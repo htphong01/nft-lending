@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap");
 
 * {
   box-sizing: border-box;
@@ -40,6 +40,6 @@ body {
 
 @media screen and (min-width: 1280px) {
   .container {
-    padding: 0 312px;
+    padding: 0 240px;
   }
 }
