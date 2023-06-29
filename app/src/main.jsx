@@ -5,6 +5,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { userRoutes } from "./routes";
 import { store, persistor } from "./redux/store";
 import "./global.css";
+import 'react-loading-skeleton/dist/skeleton.css'
 
 const router = createBrowserRouter(userRoutes);
 

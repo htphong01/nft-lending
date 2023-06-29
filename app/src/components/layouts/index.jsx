@@ -2,17 +2,24 @@ import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { setAccount } from "@src/redux/features/accountSlice";
 import { useDispatch } from "react-redux";
+import { getBalance } from "@src/utils/ethers";
 import Header from "./header";
 import Footer from "./footer";
 
 export default function UserLayout() {
   const dispatch = useDispatch();
 
-  const handleAccountsChanged = (accounts) => {
+  const handleAccountsChanged = async (accounts) => {
     if (accounts.length === 0) {
       console.log("Please connect to MetaMask.");
     } else {
-      dispatch(setAccount(accounts[0]));
+      const balance = await getBalance(accounts[0]);
+      dispatch(
+        setAccount({
+          address: accounts[0],
+          balance: balance,
+        })
+      );
     }
   };
 
@@ -62,7 +69,10 @@ export default function UserLayout() {
 
   return (
     <>
-      <Header handleAccountsChanged={handleAccountsChanged} requireSwitchNetwork={requireSwitchNetwork} />
+      <Header
+        handleAccountsChanged={handleAccountsChanged}
+        requireSwitchNetwork={requireSwitchNetwork}
+      />
       <div className="container">
         <Outlet />
       </div>

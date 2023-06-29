@@ -1,6 +1,8 @@
 import HomePage from "@src/pages";
-import ProfilePage from "@src/pages/profile";
 import UserLayout from "@src/components/layouts";
+import ProfileLayout from "@src/components/profile/layout";
+import HistoryPage from "@src/pages/profile/history";
+import AssetsPage from "@src/pages/profile/assets";
 
 export const userRoutes = [
   {
@@ -13,7 +15,17 @@ export const userRoutes = [
       },
       {
         path: "/profile",
-        element: <ProfilePage />,
+        element: <ProfileLayout />,
+        children: [
+          {
+            path: "/profile/history",
+            element: <HistoryPage />,
+          },
+          {
+            path: "/profile/assets",
+            element: <AssetsPage />,
+          },
+        ],
       },
     ],
   },

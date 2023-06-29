@@ -1,15 +1,17 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  address: '',
+  address: "",
+  balance: 0
 };
 
 export const accountSlice = createSlice({
-  name: 'account',
+  name: "account",
   initialState,
   reducers: {
     setAccount: (state, action) => {
-      state.address = action.payload;
+      state = action.payload;
+      return state;
     },
   },
 });

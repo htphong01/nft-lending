@@ -23,7 +23,7 @@ export default function Account({ account: { address } }) {
 
   return (
     <div className={styles["account-wrap"]}>
-      <Link to="/profile">
+      <Link to="/profile/history">
         <Icon icon="bx:user" fontSize={24} cursor="pointer" />
       </Link>
       <div className={styles["account-address"]}>
