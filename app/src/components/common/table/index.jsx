@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
-import styles from "../styles.module.scss";
+import styles from "./styles.module.scss";
 
-export default function Table({ title, data }) {
+export default function Table({ title, data, action }) {
   const sliceAddress = (address) => {
     return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
   };
@@ -20,6 +20,7 @@ export default function Table({ title, data }) {
         <div className={styles["table-list-item"]}>Loan value</div>
         <div className={styles["table-list-item"]}>Repayment</div>
         <div className={styles["table-list-item"]}>APR</div>
+        <div className={styles["table-list-item"]}>Action</div>
       </div>
       {data && data.length > 0 ? data.map((item, index) => (
         <div className={styles["table-list"]} key={index}>
@@ -37,6 +38,7 @@ export default function Table({ title, data }) {
           <div className={styles["table-list-item"]}>{item.loanValue}</div>
           <div className={styles["table-list-item"]}>{item.repayment}</div>
           <div className={styles["table-list-item"]}>{item.apr}</div>
+          <div className={styles["table-list-item"]}>{action ? <button onClick={() => action.handle(item)}>{action.text}</button> : '#'}</div>
         </div>
       )) : <div className={styles['no-data']}>
           <span>No data</span>

@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
 import { useImageLoaded } from "@src/hooks/useImageLoaded";
-import styles from "../styles.module.scss";
+import styles from "./styles.module.scss";
 import Skeleton from "react-loading-skeleton";
 
-export default function Card({ item }) {
+export default function Card({ item, action: { text, handle } }) {
   const [ref, loaded, onLoad] = useImageLoaded();
 
   return (
@@ -17,7 +17,7 @@ export default function Card({ item }) {
         />
         {!loaded && <Skeleton className={styles.skeleton} />}
         <div className={styles["make-collateral-wrap"]}>
-          <button>List collateral</button>
+          <button onClick={() => handle(item)}>{text}</button>
         </div>
       </div>
 
