@@ -24,7 +24,8 @@
     "react-toastify": "^9.0.8",
     "redux-persist": "^6.0.0",
     "sass": "^1.63.2",
-    "scss": "^0.2.4"
+    "scss": "^0.2.4",
+    "usehooks-ts": "^2.9.1"
   },
   "devDependencies": {
     "@types/react": "^18.0.37",

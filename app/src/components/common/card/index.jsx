@@ -12,8 +12,12 @@ export default function Card({ item, action: { text, handle } }) {
         <img
           ref={ref}
           src={item.metadata.image}
-          onLoad={onLoad}
           style={{ display: loaded ? "block" : "none" }}
+          onLoad={onLoad}
+          onError={({ currentTarget }) => {
+            currentTarget.onerror = null;
+            currentTarget.src = "https://www.chanchao.com.tw/images/default.jpg";
+          }}
         />
         {!loaded && <Skeleton className={styles.skeleton} />}
         <div className={styles["make-collateral-wrap"]}>

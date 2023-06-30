@@ -111,6 +111,7 @@ export const getNFTs = async () => {
     params: {
       owner: "0x1F0aad64EC7c3B3F4F739Cf1fb3Aa589C975F201",
       contractAddresses: ["0x086BdECe06069016F506f90dB30261Af654B7d0a"],
+      pageSize: 14
     },
     headers: {
       accept: "application/json",

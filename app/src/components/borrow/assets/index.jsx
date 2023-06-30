@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { getNFTs } from "@src/constants/example-data";
 import Card from "@src/components/common/card";
-import ListCollateralForm from '@src/components/common/list-collateral'
 import styles from "./styles.module.scss";
 
 export default function Assets() {
@@ -21,11 +20,10 @@ export default function Assets() {
   };
 
   useEffect(() => {
-    fetchNFTs();
+    // fetchNFTs();
   }, []);
   return (
     <div className={styles.container}>
-      <ListCollateralForm />
       <div className={styles.heading}>Your assets</div>
       {listNFT.length > 0 ? <div className={styles["list-nfts"]}>
         {listNFT.map((item, index) => (

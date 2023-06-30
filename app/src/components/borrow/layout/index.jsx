@@ -1,11 +1,9 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Icon } from "@iconify/react";
-import { PROFILE_TABS } from "@src/constants";
-import cvcScanIcon from "@src/assets/cvcscan-icon.png";
+import { BORROW_TABS } from "@src/constants";
 import styles from "./styles.module.scss";
 
-export default function ProfileHeader() {
+export default function BorrowHeader() {
   const account = useSelector((state) => state.account);
   const { pathname } = useLocation();
 
@@ -13,37 +11,8 @@ export default function ProfileHeader() {
     <div>
       <div className={styles.header}>
         <div className={styles.left}>
-          <h1>Account</h1>
-          <div className={styles.address}>{account.address}</div>
-          <div className={styles.social}>
-            <a
-              className={styles["social-item"]}
-              href={`https://testnet.cvcscan.com/address/${account.address}`}
-              rel="noreferrer"
-              target="_blank"
-            >
-              <img src={cvcScanIcon} alt="CVCScan" />
-              <span>CVCScan</span>
-            </a>
-            <a
-              className={styles["social-item"]}
-              href={`#`}
-              rel="noreferrer"
-              target="_blank"
-            >
-              <Icon icon="logos:twitter" fontSize={18} />
-              <span>Twitter</span>
-            </a>
-            <a
-              className={styles["social-item"]}
-              href={`#`}
-              rel="noreferrer"
-              target="_blank"
-            >
-              <Icon icon="logos:facebook" fontSize={18} />
-              <span>Facebook</span>
-            </a>
-          </div>
+          <h1>Get a loan</h1>
+          <div className={styles.description}>Put your NFT assets up as collateral for a loan.</div>
         </div>
         <div className={styles.right}>
           <div>
@@ -63,7 +32,7 @@ export default function ProfileHeader() {
         </div>
       </div>
       <div className={styles.tabs}>
-        {PROFILE_TABS.map((tab, index) => (
+        {BORROW_TABS.map((tab, index) => (
           <Link
             key={index}
             className={`${styles["tab-item"]} ${
