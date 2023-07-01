@@ -12,6 +12,9 @@ import LendLayout from "@src/components/lend/layout";
 import LendAssetsPage from "@src/pages/lend/assets";
 import LendLoansPage from "@src/pages/lend/loans";
 import LendOffersPage from "@src/pages/lend/offers";
+import LendingPoolLayout from "@src/components/lending-pool/layout";
+import LendingPoolPage from "@src/pages/lending-pool";
+import LendingPoolRequestsPage from "@src/pages/lending-pool/requests";
 
 export const userRoutes = [
   {
@@ -73,6 +76,20 @@ export const userRoutes = [
           {
             path: "/lend/offers",
             element: <LendOffersPage />,
+          },
+        ],
+      },
+      {
+        path: "/lending-pool",
+        element: <LendingPoolLayout />,
+        children: [
+          {
+            path: "/lending-pool",
+            element: <LendingPoolPage />,
+          },
+          {
+            path: "/lending-pool/requests",
+            element: <LendingPoolRequestsPage />,
           },
         ],
       },

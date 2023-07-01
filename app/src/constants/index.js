@@ -163,6 +163,17 @@ export const LEND_TABS = [
   },
 ];
 
+export const LENDING_POOL_TABS = [
+  {
+    text: "Lending Pool",
+    url: "/lending-pool",
+  },
+  {
+    text: "Lending Requests",
+    url: "/lending-pool/requests",
+  }
+];
+
 export const COLLATERAL_FORM_TYPE = {
   VIEW: "View",
   EDIT: "Edit",
