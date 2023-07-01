@@ -120,45 +120,50 @@ export const HEADER_MENU = [
 
 export const PROFILE_TABS = [
   {
-    text: 'Loans',
-    url: '/profile/history'
+    text: "Loans",
+    url: "/profile/history",
   },
   {
-    text: 'Assets',
-    url: '/profile/assets'
+    text: "Assets",
+    url: "/profile/assets",
   },
   {
-    text: 'Collaterals',
-    url: '/profile/collaterals'
-  }
-]
+    text: "Collaterals",
+    url: "/profile/collaterals",
+  },
+];
 
 export const BORROW_TABS = [
   {
-    text: 'Get a new loan',
-    url: '/borrow/assets'
+    text: "Get a new loan",
+    url: "/borrow/assets",
   },
   {
-    text: 'Loans received',
-    url: '/borrow/loans'
+    text: "Loans received",
+    url: "/borrow/loans",
   },
   {
-    text: 'Offers received',
-    url: '/borrow/offers'
-  }
-]
+    text: "Offers received",
+    url: "/borrow/offers",
+  },
+];
 
 export const LEND_TABS = [
   {
-    text: 'Give a new loan',
-    url: '/lend/assets'
+    text: "Give a new loan",
+    url: "/lend/assets",
   },
   {
-    text: 'Loans given',
-    url: '/lend/loans'
+    text: "Loans given",
+    url: "/lend/loans",
   },
   {
-    text: 'Offers sent',
-    url: '/lend/offers'
-  }
-]
+    text: "Offers sent",
+    url: "/lend/offers",
+  },
+];
+
+export const COLLATERAL_FORM_TYPE = {
+  VIEW: "View",
+  EDIT: "Edit",
+};
