@@ -19,7 +19,7 @@ export default function Assets() {
   };
 
   useEffect(() => {
-    // fetchNFTs();
+    fetchNFTs();
   }, []);
   return (
     <div className={styles.container}>

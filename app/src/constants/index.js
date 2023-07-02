@@ -169,7 +169,7 @@ export const LENDING_POOL_TABS = [
     url: "/lending-pool",
   },
   {
-    text: "Lending Requests",
+    text: "Loan Requests",
     url: "/lending-pool/requests",
   }
 ];

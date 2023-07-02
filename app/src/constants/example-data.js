@@ -123,3 +123,54 @@ export const getNFTs = async () => {
   const { data } = await axios.request(options);
   return data.ownedNfts;
 };
+
+export const CURRENT_LOAN_REQUESTS = [
+  {
+    asset: "Lil Pudgy",
+    name: "Lil Pudgy #1",
+    status: "Waiting",
+    lender: "Lending Pool",
+    borrower: "0xAc84926f0b9df7ff3B4f4377C5536Fff89e9aF54",
+    duration: "30 days",
+    due: "28/7/2023",
+    loanValue: "3 XCR",
+    repayment: "3.5 XCR",
+    apr: "125.3%",
+  },
+  {
+    asset: "Lil Pudgy",
+    name: "Lil Pudgy #1",
+    status: "Waiting",
+    lender: "Lending Pool",
+    borrower: "0xAc84926f0b9df7ff3B4f4377C5536Fff89e9aF54",
+    duration: "30 days",
+    due: "28/7/2023",
+    loanValue: "3 XCR",
+    repayment: "3.5 XCR",
+    apr: "125.3%",
+  },
+  {
+    asset: "Lil Pudgy",
+    name: "Lil Pudgy #1",
+    status: "Waiting",
+    lender: "Lending Pool",
+    borrower: "0xAc84926f0b9df7ff3B4f4377C5536Fff89e9aF54",
+    duration: "30 days",
+    due: "28/7/2023",
+    loanValue: "3 XCR",
+    repayment: "3.5 XCR",
+    apr: "125.3%",
+  },
+  {
+    asset: "Lil Pudgy",
+    name: "Lil Pudgy #1",
+    status: "Waiting",
+    lender: "Lending Pool",
+    borrower: "0xAc84926f0b9df7ff3B4f4377C5536Fff89e9aF54",
+    duration: "30 days",
+    due: "28/7/2023",
+    loanValue: "3 XCR",
+    repayment: "3.5 XCR",
+    apr: "125.3%",
+  },
+];

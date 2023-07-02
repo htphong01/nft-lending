@@ -75,6 +75,10 @@
         padding: 6px 16px;
         cursor: pointer;
         font-weight: bold;
+
+        &:hover {
+          opacity: 0.8;
+        }
       }
     }
   }
