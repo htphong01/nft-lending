@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
-import { useRef, useEffect } from "react";
-import { Icon } from "@iconify/react";
-import styles from "../styles.module.scss";
-import jazzicon from "@metamask/jazzicon";
-import { Link } from "react-router-dom";
+import { useRef, useEffect } from 'react';
+import { Icon } from '@iconify/react';
+import styles from '../styles.module.scss';
+import jazzicon from '@metamask/jazzicon';
+import { Link } from 'react-router-dom';
 
 export default function Account({ account: { address } }) {
   const avatarRef = useRef();
@@ -22,11 +22,11 @@ export default function Account({ account: { address } }) {
   }, [address, avatarRef]);
 
   return (
-    <div className={styles["account-wrap"]}>
+    <div className={styles['account-wrap']}>
       <Link to="/profile/history">
         <Icon icon="bx:user" fontSize={24} cursor="pointer" />
       </Link>
-      <div className={styles["account-address"]}>
+      <div className={styles['account-address']}>
         <div ref={avatarRef}></div>
         <span>{`${address.slice(0, 5)} ... ${address.slice(-4)}`}</span>
       </div>

@@ -1,14 +1,14 @@
-import { useState, useRef } from "react";
-import { useOnClickOutside } from "usehooks-ts";
-import { calculateAPR, calculateRepayment } from "@src/utils/apr";
-import { COLLATERAL_FORM_TYPE } from "@src/constants";
-import styles from "./styles.module.scss";
+import { useState, useRef } from 'react';
+import { useOnClickOutside } from 'usehooks-ts';
+import { calculateAPR, calculateRepayment } from '@src/utils/apr';
+import { COLLATERAL_FORM_TYPE } from '@src/constants';
+import styles from './styles.module.scss';
 
 export default function ListCollateralForm({ item, onClose, type }) {
   const ref = useRef(null);
 
   const [data, setData] = useState({
-    currency: "XCR",
+    currency: 'XCR',
     amount: 0,
     duration: 0,
     repayment: 0,
@@ -21,18 +21,10 @@ export default function ListCollateralForm({ item, onClose, type }) {
       [e.target.name]: e.target.value,
     };
 
-    if (["amount", "duration", "repayment"].includes(e.target.name)) {
-      newData.apr = calculateAPR(
-        newData.amount,
-        newData.repayment,
-        newData.duration
-      );
+    if (['amount', 'duration', 'repayment'].includes(e.target.name)) {
+      newData.apr = calculateAPR(newData.amount, newData.repayment, newData.duration);
     } else {
-      newData.repayment = calculateRepayment(
-        newData.amount,
-        newData.apr,
-        newData.duration
-      );
+      newData.repayment = calculateRepayment(newData.amount, newData.apr, newData.duration);
     }
 
     setData(newData);
@@ -41,9 +33,9 @@ export default function ListCollateralForm({ item, onClose, type }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (type === COLLATERAL_FORM_TYPE.VIEW) {
-      console.log("Remove");
+      console.log('Remove');
     } else {
-      console.log("list collateral", data);
+      console.log('list collateral', data);
     }
   };
 
@@ -52,18 +44,14 @@ export default function ListCollateralForm({ item, onClose, type }) {
   return (
     <div className={styles.container}>
       <form className={styles.form} onSubmit={handleSubmit} ref={ref}>
-        <div className={styles.title}>
-          {type === COLLATERAL_FORM_TYPE.VIEW ? "View" : "List"} Collateral
-        </div>
-        <div className={styles["sub-title"]}>Proposed loan agreement</div>
+        <div className={styles.title}>{type === COLLATERAL_FORM_TYPE.VIEW ? 'View' : 'List'} Collateral</div>
+        <div className={styles['sub-title']}>Proposed loan agreement</div>
         <div className={styles.section}>
           <div className={styles.head}>
             The loan must be in <span>{data.currency}</span>
           </div>
           <div className={styles.details}>
-            <div className={styles.label}>
-              Which currency are you offering this loan in?
-            </div>
+            <div className={styles.label}>Which currency are you offering this loan in?</div>
             <label className={styles.input}>
               <input
                 type="radio"
@@ -79,15 +67,13 @@ export default function ListCollateralForm({ item, onClose, type }) {
         </div>
         <div className={styles.section}>
           <div className={styles.head}>
-            Amount:{" "}
+            Amount:{' '}
             <span>
               {data.amount} {data.currency}
             </span>
           </div>
           <div className={styles.details}>
-            <div className={styles.label}>
-              What loan amount are you offering?
-            </div>
+            <div className={styles.label}>What loan amount are you offering?</div>
             <label className={styles.input}>
               <input
                 type="number"
@@ -105,9 +91,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
             Loan duration: <span>{data.duration} days</span>
           </div>
           <div className={styles.details}>
-            <div className={styles.label}>
-              What loan duration are you offering?
-            </div>
+            <div className={styles.label}>What loan duration are you offering?</div>
             <label className={styles.input}>
               <input
                 type="number"
@@ -122,7 +106,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
         </div>
         <div className={styles.section}>
           <div className={styles.head}>
-            Repayment:{" "}
+            Repayment:{' '}
             <span>
               {data.repayment} {data.currency} ({data.apr}% APR)
             </span>
@@ -131,7 +115,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
             <div className={styles.label}>What APR are you offering?</div>
             <label className={styles.input}>
               <input
-                className={styles["repayment-input"]}
+                className={styles['repayment-input']}
                 type="number"
                 value={data.repayment}
                 name="repayment"
@@ -139,24 +123,22 @@ export default function ListCollateralForm({ item, onClose, type }) {
                 readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
               />
               <input
-                className={styles["apr-input"]}
+                className={styles['apr-input']}
                 type="number"
                 value={data.apr}
                 name="apr"
                 onChange={handleChange}
                 readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
               />
-              <div className={styles["percent-label"]}>%</div>
+              <div className={styles['percent-label']}>%</div>
             </label>
           </div>
         </div>
-        <div className={styles["button-wrap"]}>
+        <div className={styles['button-wrap']}>
           <button type="button" onClick={() => onClose()}>
             Close
           </button>
-          <button type="submit">
-            {type === COLLATERAL_FORM_TYPE.VIEW ? "Remove" : "List"} Collateral
-          </button>
+          <button type="submit">{type === COLLATERAL_FORM_TYPE.VIEW ? 'Unlist' : 'List'} Collateral</button>
         </div>
       </form>
     </div>

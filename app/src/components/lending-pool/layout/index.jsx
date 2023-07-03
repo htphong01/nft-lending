@@ -1,7 +1,7 @@
-import { Outlet, Link, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { LENDING_POOL_TABS } from "@src/constants";
-import styles from "./styles.module.scss";
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { LENDING_POOL_TABS } from '@src/constants';
+import styles from './styles.module.scss';
 
 export default function LendingPoolHeader() {
   const account = useSelector((state) => state.account);
@@ -35,9 +35,7 @@ export default function LendingPoolHeader() {
         {LENDING_POOL_TABS.map((tab, index) => (
           <Link
             key={index}
-            className={`${styles["tab-item"]} ${
-              pathname === tab.url ? styles.active : ""
-            }`}
+            className={`${styles['tab-item']} ${pathname === tab.url ? styles.active : ''}`}
             to={tab.url}
           >
             {tab.text}

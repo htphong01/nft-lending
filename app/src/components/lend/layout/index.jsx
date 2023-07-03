@@ -1,7 +1,7 @@
-import { Outlet, Link, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { LEND_TABS } from "@src/constants";
-import styles from "./styles.module.scss";
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { LEND_TABS } from '@src/constants';
+import styles from './styles.module.scss';
 
 export default function LendHeader() {
   const account = useSelector((state) => state.account);
@@ -16,16 +16,16 @@ export default function LendHeader() {
         </div>
         <div className={styles.right}>
           <div>
-            <div className={styles["right-item"]}>
-              <div className={styles["right-item-left"]}>Balance:</div>
+            <div className={styles['right-item']}>
+              <div className={styles['right-item-left']}>Balance:</div>
               <div>{account.balance} XCR</div>
             </div>
-            <div className={styles["right-item"]}>
-              <div className={styles["right-item-left"]}>Borrow:</div>
+            <div className={styles['right-item']}>
+              <div className={styles['right-item-left']}>Borrow:</div>
               <div>0</div>
             </div>
-            <div className={styles["right-item"]}>
-              <div className={styles["right-item-left"]}>Lend:</div>
+            <div className={styles['right-item']}>
+              <div className={styles['right-item-left']}>Lend:</div>
               <div>0</div>
             </div>
           </div>
@@ -35,9 +35,7 @@ export default function LendHeader() {
         {LEND_TABS.map((tab, index) => (
           <Link
             key={index}
-            className={`${styles["tab-item"]} ${
-              pathname === tab.url ? styles.active : ""
-            }`}
+            className={`${styles['tab-item']} ${pathname === tab.url ? styles.active : ''}`}
             to={tab.url}
           >
             {tab.text}

@@ -1,10 +1,10 @@
-import Stake from "./stake";
-import Information from "./information";
-import Account from "./account";
-import styles from "./styles.module.scss";
-import cvcScanIcon from "@src/assets/cvcscan-icon.png";
-import stakerIcon from "@src/assets/staker-icon.svg";
-import aprIcon from "@src/assets/apr-icon.svg";
+import Stake from './stake';
+import Information from './information';
+import Account from './account';
+import styles from './styles.module.scss';
+import cvcScanIcon from '@src/assets/cvcscan-icon.png';
+import stakerIcon from '@src/assets/staker-icon.svg';
+import aprIcon from '@src/assets/apr-icon.svg';
 
 export default function Pool() {
   return (
@@ -19,26 +19,18 @@ export default function Pool() {
         </div>
         <div className={styles.body}>
           <div className={styles.row}>
-            <div className={styles["section-item"]}>
-              <Information
-                title="Total stakers"
-                value="100 Holders"
-                icon={stakerIcon}
-              />
+            <div className={styles['section-item']}>
+              <Information title="Total stakers" value="100 Holders" icon={stakerIcon} />
             </div>
-            <div className={styles["section-item"]}>
-              <Information
-                title="Pool balance"
-                value="1255.24 XCR"
-                icon={aprIcon}
-              />
+            <div className={styles['section-item']}>
+              <Information title="Pool balance" value="1255.24 XCR" icon={aprIcon} />
             </div>
           </div>
           <div className={styles.row}>
-            <div className={styles["section-item"]}>
+            <div className={styles['section-item']}>
               <Stake />
             </div>
-            <div className={styles["section-item"]}>
+            <div className={styles['section-item']}>
               <Account />
             </div>
           </div>

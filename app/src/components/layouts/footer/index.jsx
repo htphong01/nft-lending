@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
-import styles from "./styles.module.scss";
-import Menu from './menu'
+import { Link } from 'react-router-dom';
+import styles from './styles.module.scss';
+import Menu from './menu';
 
 export default function Footer() {
   return (
@@ -10,8 +10,8 @@ export default function Footer() {
           AvengersFI
         </Link>
         <div className={styles.description}>
-          NFTfi.com is a peer-to-peer platform that lets NFT <br/> 
-          holders and liquidity providers connect via <br/> 
+          NFTfi.com is a peer-to-peer platform that lets NFT <br />
+          holders and liquidity providers connect via <br />
           permissionless smart contract infrastructure.
         </div>
       </div>

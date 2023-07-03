@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import styles from "./styles.module.scss";
+import { Link } from 'react-router-dom';
+import styles from './styles.module.scss';
 
 export default function Banner() {
   return (
@@ -14,7 +14,7 @@ export default function Banner() {
           from lenders. Repay your loan, and you get your <br />
           NFT back.
         </div>
-        <div className={styles["button-wrap"]}>
+        <div className={styles['button-wrap']}>
           <Link to="#" className={styles.active}>
             Get a loan now
           </Link>

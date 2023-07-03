@@ -1,9 +1,9 @@
-import styles from "./styles.module.scss";
+import styles from './styles.module.scss';
 
 export default function Account() {
   return (
     <div className={styles.account}>
-      <div className={styles["balance-block"]}>
+      <div className={styles['balance-block']}>
         <div className={styles.title}>My Balance</div>
         <div className={styles.balance}>100 XCR</div>
         <div className={styles.money}>$11</div>
