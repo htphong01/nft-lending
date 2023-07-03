@@ -102,7 +102,7 @@ export const PREVIOUS_LOANS = [
   },
 ];
 
-export const getNFTs = async () => {
+export const getNFTs = async (pageSize = 14) => {
   const url = `https://polygon-mumbai.g.alchemy.com/nft/v2/RRampoJ43pj7o98Zto95wSMw3JYTI5rL/getNFTs`;
 
   const options = {
@@ -111,7 +111,7 @@ export const getNFTs = async () => {
     params: {
       owner: '0x1F0aad64EC7c3B3F4F739Cf1fb3Aa589C975F201',
       contractAddresses: ['0x086BdECe06069016F506f90dB30261Af654B7d0a'],
-      pageSize: 14,
+      pageSize,
     },
     headers: {
       accept: 'application/json',
@@ -171,5 +171,56 @@ export const CURRENT_LOAN_REQUESTS = [
     loanValue: '3 XCR',
     repayment: '3.5 XCR',
     apr: '125.3%',
+  },
+];
+
+export const OFFERS_RECEIVED = [
+  {
+    loanValue: '3 XCR',
+    interest: '0.96%',
+    apr: '12.53%',
+    duration: '30 days',
+    lender: '0xAc84926f0b9df7ff3B4f4377C5536Fff89e9aF54',
+    repayment: '3.5 XCR',
+  },
+  {
+    loanValue: '3 XCR',
+    interest: '0.96%',
+    apr: '12.53%',
+    duration: '30 days',
+    lender: '0xAc84926f0b9df7ff3B4f4377C5536Fff89e9aF54',
+    repayment: '3.5 XCR',
+  },
+  {
+    loanValue: '3 XCR',
+    interest: '0.96%',
+    apr: '12.53%',
+    duration: '30 days',
+    lender: '0xAc84926f0b9df7ff3B4f4377C5536Fff89e9aF54',
+    repayment: '3.5 XCR',
+  },
+  {
+    loanValue: '3 XCR',
+    interest: '0.96%',
+    apr: '12.53%',
+    duration: '30 days',
+    lender: '0xAc84926f0b9df7ff3B4f4377C5536Fff89e9aF54',
+    repayment: '3.5 XCR',
+  },
+  {
+    loanValue: '3 XCR',
+    interest: '0.96%',
+    apr: '12.53%',
+    duration: '30 days',
+    lender: '0xAc84926f0b9df7ff3B4f4377C5536Fff89e9aF54',
+    repayment: '3.5 XCR',
+  },
+  {
+    loanValue: '3 XCR',
+    interest: '0.96%',
+    apr: '12.53%',
+    duration: '30 days',
+    lender: '0xAc84926f0b9df7ff3B4f4377C5536Fff89e9aF54',
+    repayment: '3.5 XCR',
   },
 ];
