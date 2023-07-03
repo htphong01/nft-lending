@@ -15,6 +15,7 @@
     gap: 10px;
     justify-content: center;
     flex: 1;
+    align-items: center;
 
     .title {
       font-weight: 600;
@@ -46,6 +47,7 @@
     justify-content: center;
 
     .content {
+      width: 100%;
       background-color: #221630;
       padding: 20px 16px;
       display: flex;

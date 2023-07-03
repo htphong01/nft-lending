@@ -6,7 +6,7 @@ export default function Account() {
       <div className={styles["balance-block"]}>
         <div className={styles.title}>My Balance</div>
         <div className={styles.balance}>100 XCR</div>
-        <div className={styles.money}>$1.10</div>
+        <div className={styles.money}>$11</div>
       </div>
 
       <div className={styles.block}>
