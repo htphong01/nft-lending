@@ -29,15 +29,15 @@ export const FOOTER_MENU = [
     items: [
       {
         title: 'Collateral',
-        link: '#',
+        link: '/lend/assets',
       },
       {
         title: 'Loans',
-        link: '#',
+        link: '/lend/loans',
       },
       {
         title: 'Offers sent',
-        link: '#',
+        link: '/lend/offers',
       },
     ],
   },
@@ -46,15 +46,15 @@ export const FOOTER_MENU = [
     items: [
       {
         title: 'Get a new loan',
-        link: '#',
+        link: '/borrow/assets',
       },
       {
         title: 'Loans received',
-        link: '#',
+        link: '/borrow/loans',
       },
       {
         title: 'Offers received',
-        link: '#',
+        link: '/borrow/offers',
       },
     ],
   },

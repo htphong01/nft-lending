@@ -14,7 +14,11 @@
       padding: 24px;
       display: flex;
       flex-direction: column;
-      justify-content: space-around;
+      justify-content: space-between;
+
+      .heading {
+        text-align: left;
+      }
 
       .real-price {
         text-align: right;
@@ -46,6 +50,11 @@
       }
 
       .form {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+
         .title {
           font-size: 14px;
           font-weight: bold;
@@ -157,6 +166,10 @@
             flex-grow: 4;
             height: 32px;
             cursor: pointer;
+
+            &:hover {
+              opacity: 0.8;
+            }
           }
         }
       }

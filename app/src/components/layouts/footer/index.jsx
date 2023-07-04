@@ -10,7 +10,7 @@ export default function Footer() {
           AvengersFI
         </Link>
         <div className={styles.description}>
-          NFTfi.com is a peer-to-peer platform that lets NFT <br />
+          AvengersFI is a peer-to-peer platform that lets NFT <br />
           holders and liquidity providers connect via <br />
           permissionless smart contract infrastructure.
         </div>

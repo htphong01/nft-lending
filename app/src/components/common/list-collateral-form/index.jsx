@@ -35,7 +35,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
     if (type === COLLATERAL_FORM_TYPE.VIEW) {
       console.log('Remove');
     } else {
-      console.log('list collateral', data);
+      console.log('submit', data);
     }
   };
 

@@ -27,8 +27,6 @@ export default function Form({ item, onClose }) {
     };
   };
 
-  console.log(calculatePercentVote(VOTE_RESULT.accepted, VOTE_RESULT.rejected).accepted);
-
   useOnClickOutside(ref, () => onClose());
 
   return (

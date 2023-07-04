@@ -15,10 +15,10 @@ export default function Banner() {
           NFT back.
         </div>
         <div className={styles['button-wrap']}>
-          <Link to="#" className={styles.active}>
+          <Link to="/borrow/assets" className={styles.active}>
             Get a loan now
           </Link>
-          <Link to="#" className={styles.deactive}>
+          <Link to="/lend/assets" className={styles.deactive}>
             I want to lend
           </Link>
         </div>

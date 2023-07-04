@@ -5,7 +5,6 @@ import { OFFERS_RECEIVED } from '@src/constants/example-data';
 import styles from './styles.module.scss';
 
 export default function MakeOffer({ item }) {
-  console.log(item);
   const data = Object.entries(item).filter((element) => element[0] !== 'lender' && element[0] !== 'metadata');
 
   const sliceAddress = (address) => {
@@ -25,6 +24,9 @@ export default function MakeOffer({ item }) {
           <img src={item.metadata.image} alt={item.metadata.name} />
         </div>
         <div className={styles.section}>
+          <div className={styles['heading']}>
+            Proposed offer from owner
+          </div>
           {data.map((element, index) => (
             <div className={styles.info} key={index}>
               <div className={styles.label}>{element[0].charAt(0).toUpperCase() + element[0].slice(1)}: </div>
