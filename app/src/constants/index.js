@@ -178,3 +178,7 @@ export const COLLATERAL_FORM_TYPE = {
   VIEW: 'View',
   EDIT: 'Edit',
 };
+
+export const NFT_CONTRACT_ADDRESS = '0xe585f9DEE480f59b4daC27d591e279Ab107270B5';
+export const NFT_CONTRACT_NAME = 'Chonk Society';
+export const CHAIN_ID = 5555;
