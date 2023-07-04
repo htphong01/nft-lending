@@ -22,8 +22,6 @@ import "@openzeppelin/contracts/utils/Context.sol";
 abstract contract Ownable is Context {
     address private _owner;
 
-    address private _ownerCandidate;
-
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     /**
@@ -42,27 +40,12 @@ abstract contract Ownable is Context {
     }
 
     /**
-     * @dev Requests transferring ownership of the contract to a new account (`_newOwnerCandidate`).
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
      * Can only be called by the current owner.
      */
-    function requestTransferOwnership(address _newOwnerCandidate) public virtual onlyOwner {
-        require(_newOwnerCandidate != address(0), "Ownable: new owner is the zero address");
-        _ownerCandidate = _newOwnerCandidate;
-    }
-
-    function acceptTransferOwnership() public virtual {
-        require(_ownerCandidate == _msgSender(), "Ownable: not owner candidate");
-        _setOwner(_ownerCandidate);
-        delete _ownerCandidate;
-    }
-
-    function cancelTransferOwnership() public virtual onlyOwner {
-        delete _ownerCandidate;
-    }
-
-    function rejectTransferOwnership() public virtual {
-        require(_ownerCandidate == _msgSender(), "Ownable: not owner candidate");
-        delete _ownerCandidate;
+    function transferOwnership(address _newOwner) public virtual onlyOwner {
+        require(_newOwner != address(0), "Ownable: new owner is the zero address");
+        _setOwner(_newOwner);
     }
 
     /**
@@ -75,7 +58,7 @@ abstract contract Ownable is Context {
     /**
      * @dev Sets the owner.
      */
-    function _setOwner(address _newOwner) internal {
+    function _setOwner(address _newOwner) private {
         address oldOwner = _owner;
         _owner = _newOwner;
         emit OwnershipTransferred(oldOwner, _newOwner);
