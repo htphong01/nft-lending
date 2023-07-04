@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { RedisService } from './redis.provider';
 
 @Injectable()
-export class WebRedisService extends RedisService {
+export class VoteRedisService extends RedisService {
   constructor() {
     super({
       host: config.ENV.REDIS_VOTE_HOST,

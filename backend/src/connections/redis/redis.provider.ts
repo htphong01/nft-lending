@@ -53,9 +53,9 @@ export class RedisService {
     await this.redis.publish(chanel, JSON.stringify(data));
   }
 
-  async hset(hash :string ,key: string, value: any) {
+  async hset(hash: string, key: string, value: any) {
     try {
-      await this.redis.hset(hash,key, value);
+      await this.redis.hset(hash, key, value);
     } catch (e) {
       this.logger.error(`ERROR SET KEY ${key}: ${e.message}`);
     }
@@ -63,23 +63,23 @@ export class RedisService {
 
   async hget(hash: string, key: string) {
     try {
-       return await new Promise((resolve, reject) => {
-        return this.redis.hget(hash, key, function(err, res) {
+      return await new Promise((resolve, reject) => {
+        return this.redis.hget(hash, key, function (err, res) {
           resolve(res);
         });
-    });
+      });
     } catch (e) {
       this.logger.error(`ERROR GET HASH KEY ${hash}:${key} : ${e.message}`);
     }
   }
 
-  async hgetall(hashKey :string) {
+  async hgetall(hashKey: string) {
     try {
-       return await new Promise((resolve, reject) => {
-        return this.redis.hgetall(hashKey, function(err, res) {
+      return await new Promise((resolve, reject) => {
+        return this.redis.hgetall(hashKey, function (err, res) {
           resolve(res);
         });
-    });
+      });
     } catch (e) {
       this.logger.error(`ERROR GET HASH All KEY ${hashKey}: ${e.message}`);
     }
@@ -93,7 +93,7 @@ export class RedisService {
     }
   }
 
-  async sadd(hash :string , value: any) {
+  async sadd(hash: string, value: any) {
     try {
       await this.redis.sadd(hash, value);
     } catch (e) {
@@ -101,7 +101,7 @@ export class RedisService {
     }
   }
 
-  async smembers(hash :string): Promise<any[]> {
+  async smembers(hash: string): Promise<any[]> {
     try {
       return await this.redis.smembers(hash);
     } catch (e) {
