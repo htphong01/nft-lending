@@ -6,15 +6,14 @@ import "./interfaces/ILendingPool.sol";
 import "./utils/Permission.sol";
 
 /**
- *  @title  Token S420
+ *  @title  Token Stake
  *
- *  @notice Token 420 is fully conformed to the ERC-20 with the remarkable feature of globally inflating the balance of
+ *  @notice Token stake is fully conformed to the ERC-20 with the remarkable feature of globally inflating the balance of
  *          each token owner.
- *          The token is integrated with the Staking Pool as well as the whole 420 DAO system.
  *
  *  @dev    This contract derives from the implementation of ERC-20 of OpenZeppelin.
  */
-contract TokenS420 is ERC20, Permission {
+contract TokenStake is ERC20, Permission {
     ILendingPool public lendingPool;
 
     /**
@@ -38,10 +37,10 @@ contract TokenS420 is ERC20, Permission {
 
     /**
      *  @dev    Apply the constructor of the superclass contract `ERC20`.
-     *          Name:     "Stake s420"
-     *          Symbol:   "s420"
+     *          Name:     "Stake"
+     *          Symbol:   "SSS"
      */
-    constructor() ERC20("Stake s420", "s420") {}
+    constructor() ERC20("Stake", "SSS") {}
 
     /**
      *  @notice Register a DAO Manager for some restricted function.
@@ -49,7 +48,7 @@ contract TokenS420 is ERC20, Permission {
      *  @dev    This can only be called once.
      */
     function registerLendingPool() external {
-        require(address(lendingPool) == address(0), "TokenS420: Staking Pool has already been registered.");
+        require(address(lendingPool) == address(0), "TokenStake: Staking Pool has already been registered.");
         lendingPool = ILendingPool(msg.sender);
         emit LendingPoolRegistration(address(lendingPool));
     }
@@ -88,7 +87,7 @@ contract TokenS420 is ERC20, Permission {
      */
     function transferFrom(address _sender, address _recipient, uint256 _amount) public override returns (bool) {
         uint256 currentAllowance = allowance(_sender, _recipient);
-        require(currentAllowance >= _amount, "TokenS420: Transfer amount exceeds allowance.");
+        require(currentAllowance >= _amount, "TokenStake: Transfer amount exceeds allowance.");
 
         // Already check overflow
         unchecked {
@@ -112,11 +111,11 @@ contract TokenS420 is ERC20, Permission {
      *  @param  _discountFactor Transfer discount factor value
      */
     function _transfer(address _sender, address _recipient, uint256 _discountFactor) internal override {
-        require(_sender != address(0), "TokenS420: Transfer from the zero address.");
-        require(_recipient != address(0), "TokenS420: Transfer to the zero address.");
+        require(_sender != address(0), "TokenStake: Transfer from the zero address.");
+        require(_recipient != address(0), "TokenStake: Transfer to the zero address.");
 
         uint256 senderDiscountFactor = discountFactors[_sender];
-        require(senderDiscountFactor >= _discountFactor, "TokenS420: Transfer amount exceeds balance.");
+        require(senderDiscountFactor >= _discountFactor, "TokenStake: Transfer amount exceeds balance.");
 
         discountFactors[_sender] = discountFactors[_sender] - _discountFactor;
         discountFactors[_recipient] = discountFactors[_recipient] + _discountFactor;
@@ -134,7 +133,7 @@ contract TokenS420 is ERC20, Permission {
      *  @param  _discountFactor Discount factor value to mint
      */
     function mintDiscountFactor(address _account, uint256 _discountFactor) public permittedTo(address(lendingPool)) {
-        require(_account != address(0), "TokenS420: Mint to the zero address");
+        require(_account != address(0), "TokenStake: Mint to the zero address");
 
         discountFactors[_account] = discountFactors[_account] + _discountFactor;
         totalDiscountFactor = totalDiscountFactor + _discountFactor;
@@ -152,8 +151,8 @@ contract TokenS420 is ERC20, Permission {
      *  @param  _discountFactor Discount factor value to to burn
      */
     function burnDiscountFactor(address _account, uint256 _discountFactor) public permittedTo(address(lendingPool)) {
-        require(_account != address(0), "TokenS420: Burn from the zero address.");
-        require(discountFactors[_account] >= _discountFactor, "TokenS420: Transfer amount exceeds balance.");
+        require(_account != address(0), "TokenStake: Burn from the zero address.");
+        require(discountFactors[_account] >= _discountFactor, "TokenStake: Transfer amount exceeds balance.");
 
         discountFactors[_account] = discountFactors[_account] - _discountFactor;
         totalDiscountFactor = totalDiscountFactor - _discountFactor;

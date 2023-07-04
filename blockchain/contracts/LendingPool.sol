@@ -6,13 +6,13 @@ import "./libraries/Formula.sol";
 import "./libraries/Helper.sol";
 import "./interfaces/ILendingPool.sol";
 import "./utils/Permission.sol";
-import "./TokenS420.sol";
+import "./TokenStake.sol";
 
 /**
  *  @title  Lending Pool
  *
  *  @notice This smart contract provides methods for users to stake/unstake tokens and manage the interest rate for the
- *          token s420.
+ *          token Stake.
  *
  *  @dev    This contract implements interface `ILendingPool`.
  */
@@ -21,10 +21,10 @@ contract LendingPool is ILendingPool, Permission {
     /**
      *  @notice Other dependent contracts in the DAO.
      */
-    TokenS420 public immutable sToken;
+    TokenStake public immutable sToken;
 
     /**
-     *  @notice Total amount of token 420 has been staked.
+     *  @notice Total amount of token stake has been staked.
      */
     uint256 public totalStake;
 
@@ -33,13 +33,11 @@ contract LendingPool is ILendingPool, Permission {
      */
     uint256 public productOfInterestRate = Formula.ONE;
 
-    event DaoManagerRegistration(address indexed account);
     event Stake(address indexed account, uint256 indexed amount);
     event Unstake(address indexed account, uint256 indexed amount);
     event Inflation(uint256 indexed reward);
-    event Upgrade(address indexed oldAddress, address indexed newAddress, uint256 indexed tokenBalance);
 
-    constructor(TokenS420 _sToken) {
+    constructor(TokenStake _sToken) {
         sToken = _sToken;
         sToken.registerLendingPool();
     }
@@ -78,27 +76,26 @@ contract LendingPool is ILendingPool, Permission {
     /**
      *  @notice Fetch reward for the stakeholders before proceeding to the next day.
      *
-     *  @dev    Only the DAO Manager can call this function.
+     *  @dev    Only admin can call this function.
      *
      *          Name    Meaning
      *  @param  _reward Amount of reward to fetch
      */
-    function fetchReward(uint256 _reward) external {
-        // The balance of token s420 of each stakeholder will increase as the accumulated interest rate increases.
+    function fetchReward(uint256 _reward) external onlyAdmin {
+        // The balance of token stake of each stakeholder will increase as the accumulated interest rate increases.
         productOfInterestRate = Formula.newProductOfInterestRate(productOfInterestRate, _reward, totalStake);
         totalStake += _reward;
         emit Inflation(_reward);
     }
 
     /**
-     *  @notice Stake token 420 to the Lending Pool.
-     *
-     *  @dev    Users must `approve` enough token 420 for this contract before calling this function.
+     *  @notice Stake token to the Lending Pool.
      *
      *          Name    Meaning
      *  @param  _amount Token amount to stake
      */
     function stake(uint256 _amount) external payable {
+        require(_amount > 0 && msg.value == _amount, "LendingPool: Invalid amount");
         // Calculate and mint discount factor for the stakeholder.
         uint256 discountFactor = tokenToDiscountFactor(_amount);
         sToken.mintDiscountFactor(msg.sender, discountFactor);
@@ -106,14 +103,14 @@ contract LendingPool is ILendingPool, Permission {
         // Increase total amount of stake.
         totalStake += _amount;
 
-        // Transfer token 420 from address of the stakeholder to address of this contract.
+        // Transfer token from address of the stakeholder to address of this contract.
         Helper.safeTransferNative(address(this), _amount);
 
         emit Stake(msg.sender, _amount);
     }
 
     /**
-     *  @notice Unstake token s420 from the Lending Pool.
+     *  @notice Unstake token stake from the Lending Pool.
      *
      *          Name    Meaning
      *  @param  _amount Token amount to unstake
@@ -121,7 +118,7 @@ contract LendingPool is ILendingPool, Permission {
     function unstake(uint256 _amount) external returns (uint256) {
         require(_amount <= sToken.balanceOf(msg.sender), "LendingPool: Unstake amount exceeds the stake.");
 
-        uint256 rewardPerUser = _amount.mul(address(this).balance).div(sToken.balanceOf(msg.sender));
+        uint256 rewardPerUser = _amount.mul(totalStake).div(sToken.balanceOf(msg.sender));
 
         // Update total stake.
         totalStake -= _amount;
@@ -130,7 +127,7 @@ contract LendingPool is ILendingPool, Permission {
         uint256 discountFactor = tokenToDiscountFactor(_amount);
         sToken.burnDiscountFactor(msg.sender, discountFactor);
 
-        // Transfer token s420 from address of this contract to address of the stakeholder.
+        // Transfer token from address of this contract to address of the stakeholder.
         Helper.safeTransferNative(msg.sender, _amount.add(rewardPerUser));
 
         emit Unstake(msg.sender, _amount);

@@ -4,11 +4,10 @@ pragma solidity 0.8.18;
 /**
  *  @title  Lending Pool Interface
  *
- *  @notice Interface of `StakingPool` to be used in `TokenS420`.
+ *  @notice Interface of `LendingPool` to be used in `TokenStake`.
  *  @notice This interface includes functions:
  *          - Get the address of the DAO manager
  *          - Convert between discount factors and staking tokens
- *          - Transfer all token 420 to a new Staking Pool in case of migration
  */
 interface ILendingPool {
     /**
