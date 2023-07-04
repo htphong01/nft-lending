@@ -19,7 +19,12 @@ export class OrdersController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(+id);
+    return this.ordersService.findById(id);
+  }
+
+  @Get('creator/:address')
+  findByCreator(@Param('address') address: string) {
+    return this.ordersService.findByCreator(address);
   }
 
   @Patch(':id')
