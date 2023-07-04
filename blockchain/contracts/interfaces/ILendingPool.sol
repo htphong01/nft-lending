@@ -4,9 +4,8 @@ pragma solidity 0.8.18;
 /**
  *  @title  Lending Pool Interface
  *
- *  @notice Interface of `LendingPool` to be used in `TokenStake`.
+ *  @notice Interface of `LendingPool` to be used in `WXCRS`.
  *  @notice This interface includes functions:
- *          - Get the address of the DAO manager
  *          - Convert between discount factors and staking tokens
  */
 interface ILendingPool {

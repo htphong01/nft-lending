@@ -13,7 +13,7 @@ import "./utils/Permission.sol";
  *
  *  @dev    This contract derives from the implementation of ERC-20 of OpenZeppelin.
  */
-contract TokenStake is ERC20, Permission {
+contract WXCRS is ERC20, Permission {
     ILendingPool public lendingPool;
 
     /**
@@ -43,7 +43,7 @@ contract TokenStake is ERC20, Permission {
     constructor() ERC20("Stake", "SSS") {}
 
     /**
-     *  @notice Register a DAO Manager for some restricted function.
+     *  @notice Register a lendingPool for some restricted function.
      *
      *  @dev    This can only be called once.
      */

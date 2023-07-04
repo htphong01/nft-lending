@@ -3,10 +3,10 @@ pragma solidity 0.8.18;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./libraries/Formula.sol";
-import "./libraries/Helper.sol";
 import "./interfaces/ILendingPool.sol";
 import "./utils/Permission.sol";
-import "./TokenStake.sol";
+import "./WXCRS.sol";
+import "./WXCR.sol";
 
 /**
  *  @title  Lending Pool
@@ -21,7 +21,8 @@ contract LendingPool is ILendingPool, Permission {
     /**
      *  @notice Other dependent contracts in the DAO.
      */
-    TokenStake public immutable sToken;
+    WXCR public immutable token;
+    WXCRS public immutable sToken;
 
     /**
      *  @notice Total amount of token stake has been staked.
@@ -37,7 +38,8 @@ contract LendingPool is ILendingPool, Permission {
     event Unstake(address indexed account, uint256 indexed amount);
     event Inflation(uint256 indexed reward);
 
-    constructor(TokenStake _sToken) {
+    constructor(WXCR _token, WXCRS _sToken) {
+        token = _token;
         sToken = _sToken;
         sToken.registerLendingPool();
     }
@@ -94,8 +96,8 @@ contract LendingPool is ILendingPool, Permission {
      *          Name    Meaning
      *  @param  _amount Token amount to stake
      */
-    function stake(uint256 _amount) external payable {
-        require(_amount > 0 && msg.value == _amount, "LendingPool: Invalid amount");
+    function stake(uint256 _amount) external {
+        require(_amount > 0, "LendingPool: Invalid amount");
         // Calculate and mint discount factor for the stakeholder.
         uint256 discountFactor = tokenToDiscountFactor(_amount);
         sToken.mintDiscountFactor(msg.sender, discountFactor);
@@ -104,7 +106,7 @@ contract LendingPool is ILendingPool, Permission {
         totalStake += _amount;
 
         // Transfer token from address of the stakeholder to address of this contract.
-        Helper.safeTransferNative(address(this), _amount);
+        token.transferFrom(msg.sender, address(this), _amount);
 
         emit Stake(msg.sender, _amount);
     }
@@ -128,7 +130,7 @@ contract LendingPool is ILendingPool, Permission {
         sToken.burnDiscountFactor(msg.sender, discountFactor);
 
         // Transfer token from address of this contract to address of the stakeholder.
-        Helper.safeTransferNative(msg.sender, _amount.add(rewardPerUser));
+        token.transfer(msg.sender, _amount.add(rewardPerUser));
 
         emit Unstake(msg.sender, _amount);
 
