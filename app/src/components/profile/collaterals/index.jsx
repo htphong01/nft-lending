@@ -1,37 +1,48 @@
 import { useEffect, useState } from 'react';
-import { getNFTs } from '@src/constants/example-data';
+import ReactLoading from 'react-loading';
+import { useSelector } from 'react-redux';
+import { getOrderByCreator } from '@src/api/order.api';
 import Card from '@src/components/common/card';
 import ListCollateralForm from '@src/components/common/list-collateral-form';
 import { COLLATERAL_FORM_TYPE } from '@src/constants';
 import styles from './styles.module.scss';
 
-export default function Assets() {
-  const [listNFT, setListNFT] = useState([]);
-  const [selectedNFT, setSelectedNFT] = useState();
+export default function Collateral() {
+  const account = useSelector((state) => state.account);
 
-  const fetchNFTs = async () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [orderList, setOrderList] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState();
+
+  const fetchOrderList = async () => {
     try {
-      const nfts = await getNFTs();
-      setListNFT(nfts);
+      const { data } = await getOrderByCreator(account.address);
+      setOrderList(data);
+      setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.log('error', error);
     }
   };
 
   useEffect(() => {
-    fetchNFTs();
+    fetchOrderList();
   }, []);
-
+  
   return (
     <div className={styles.container}>
-      {selectedNFT && (
-        <ListCollateralForm item={selectedNFT} onClose={setSelectedNFT} type={COLLATERAL_FORM_TYPE.VIEW} />
+      {selectedOrder && (
+        <ListCollateralForm item={selectedOrder} onClose={setSelectedOrder} type={COLLATERAL_FORM_TYPE.VIEW} />
       )}
-      <div className={styles.heading}>Your assets</div>
-      {listNFT.length > 0 ? (
+      <div className={styles.heading}>Your collaterals</div>
+      {isLoading ? (
+        <div className="react-loading-item">
+          <ReactLoading type="bars" color="#fff" height={100} width={120} />
+        </div>
+      ) : orderList.length > 0 ? (
         <div className={styles['list-nfts']}>
-          {listNFT.map((item, index) => (
-            <Card key={index} item={item} action={{ text: 'View collateral', handle: setSelectedNFT }} />
+          {orderList.map((order, index) => (
+            <Card key={index} item={order.metadata} action={{ text: 'List collateral', handle: () => setSelectedOrder(order) }} />
           ))}
         </div>
       ) : (

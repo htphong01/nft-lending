@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
+import { ethers } from 'ethers';
+import { calculateRepayment } from '@src/utils/apr';
 import { useRef } from 'react';
 import { useOnClickOutside } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
@@ -38,12 +40,46 @@ export default function Form({ item, onClose }) {
             <img src={item.metadata.image} alt="NFT Image" />
           </div>
           <div className={styles.section}>
-            {data.map((element, index) => (
-              <div className={styles.info} key={index}>
-                <div className={styles.label}>{element[0].charAt(0).toUpperCase() + element[0].slice(1)}: </div>
-                <div className={styles.value}>{element[0] === 'borrower' ? sliceAddress(element[1]) : element[1]}</div>
+            <div className={styles.info}>
+              <div className={styles.label}>Name: </div>
+              <div className={styles.value}>{item.metadata.name}</div>
+            </div>
+            <div className={styles.info}>
+              <div className={styles.label}>Collection: </div>
+              <div className={styles.value}>{sliceAddress(item.nftAddress)}</div>
+            </div>
+            <div className={styles.info}>
+              <div className={styles.label}>Borrower: </div>
+              <div className={styles.value}>{sliceAddress(item.creator)}</div>
+            </div>
+            <div className={styles.info}>
+              <div className={styles.label}>Amount: </div>
+              <div className={styles.value}>{ethers.utils.formatUnits(item.offer, 18)} XCR</div>
+            </div>
+            <div className={styles.info}>
+              <div className={styles.label}>Duration: </div>
+              <div className={styles.value}>{item.duration} days</div>
+            </div>
+            <div className={styles.info}>
+              <div className={styles.label}>Repayment: </div>
+              <div className={styles.value}>
+                {calculateRepayment(ethers.utils.formatUnits(item.offer), (item.rate * 100) / 1e4, item.duration)} XCR
               </div>
-            ))}
+            </div>
+            <div className={styles.info}>
+              <div className={styles.label}>APR: </div>
+              <div className={styles.value}>{(item.rate * 100) / 1e4}%</div>
+            </div>
+            <div className={styles.info}>
+              <div className={styles.label}>Float price: </div>
+              <div className={styles.value}>
+                {Number(ethers.utils.formatUnits(`${item.floorPrice}`)).toFixed(2)} XCR
+              </div>
+            </div>
+            <div className={styles.info}>
+              <div className={styles.label}>Oracle price: </div>
+              <div className={styles.value}>15 XCR</div>
+            </div>
           </div>
         </div>
         <div className={styles.row}>

@@ -1,11 +1,14 @@
 /* eslint-disable react/prop-types */
+import { ethers } from 'ethers';
+import { calculateRepayment } from '@src/utils/apr';
+import { OFFERS_RECEIVED } from '@src/constants/example-data';
 import Form from './form';
 import Table from './table';
-import { OFFERS_RECEIVED } from '@src/constants/example-data';
 import styles from './styles.module.scss';
 
 export default function MakeOffer({ item }) {
-  const data = Object.entries(item).filter((element) => element[0] !== 'lender' && element[0] !== 'metadata');
+  // const data = Object.entries(item).filter((element) => element[0] !== 'lender' && element[0] !== 'metadata');
+  console.log(item);
 
   const sliceAddress = (address) => {
     return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
@@ -24,15 +27,39 @@ export default function MakeOffer({ item }) {
           <img src={item.metadata.image} alt={item.metadata.name} />
         </div>
         <div className={styles.section}>
-          <div className={styles['heading']}>
-            Proposed offer from owner
+          <div className={styles['heading']}>Proposed offer from owner</div>
+          <div className={styles.info}>
+            <div className={styles.label}>Name: </div>
+            <div className={styles.value}>{item.metadata.name}</div>
           </div>
-          {data.map((element, index) => (
-            <div className={styles.info} key={index}>
-              <div className={styles.label}>{element[0].charAt(0).toUpperCase() + element[0].slice(1)}: </div>
-              <div className={styles.value}>{element[0] === 'borrower' ? sliceAddress(element[1]) : element[1]}</div>
-            </div>
-          ))}
+          <div className={styles.info}>
+            <div className={styles.label}>Collection: </div>
+            <div className={styles.value}>{sliceAddress(item.nftAddress)}</div>
+          </div>
+          <div className={styles.info}>
+            <div className={styles.label}>Borrower: </div>
+            <div className={styles.value}>{sliceAddress(item.creator)}</div>
+          </div>
+          <div className={styles.info}>
+            <div className={styles.label}>Amount: </div>
+            <div className={styles.value}>{ethers.utils.formatUnits(item.offer, 18)} XCR</div>
+          </div>
+          <div className={styles.info}>
+            <div className={styles.label}>Duration: </div>
+            <div className={styles.value}>{item.duration} days</div>
+          </div>
+          <div className={styles.info}>
+            <div className={styles.label}>Repayment: </div>
+            <div className={styles.value}>{calculateRepayment(ethers.utils.formatUnits(item.offer), item.rate * 100 / 1e4, item.duration)} XCR</div>
+          </div>
+          <div className={styles.info}>
+            <div className={styles.label}>APR: </div>
+            <div className={styles.value}>{item.rate * 100 / 1e4}%</div>
+          </div>
+          <div className={styles.info}>
+            <div className={styles.label}>Float price: </div>
+            <div className={styles.value}>{Number(ethers.utils.formatUnits(`${item.floorPrice}`)).toFixed(2)} XCR</div>
+          </div>
         </div>
         <div className={styles.section}>
           <Form />

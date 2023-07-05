@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import ReactLoading from 'react-loading';
 import { useNavigate } from 'react-router-dom';
-import { getNFTs } from '@src/constants/example-data';
+import { getOrders } from '@src/api/order.api';
 import Card from '@src/components/common/card';
 import styles from './styles.module.scss';
 
@@ -9,18 +9,17 @@ export default function Assets() {
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [listNFT, setListNFT] = useState([]);
+  const [orderList, setOrderList] = useState([]);
 
-  const handleMakeOffer = (item) => {
-    const contract = item.contract.address;
-    const id = item.metadata.edition;
-    navigate(`/assets/${contract}/${id}`);
+  const handleMakeOffer = (order) => {
+    const orderHash = order.hash;
+    navigate(`/assets/${orderHash}`);
   };
 
-  const fetchNFTs = async () => {
+  const fetchOrderList = async () => {
     try {
-      const nfts = await getNFTs();
-      setListNFT(nfts);
+      const { data } = await getOrders({ borrowFrom: 'user' });
+      setOrderList(data);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -29,19 +28,23 @@ export default function Assets() {
   };
 
   useEffect(() => {
-    fetchNFTs();
+    fetchOrderList();
   }, []);
   return (
     <div className={styles.container}>
-      <div className={styles.heading}>Your assets</div>
+      <div className={styles.heading}>List assets</div>
       {isLoading ? (
         <div className="react-loading-item">
           <ReactLoading type="bars" color="#fff" height={100} width={120} />
         </div>
-      ) : listNFT.length > 0 ? (
+      ) : orderList.length > 0 ? (
         <div className={styles['list-nfts']}>
-          {listNFT.map((item, index) => (
-            <Card key={index} item={item} action={{ text: 'Make offer', handle: handleMakeOffer }} />
+          {orderList.map((order, index) => (
+            <Card
+              key={index}
+              item={order.metadata}
+              action={{ text: 'Make offer', handle: () => handleMakeOffer(order) }}
+            />
           ))}
         </div>
       ) : (

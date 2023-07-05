@@ -7,7 +7,7 @@ import { verifySignature } from '../utils/signature';
 const sha256 = require('simple-sha256')
 
 @Injectable()
-export class OrdersService {
+export class OrdersService { 
 
   constructor(private readonly order: Order) { }
 
@@ -19,7 +19,7 @@ export class OrdersService {
       offer: createOrderDto.offer,
       duration: createOrderDto.duration,
       rate: createOrderDto.rate,
-      floorPrice: createOrderDto.floorPrice
+      doesBorrowUser: createOrderDto.doesBorrowUser
     }));
     const orderHash = await sha256(bytes);
 
@@ -33,14 +33,15 @@ export class OrdersService {
 
     await this.order.create(orderHash, {
       ...createOrderDto,
+      floorPrice: createOrderDto.offer * 1.1,
       hash: orderHash,
       status: OrderStatus.OPENING,
       createdAt: new Date().getTime()
     });
   }
 
-  async findAll() {
-    return await this.order.getAll();
+  async findAll(conditions: Record<string, any> = {}) {
+    return await this.order.find(conditions);
   }
 
   async findById(id: string) {
