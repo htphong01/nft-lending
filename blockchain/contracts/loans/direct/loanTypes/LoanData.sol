@@ -23,7 +23,6 @@ interface LoanData {
      * collateral, measured in the smallest units of the ERC20 currency used for the loan. The borrower will always have
      * to pay this amount to retrieve their collateral, regardless of whether they repay early.
      * @param nftCollateralContract - The address of the the NFT collateral contract.
-     * @param nftCollateralWrapper - The NFTfi wrapper of the NFT collateral contract.
      * @param nftCollateralId - The ID within the NFTCollateralContract for the NFT being used as collateral for this
      * loan. The NFT is stored within this contract during the duration of the loan.
      * @param loanStartTime - The block.timestamp when the loan first began (measured in seconds).
@@ -47,10 +46,11 @@ interface LoanData {
         uint32 loanDuration;
         uint16 loanInterestRateForDurationInBasisPoints;
         uint16 loanAdminFeeInBasisPoints;
-        address nftCollateralWrapper;
         uint64 loanStartTime;
         address nftCollateralContract;
         address borrower;
+        address lender;
+        bool status;
     }
 
     /**

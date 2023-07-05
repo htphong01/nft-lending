@@ -12,7 +12,7 @@ interface IDirectLoanBase {
     // solhint-disable-next-line func-name-mixedcase
     function LOAN_COORDINATOR() external view returns (bytes32);
 
-    function loanIdToLoan(uint32)
+    function loanIdToLoan(uint256)
         external
         view
         returns (
@@ -23,13 +23,14 @@ interface IDirectLoanBase {
             uint32,
             uint16,
             uint16,
-            address,
             uint64,
             address,
-            address
+            address,
+            address,
+            bool
         );
 
-    function loanRepaidOrLiquidated(uint32) external view returns (bool);
+    function loanRepaidOrLiquidated(uint256) external view returns (bool);
 
     function getWhetherNonceHasBeenUsedForUser(address _user, uint256 _nonce) external view returns (bool);
 }

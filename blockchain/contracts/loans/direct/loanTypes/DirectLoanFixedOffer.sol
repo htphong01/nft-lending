@@ -103,12 +103,11 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
         Signature memory _signature,
         BorrowerSettings memory _borrowerSettings
     ) external whenNotPaused nonReentrant {
-        address nftWrapper = _getWrapper(_offer.nftCollateralContract);
-        _loanSanityChecks(_offer, nftWrapper);
+        _loanSanityChecks(_offer);
         _loanSanityChecksOffer(_offer);
         _acceptOffer(
             LOAN_TYPE,
-            _setupLoanTerms(_offer, nftWrapper),
+            _setupLoanTerms(_offer, _signature.signer),
             _setupLoanExtras(_borrowerSettings.revenueSharePartner, _borrowerSettings.referralFeeInBasisPoints),
             _offer,
             _signature
@@ -128,7 +127,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * @return The amount of the specified ERC20 currency required to pay back this loan, measured in the smallest unit
      * of the specified ERC20 currency.
      */
-    function getPayoffAmount(uint32 _loanId) external view override returns (uint256) {
+    function getPayoffAmount(uint256 _loanId) external view override returns (uint256) {
         LoanTerms storage loan = loanIdToLoan[_loanId];
         return loan.maximumRepaymentAmount;
     }
@@ -165,9 +164,6 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
 
         require(NFTfiSigningUtils.isValidLenderSignature(_offer, _signature), "Lender signature is invalid");
 
-        address bundle = hub.getContract(ContractKeys.NFTFI_BUNDLER);
-        require(_loanTerms.nftCollateralContract != bundle, "Collateral cannot be bundle");
-
         uint32 loanId = _createLoan(_loanType, _loanTerms, _loanExtras, msg.sender, _signature.signer, _offer.referrer);
 
         // Emit an event with all relevant details from this transaction.
@@ -179,20 +175,21 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * This is needed in order to avoid stack too deep issues.
      * Since this is a Fixed loan type loanInterestRateForDurationInBasisPoints is ignored.
      */
-    function _setupLoanTerms(Offer memory _offer, address _nftWrapper) internal view returns (LoanTerms memory) {
+    function _setupLoanTerms(Offer memory _offer, address _lender) internal view returns (LoanTerms memory) {
         return
             LoanTerms({
                 loanERC20Denomination: _offer.loanERC20Denomination,
                 loanPrincipalAmount: _offer.loanPrincipalAmount,
                 maximumRepaymentAmount: _offer.maximumRepaymentAmount,
                 nftCollateralContract: _offer.nftCollateralContract,
-                nftCollateralWrapper: _nftWrapper,
                 nftCollateralId: _offer.nftCollateralId,
                 loanStartTime: uint64(block.timestamp),
                 loanDuration: _offer.loanDuration,
                 loanInterestRateForDurationInBasisPoints: uint16(0),
                 loanAdminFeeInBasisPoints: _offer.loanAdminFeeInBasisPoints,
-                borrower: msg.sender
+                borrower: msg.sender,
+                lender: _lender,
+                status: true
             });
     }
 
@@ -201,12 +198,9 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      *
      * @param _loanTerms - Struct containing all the loan's parameters
      */
-    function _payoffAndFee(LoanTerms memory _loanTerms)
-        internal
-        pure
-        override
-        returns (uint256 adminFee, uint256 payoffAmount)
-    {
+    function _payoffAndFee(
+        LoanTerms memory _loanTerms
+    ) internal pure override returns (uint256 adminFee, uint256 payoffAmount) {
         // Calculate amounts to send to lender and admins
         uint256 interestDue = _loanTerms.maximumRepaymentAmount - _loanTerms.loanPrincipalAmount;
         adminFee = LoanChecksAndCalculations.computeAdminFee(

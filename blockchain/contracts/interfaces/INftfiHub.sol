@@ -8,7 +8,5 @@ pragma solidity 0.8.18;
  * @dev NftfiHub interface
  */
 interface INftfiHub {
-    function setContract(string calldata _contractKey, address _contractAddress) external;
-
-    function getContract(bytes32 _contractKey) external view returns (address);
+    function getNFTPermit(address _nftContract) external view returns (bool);
 }

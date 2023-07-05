@@ -32,7 +32,7 @@ library LoanChecksAndCalculations {
         require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
 
         // Fetch loan details from storage, but store them in memory for the sake of saving gas.
-        (, , , , uint32 loanDuration, , , , uint64 loanStartTime, , ) = IDirectLoanBase(address(this)).loanIdToLoan(
+        (, , , , uint32 loanDuration, , , uint64 loanStartTime, , , , ) = IDirectLoanBase(address(this)).loanIdToLoan(
             _loanId
         );
 
@@ -42,13 +42,13 @@ library LoanChecksAndCalculations {
     }
 
     function checkLoanIdValidity(uint32 _loanId, INftfiHub _hub) public view {
-        require(
-            IDirectLoanCoordinator(_hub.getContract(IDirectLoanBase(address(this)).LOAN_COORDINATOR())).isValidLoanId(
-                _loanId,
-                address(this)
-            ),
-            "invalid loanId"
-        );
+        // require(
+        //     IDirectLoanCoordinator(_hub.getContract(IDirectLoanBase(address(this)).LOAN_COORDINATOR())).isValidLoanId(
+        //         _loanId,
+        //         address(this)
+        //     ),
+        //     "invalid loanId"
+        // );
     }
 
     /**
@@ -64,8 +64,7 @@ library LoanChecksAndCalculations {
             return 0;
         }
 
-        uint16 revenueSharePercent = IPermittedPartners(_hub.getContract(ContractKeys.PERMITTED_PARTNERS))
-        .getPartnerPermit(_revenueSharePartner);
+        uint16 revenueSharePercent = 25;
 
         return revenueSharePercent;
     }
@@ -142,10 +141,10 @@ library LoanChecksAndCalculations {
      * @dev Performs some validation checks over loan parameters when accepting a listing
      *
      */
-    function bindingTermsSanityChecks(LoanData.ListingTerms memory _listingTerms, LoanData.Offer memory _offer)
-        external
-        pure
-    {
+    function bindingTermsSanityChecks(
+        LoanData.ListingTerms memory _listingTerms,
+        LoanData.Offer memory _offer
+    ) external pure {
         // offer vs listing validations
         require(_offer.loanERC20Denomination == _listingTerms.loanERC20Denomination, "Invalid loanERC20Denomination");
         require(
@@ -177,11 +176,10 @@ library LoanChecksAndCalculations {
      * @return The quantity of ERC20 currency (measured in smalled units of that ERC20 currency) that should be sent to
      * the `revenueSharePartner`.
      */
-    function computeRevenueShare(uint256 _adminFee, uint256 _revenueShareInBasisPoints)
-        external
-        pure
-        returns (uint256)
-    {
+    function computeRevenueShare(
+        uint256 _adminFee,
+        uint256 _revenueShareInBasisPoints
+    ) external pure returns (uint256) {
         return (_adminFee * _revenueShareInBasisPoints) / HUNDRED_PERCENT;
     }
 

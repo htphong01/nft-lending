@@ -5,7 +5,6 @@ pragma solidity 0.8.18;
 import "./IDirectLoanBase.sol";
 import "./LoanData.sol";
 import "./LoanChecksAndCalculations.sol";
-import "./LoanAirdropUtils.sol";
 import "../../BaseLoan.sol";
 import "../../../utils/NftReceiver.sol";
 import "../../../utils/NFTfiSigningUtils.sol";
@@ -15,7 +14,6 @@ import "../../../interfaces/IDirectLoanCoordinator.sol";
 import "../../../interfaces/INftWrapper.sol";
 import "../../../interfaces/IPermittedPartners.sol";
 import "../../../interfaces/IPermittedERC20s.sol";
-import "../../../interfaces/IPermittedNFTs.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -79,6 +77,8 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, BaseLoan, NftReceiver, LoanData {
     using SafeERC20 for IERC20;
 
+    uint256 public loanId;
+
     /* ******* */
     /* STORAGE */
     /* ******* */
@@ -104,14 +104,14 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     /**
      * @notice A mapping from a loan's identifier to the loan's details, represted by the loan struct.
      */
-    mapping(uint32 => LoanTerms) public override loanIdToLoan;
-    mapping(uint32 => LoanExtras) public loanIdToLoanExtras;
+    mapping(uint256 => LoanTerms) public override loanIdToLoan;
+    mapping(uint256 => LoanExtras) public loanIdToLoanExtras;
 
     /**
      * @notice A mapping tracking whether a loan has either been repaid or liquidated. This prevents an attacker trying
      * to repay or liquidate the same loan twice.
      */
-    mapping(uint32 => bool) public override loanRepaidOrLiquidated;
+    mapping(uint256 => bool) public override loanRepaidOrLiquidated;
 
     /**
      * @dev keeps track of tokens being held as loan collateral, so we dont allow these
@@ -174,7 +174,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * token that they received when the loan began.
      */
     event LoanStarted(
-        uint32 indexed loanId,
+        uint256 indexed loanId,
         address indexed borrower,
         address indexed lender,
         LoanTerms loanTerms,
@@ -206,7 +206,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * loan.
      */
     event LoanRepaid(
-        uint32 indexed loanId,
+        uint256 indexed loanId,
         address indexed borrower,
         address indexed lender,
         uint256 loanPrincipalAmount,
@@ -238,7 +238,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param  nftCollateralContract - The ERC721 contract of the NFT collateral
      */
     event LoanLiquidated(
-        uint32 indexed loanId,
+        uint256 indexed loanId,
         address indexed borrower,
         address indexed lender,
         uint256 loanPrincipalAmount,
@@ -264,7 +264,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param renegotiationAdminFee renegotiationFee admin portion based on determined by adminFeeInBasisPoints
      */
     event LoanRenegotiated(
-        uint32 indexed loanId,
+        uint256 indexed loanId,
         address indexed borrower,
         address indexed lender,
         uint32 newLoanDuration,
@@ -382,11 +382,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param _tokenId - id token to be sent out
      * @param _receiver - receiver of the token
      */
-    function drainERC721Airdrop(
-        address _tokenAddress,
-        uint256 _tokenId,
-        address _receiver
-    ) external onlyOwner {
+    function drainERC721Airdrop(address _tokenAddress, uint256 _tokenId, address _receiver) external onlyOwner {
         IERC721 tokenContract = IERC721(_tokenAddress);
         require(_escrowTokens[_tokenAddress][_tokenId] == 0, "token is collateral");
         require(tokenContract.ownerOf(_tokenId) == address(this), "nft not owned");
@@ -426,7 +422,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * - chainId
      */
     function renegotiateLoan(
-        uint32 _loanId,
+        uint256 _loanId,
         uint32 _newLoanDuration,
         uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,
@@ -531,56 +527,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     }
 
     /**
-     * @notice this function initiates a flashloan to pull an airdrop from a tartget contract
-     *
-     * @param _loanId -
-     * @param _target - address of the airdropping contract
-     * @param _data - function selector to be called on the airdropping contract
-     * @param _nftAirdrop - address of the used claiming nft in the drop
-     * @param _nftAirdropId - id of the used claiming nft in the drop
-     */
-
-    function pullAirdrop(
-        uint32 _loanId,
-        address _target,
-        bytes calldata _data,
-        address _nftAirdrop,
-        uint256 _nftAirdropId
-    ) external nonReentrant {
-        LoanChecksAndCalculations.checkLoanIdValidity(_loanId, hub);
-        require(!loanRepaidOrLiquidated[_loanId], "Loan already repaid/liquidated");
-
-        LoanTerms memory loan = loanIdToLoan[_loanId];
-
-        LoanAirdropUtils.pullAirdrop(
-            _loanId,
-            loan,
-            _target,
-            _data,
-            _nftAirdrop,
-            _nftAirdropId,
-            hub
-        );
-    }
-
-    /**
-     * @notice this function creates a proxy contract wrapping the collateral to be able to catch an expected airdrop
-     *
-     * @param _loanId -
-     */
-
-    function wrapCollateral(uint32 _loanId) external nonReentrant {
-        LoanChecksAndCalculations.checkLoanIdValidity(_loanId, hub);
-        require(!loanRepaidOrLiquidated[_loanId], "Loan already repaid/liquidated");
-
-        LoanTerms storage loan = loanIdToLoan[_loanId];
-
-        _escrowTokens[loan.nftCollateralContract][loan.nftCollateralId] -= 1;
-        (address instance, uint256 receiverId) = LoanAirdropUtils.wrapCollateral(_loanId, loan, hub);
-        _escrowTokens[instance][receiverId] += 1;
-    }
-
-    /**
      * @notice This function can be called by either a lender or a borrower to cancel all off-chain orders that they
      * have signed that contain this nonce. If the off-chain orders were created correctly, there should only be one
      * off-chain order that contains this nonce at all.
@@ -614,7 +560,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @return The amount of the specified ERC20 currency required to pay back this loan, measured in the smallest unit
      * of the specified ERC20 currency.
      */
-    function getPayoffAmount(uint32 _loanId) external view virtual returns (uint256);
+    function getPayoffAmount(uint256 _loanId) external view virtual returns (uint256);
 
     /**
      * @notice This function can be used to view whether a particular nonce for a particular user has already been used,
@@ -689,7 +635,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * - chainId
      */
     function _renegotiateLoan(
-        uint32 _loanId,
+        uint256 _loanId,
         uint32 _newLoanDuration,
         uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,
@@ -801,7 +747,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         address _borrower,
         address _lender,
         address _referrer
-    ) internal returns (uint32 loanId) {
+    ) internal returns (uint256) {
+        ++loanId;
         _escrowTokens[_loanTerms.nftCollateralContract][_loanTerms.nftCollateralId] += 1;
 
         uint256 referralfee = LoanChecksAndCalculations.computeReferralFee(
@@ -816,13 +763,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         }
         // Transfer principal from lender to borrower.
         IERC20(_loanTerms.loanERC20Denomination).safeTransferFrom(_lender, _borrower, principalAmount);
-
-        // Issue an ERC721 promissory note to the lender that gives them the
-        // right to either the principal-plus-interest or the collateral,
-        // and an obligation note to the borrower that gives them the
-        // right to pay back the loan and get the collateral back.
-        IDirectLoanCoordinator loanCoordinator = IDirectLoanCoordinator(hub.getContract(LOAN_COORDINATOR));
-        loanId = loanCoordinator.registerLoan(_lender, _loanType);
 
         // Add the loan to storage before moving collateral/principal to follow
         // the Checks-Effects-Interactions pattern.
@@ -839,22 +779,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param _sender - Current owner of the NFT
      * @param _recipient - Recipient of the transfer
      */
-    function _transferNFT(
-        LoanTerms memory _loanTerms,
-        address _sender,
-        address _recipient
-    ) internal {
-        Address.functionDelegateCall(
-            _loanTerms.nftCollateralWrapper,
-            abi.encodeWithSelector(
-                INftWrapper(_loanTerms.nftCollateralWrapper).transferNFT.selector,
-                _sender,
-                _recipient,
-                _loanTerms.nftCollateralContract,
-                _loanTerms.nftCollateralId
-            ),
-            "NFT not successfully transferred"
-        );
+    function _transferNFT(LoanTerms memory _loanTerms, address _sender, address _recipient) internal {
+        IERC721(_loanTerms.nftCollateralContract).safeTransferFrom(_sender, _recipient, _loanTerms.nftCollateralId, "");
     }
 
     /**
@@ -868,12 +794,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      *
      * @param _loanId  A unique identifier for this particular loan, sourced from the Loan Coordinator.
      */
-    function _payBackLoan(
-        uint32 _loanId,
-        address _borrower,
-        address _lender,
-        LoanTerms memory _loan
-    ) internal {
+    function _payBackLoan(uint256 _loanId, address _borrower, address _lender, LoanTerms memory _loan) internal {
         // Fetch loan details from storage, but store them in memory for the sake of saving gas.
         LoanExtras memory loanExtras = loanIdToLoanExtras[_loanId];
 
@@ -927,7 +848,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param _loanCoordinator - The loan coordinator used when creating the loan.
      */
     function _resolveLoan(
-        uint32 _loanId,
+        uint256 _loanId,
         address _nftReceiver,
         LoanTerms memory _loanTerms,
         IDirectLoanCoordinator _loanCoordinator
@@ -935,7 +856,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         _resolveLoanNoNftTransfer(_loanId, _loanTerms, _loanCoordinator);
         // Transfer collateral from this contract to the lender, since the lender is seizing collateral for an overdue
         // loan
-        _transferNFT(_loanTerms, address(this), _nftReceiver);
+
+        // _transferNFT(_loanTerms, address(this), _nftReceiver);
     }
 
     /**
@@ -947,7 +869,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param _loanCoordinator - The loan coordinator used when creating the loan.
      */
     function _resolveLoanNoNftTransfer(
-        uint32 _loanId,
+        uint256 _loanId,
         LoanTerms memory _loanTerms,
         IDirectLoanCoordinator _loanCoordinator
     ) internal {
@@ -980,9 +902,9 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @dev Performs some validation checks over loan parameters
      *
      */
-    function _loanSanityChecks(LoanData.Offer memory _offer, address _nftWrapper) internal view {
+    function _loanSanityChecks(LoanData.Offer memory _offer) internal view {
         require(getERC20Permit(_offer.loanERC20Denomination), "Currency denomination is not permitted");
-        require(_nftWrapper != address(0), "NFT collateral contract is not permitted");
+        require(hub.getNFTPermit(_offer.nftCollateralContract), "NFT collateral contract is not permitted");
         require(uint256(_offer.loanDuration) <= maximumLoanDuration, "Loan duration exceeds maximum loan duration");
         require(uint256(_offer.loanDuration) != 0, "Loan duration cannot be zero");
         require(
@@ -994,15 +916,12 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     /**
      * @dev reads some variable values of a loan for payback functions, created to reduce code repetition
      */
-    function _getPartiesAndData(uint32 _loanId)
+    function _getPartiesAndData(
+        uint256 _loanId
+    )
         internal
         view
-        returns (
-            address borrower,
-            address lender,
-            LoanTerms memory loan,
-            IDirectLoanCoordinator loanCoordinator
-        )
+        returns (address borrower, address lender, LoanTerms memory loan, IDirectLoanCoordinator loanCoordinator)
     {
         loanCoordinator = IDirectLoanCoordinator(hub.getContract(LOAN_COORDINATOR));
         IDirectLoanCoordinator.Loan memory loanCoordinatorData = loanCoordinator.getLoanData(_loanId);
@@ -1022,11 +941,10 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @dev Creates a `LoanExtras` struct using data sent as the borrower's extra settings.
      * This is needed in order to avoid stack too deep issues.
      */
-    function _setupLoanExtras(address _revenueSharePartner, uint16 _referralFeeInBasisPoints)
-        internal
-        view
-        returns (LoanExtras memory)
-    {
+    function _setupLoanExtras(
+        address _revenueSharePartner,
+        uint16 _referralFeeInBasisPoints
+    ) internal view returns (LoanExtras memory) {
         // Save loan details to a struct in memory first, to save on gas if any
         // of the below checks fail, and to avoid the "Stack Too Deep" error by
         // clumping the parameters together into one struct held in memory.
@@ -1042,16 +960,4 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @dev Calculates the payoff amount and admin fee
      */
     function _payoffAndFee(LoanTerms memory _loanTerms) internal view virtual returns (uint256, uint256);
-
-    /**
-     * @dev Checks that the collateral is a supported contracts and returns what wrapper to use for the loan's NFT
-     * collateral contract.
-     *
-     * @param _nftCollateralContract - The address of the the NFT collateral contract.
-     *
-     * @return Address of the NftWrapper to use for the loan's NFT collateral.
-     */
-    function _getWrapper(address _nftCollateralContract) internal view returns (address) {
-        return IPermittedNFTs(hub.getContract(ContractKeys.PERMITTED_NFTS)).getNFTWrapper(_nftCollateralContract);
-    }
 }

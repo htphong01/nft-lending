@@ -19,7 +19,7 @@ import "./WXCR.sol";
 contract LendingPool is ILendingPool, Permission {
     using SafeMath for uint256;
     /**
-     *  @notice Other dependent contracts in the DAO.
+     *  @notice Other dependent contracts.
      */
     WXCR public immutable token;
     WXCRS public immutable sToken;
@@ -30,7 +30,7 @@ contract LendingPool is ILendingPool, Permission {
     uint256 public totalStake;
 
     /**
-     *  @notice Accumulated compound interest rate of everyday since the beginning of the DAO.
+     *  @notice Accumulated compound interest rate of everyday since the beginning.
      */
     uint256 public productOfInterestRate = Formula.ONE;
 
@@ -120,8 +120,6 @@ contract LendingPool is ILendingPool, Permission {
     function unstake(uint256 _amount) external returns (uint256) {
         require(_amount <= sToken.balanceOf(msg.sender), "LendingPool: Unstake amount exceeds the stake.");
 
-        uint256 rewardPerUser = _amount.mul(totalStake).div(sToken.balanceOf(msg.sender));
-
         // Update total stake.
         totalStake -= _amount;
 
@@ -130,11 +128,11 @@ contract LendingPool is ILendingPool, Permission {
         sToken.burnDiscountFactor(msg.sender, discountFactor);
 
         // Transfer token from address of this contract to address of the stakeholder.
-        token.transfer(msg.sender, _amount.add(rewardPerUser));
+        token.transfer(msg.sender, _amount);
 
         emit Unstake(msg.sender, _amount);
 
         // Return the token amount.
-        return _amount.add(rewardPerUser);
+        return _amount;
     }
 }
