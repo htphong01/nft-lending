@@ -51,12 +51,21 @@
           margin-bottom: 8px;
         }
 
+        .select {
+          display: flex;
+          align-items: center;
+        }
+
         label {
           color: #6d50cd;
           display: flex;
           align-items: center;
           cursor: pointer;
           position: relative;
+
+          &:first-child {
+            margin-right: 16px;
+          }
 
           input[type='radio'] {
             margin: 0;

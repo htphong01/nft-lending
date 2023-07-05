@@ -59,7 +59,7 @@ export default function UserLayout() {
         });
 
       window.ethereum.on('accountsChanged', handleAccountsChanged);
-      // requireSwitchNetwork();
+      requireSwitchNetwork();
     } else {
       alert('MetaMask is not installed. Please consider installing it: https://metamask.io/download.html');
     }
