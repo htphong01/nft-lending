@@ -20,7 +20,7 @@ export default function MakeOffer({ item }) {
         <div className={styles.section}>
           <div>
             <div className={styles['real-price']}>
-              Real price: <b>13.25 XCR</b>
+              Real price: <b>17.25 XCR</b>
             </div>
             <div className={styles['real-price-source']}>Fetch price from Chainlink Oracle</div>
           </div>
