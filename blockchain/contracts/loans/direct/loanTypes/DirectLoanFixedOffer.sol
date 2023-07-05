@@ -3,7 +3,6 @@
 pragma solidity 0.8.18;
 
 import "./DirectLoanBaseMinimal.sol";
-import "../../../utils/ContractKeys.sol";
 
 /**
  * @title  DirectLoanFixed
@@ -55,12 +54,6 @@ import "../../../utils/ContractKeys.sol";
  * principal-plus-interest, which the borrower now keeps.
  */
 contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
-    /* ********** */
-    /* DATA TYPES */
-    /* ********** */
-
-    bytes32 public constant LOAN_TYPE = bytes32("DIRECT_LOAN_FIXED_OFFER");
-
     /* *********** */
     /* CONSTRUCTOR */
     /* *********** */
@@ -76,14 +69,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
         address _admin,
         address _nftfiHub,
         address[] memory _permittedErc20s
-    )
-        DirectLoanBaseMinimal(
-            _admin,
-            _nftfiHub,
-            ContractKeys.getIdFromStringKey("DIRECT_LOAN_COORDINATOR"),
-            _permittedErc20s
-        )
-    {
+    ) DirectLoanBaseMinimal(_admin, _nftfiHub, _permittedErc20s) {
         // solhint-disable-previous-line no-empty-blocks
     }
 
@@ -106,7 +92,6 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
         _loanSanityChecks(_offer);
         _loanSanityChecksOffer(_offer);
         _acceptOffer(
-            LOAN_TYPE,
             _setupLoanTerms(_offer, _signature.signer),
             _setupLoanExtras(_borrowerSettings.revenueSharePartner, _borrowerSettings.referralFeeInBasisPoints),
             _offer,
@@ -139,14 +124,12 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
     /**
      * @notice This function is called by the borrower when accepting a lender's offer to begin a loan.
      *
-     * @param _loanType - The loan type being created.
      * @param _loanTerms - The main Loan Terms struct. This data is saved upon loan creation on loanIdToLoan.
      * @param _loanExtras - The main Loan Terms struct. This data is saved upon loan creation on loanIdToLoanExtras.
      * @param _offer - The offer made by the lender.
      * @param _signature - The components of the lender's signature.
      */
     function _acceptOffer(
-        bytes32 _loanType,
         LoanTerms memory _loanTerms,
         LoanExtras memory _loanExtras,
         Offer memory _offer,
@@ -164,7 +147,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
 
         require(NFTfiSigningUtils.isValidLenderSignature(_offer, _signature), "Lender signature is invalid");
 
-        uint32 loanId = _createLoan(_loanType, _loanTerms, _loanExtras, msg.sender, _signature.signer, _offer.referrer);
+        uint256 loanId = _createLoan(_loanTerms, _loanExtras, msg.sender, _signature.signer, _offer.referrer);
 
         // Emit an event with all relevant details from this transaction.
         emit LoanStarted(loanId, msg.sender, _signature.signer, _loanTerms, _loanExtras);

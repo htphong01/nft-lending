@@ -4,10 +4,7 @@ pragma solidity 0.8.18;
 
 import "./IDirectLoanBase.sol";
 import "./LoanData.sol";
-import "../../../interfaces/IDirectLoanCoordinator.sol";
-import "../../../utils/ContractKeys.sol";
 import "../../../interfaces/INftfiHub.sol";
-import "../../../interfaces/IPermittedPartners.sol";
 import "../../../interfaces/IPermittedERC20s.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -25,8 +22,8 @@ library LoanChecksAndCalculations {
      *
      * @param _loanId - The id of the loan being repaid
      */
-    function payBackChecks(uint32 _loanId, INftfiHub _hub) external view {
-        checkLoanIdValidity(_loanId, _hub);
+    function payBackChecks(uint32 _loanId) external view {
+        checkLoanIdValidity(_loanId);
         // Sanity check that payBackLoan() and liquidateOverdueLoan() have never been called on this loanId.
         // Depending on how the rest of the code turns out, this check may be unnecessary.
         require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
@@ -41,14 +38,8 @@ library LoanChecksAndCalculations {
         require(block.timestamp <= (uint256(loanStartTime) + uint256(loanDuration)), "Loan is expired");
     }
 
-    function checkLoanIdValidity(uint32 _loanId, INftfiHub _hub) public view {
-        // require(
-        //     IDirectLoanCoordinator(_hub.getContract(IDirectLoanBase(address(this)).LOAN_COORDINATOR())).isValidLoanId(
-        //         _loanId,
-        //         address(this)
-        //     ),
-        //     "invalid loanId"
-        // );
+    function checkLoanIdValidity(uint256 _loanId) public view {
+        require(IDirectLoanBase(address(this)).isValidLoanId(_loanId), "invalid loanId");
     }
 
     /**
@@ -58,7 +49,7 @@ library LoanChecksAndCalculations {
      *
      * @return The revenue share percent for the partner.
      */
-    function getRevenueSharePercent(address _revenueSharePartner, INftfiHub _hub) external view returns (uint16) {
+    function getRevenueSharePercent(address _revenueSharePartner) external pure returns (uint16) {
         // return soon if no partner is set to avoid a public call
         if (_revenueSharePartner == address(0)) {
             return 0;
@@ -94,27 +85,13 @@ library LoanChecksAndCalculations {
      */
     function renegotiationChecks(
         LoanData.LoanTerms memory _loan,
-        uint32 _loanId,
+        uint256 _loanId,
         uint32 _newLoanDuration,
         uint256 _newMaximumRepaymentAmount,
-        uint256 _lenderNonce,
-        INftfiHub _hub
+        uint256 _lenderNonce
     ) external view returns (address, address) {
-        checkLoanIdValidity(_loanId, _hub);
-        IDirectLoanCoordinator loanCoordinator = IDirectLoanCoordinator(
-            _hub.getContract(IDirectLoanBase(address(this)).LOAN_COORDINATOR())
-        );
-        uint256 smartNftId = loanCoordinator.getLoanData(_loanId).smartNftId;
-
-        address borrower;
-
-        if (_loan.borrower != address(0)) {
-            borrower = _loan.borrower;
-        } else {
-            borrower = IERC721(loanCoordinator.obligationReceiptToken()).ownerOf(smartNftId);
-        }
-
-        require(msg.sender == borrower, "Only borrower can initiate");
+        checkLoanIdValidity(_loanId);
+        require(msg.sender == _loan.borrower, "Only borrower can initiate");
         require(block.timestamp <= (uint256(_loan.loanStartTime) + _newLoanDuration), "New duration already expired");
         require(
             uint256(_newLoanDuration) <= IDirectLoanBase(address(this)).maximumLoanDuration(),
@@ -126,15 +103,12 @@ library LoanChecksAndCalculations {
             "Negative interest rate loans are not allowed."
         );
 
-        // Fetch current owner of loan promissory note.
-        address lender = IERC721(loanCoordinator.promissoryNoteToken()).ownerOf(smartNftId);
-
         require(
-            !IDirectLoanBase(address(this)).getWhetherNonceHasBeenUsedForUser(lender, _lenderNonce),
+            !IDirectLoanBase(address(this)).getWhetherNonceHasBeenUsedForUser(_loan.lender, _lenderNonce),
             "Lender nonce invalid"
         );
 
-        return (borrower, lender);
+        return (_loan.borrower, _loan.lender);
     }
 
     /**

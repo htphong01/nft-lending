@@ -9,28 +9,16 @@ interface IDirectLoanBase {
 
     function adminFeeInBasisPoints() external view returns (uint16);
 
-    // solhint-disable-next-line func-name-mixedcase
-    function LOAN_COORDINATOR() external view returns (bytes32);
-
-    function loanIdToLoan(uint256)
+    function loanIdToLoan(
+        uint256
+    )
         external
         view
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            address,
-            uint32,
-            uint16,
-            uint16,
-            uint64,
-            address,
-            address,
-            address,
-            bool
-        );
+        returns (uint256, uint256, uint256, address, uint32, uint16, uint16, uint64, address, address, address, bool);
 
     function loanRepaidOrLiquidated(uint256) external view returns (bool);
 
     function getWhetherNonceHasBeenUsedForUser(address _user, uint256 _nonce) external view returns (bool);
+
+    function isValidLoanId(uint256 _loanId) external view returns (bool);
 }
