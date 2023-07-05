@@ -1,12 +1,15 @@
 /* eslint-disable react/prop-types */
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { Icon } from '@iconify/react';
 import { useSelector } from 'react-redux';
 import { ethers } from 'ethers';
 import { useOnClickOutside } from 'usehooks-ts';
-import { calculateAPR, calculateRepayment } from '@src/utils/apr';
+import { Link } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
+import { createOrder } from '@src/api/order.api';
 import { generateSignature } from '@src/utils/ethers';
+import { calculateAPR, calculateRepayment } from '@src/utils/apr';
 import { COLLATERAL_FORM_TYPE, NFT_CONTRACT_ADDRESS } from '@src/constants';
-import { ORDER_TYPE_SIGNATURE } from '@src/constants/signature';
 import styles from './styles.module.scss';
 
 export default function ListCollateralForm({ item, onClose, type }) {
@@ -42,30 +45,61 @@ export default function ListCollateralForm({ item, onClose, type }) {
     e.preventDefault();
     try {
       if (type === COLLATERAL_FORM_TYPE.VIEW) {
-        console.log('Remove');
+        console.log('item', item);
       } else {
+        if (Object.values(data).includes(0)) return;
         const order = {
           creator: account.address,
           nftAddress: NFT_CONTRACT_ADDRESS,
-          nftTokenId: item.metadata.edition,
-          offer: ethers.utils.parseUnits(data.offer, 18),
+          nftTokenId: item.edition,
+          offer: ethers.utils.parseUnits(data.offer, 18).toString(),
           duration: data.duration,
-          rate: data.apr * 1e4 / 100,
+          rate: (data.apr * 1e4) / 100,
+          doesBorrowUser: data.borrowFrom === 'user',
         };
-        const signature = await generateSignature(order, { Order: ORDER_TYPE_SIGNATURE });
-        console.log(signature)
+        const signature = await generateSignature(order);
+        order.signature = signature;
+        order.metadata = item;
+        await createOrder(order);
+        toast.success('List collateral successfully!');
+        setTimeout(() => {
+          onClose();
+        }, 1000);
       }
     } catch (error) {
+      toast.error('An error has been occurred!');
       console.log('error', error);
     }
   };
 
   useOnClickOutside(ref, () => onClose());
 
+  useEffect(() => {
+    if (type === COLLATERAL_FORM_TYPE.VIEW) {
+      setData({
+        currency: 'XCR',
+        offer: ethers.utils.formatUnits(item.offer, 18),
+        duration: item.duration,
+        repayment: calculateRepayment(ethers.utils.formatUnits(item.offer), (item.rate * 100) / 1e4, item.duration),
+        apr: (item.rate * 100) / 1e4,
+        borrowFrom: item.doesBorrowUser ? 'user' : 'pool',
+      });
+    }
+  }, []);
+
+  console.log(item);
   return (
     <div className={styles.container}>
+      <Toaster position="top-center" reverseOrder={false} />
       <form className={styles.form} onSubmit={handleSubmit} ref={ref}>
-        <div className={styles.title}>{type === COLLATERAL_FORM_TYPE.VIEW ? 'View' : 'List'} Collateral</div>
+        <div className={styles.title}>
+          <span>{type === COLLATERAL_FORM_TYPE.VIEW ? 'View' : 'List'} Collateral</span>
+          {type === COLLATERAL_FORM_TYPE.VIEW && item.doesBorrowUser && (
+            <Link to={`/assets/${item.hash}`}>
+              <Icon icon="uil:edit" />
+            </Link>
+          )}
+        </div>
         <div className={styles['sub-title']}>Proposed loan agreement</div>
         <div className={styles.section}>
           <div className={styles.head}>
@@ -150,7 +184,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
                   name="borrowFrom"
                   onChange={handleChange}
                   checked={data.borrowFrom === 'user'}
-                  readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
+                  disabled={data.borrowFrom !== 'user' && type === COLLATERAL_FORM_TYPE.VIEW}
                 />
                 <span>User</span>
               </label>
@@ -161,13 +195,25 @@ export default function ListCollateralForm({ item, onClose, type }) {
                   name="borrowFrom"
                   onChange={handleChange}
                   checked={data.borrowFrom === 'pool'}
-                  readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
+                  disabled={data.borrowFrom !== 'pool' && type === COLLATERAL_FORM_TYPE.VIEW}
                 />
                 <span>Lending Pool</span>
               </label>
             </div>
           </div>
         </div>
+        {type === COLLATERAL_FORM_TYPE.VIEW && !item.doesBorrowUser && (
+          <div className={styles.section}>
+            <div className={styles.head}>
+              Voting Result: {' '}
+              <span>
+                (87 Accepted & 34 Rejected)
+              </span>
+            </div>
+            <div className={styles.details}>
+            </div>
+          </div>
+        )}
         <div className={styles['button-wrap']}>
           <button type="button" onClick={() => onClose()}>
             Close

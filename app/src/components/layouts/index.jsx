@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { setAccount } from '@src/redux/features/accountSlice';
 import { useDispatch } from 'react-redux';
+import { Toaster } from 'react-hot-toast';
 import { getBalance } from '@src/utils/ethers';
 import Header from './header';
 import Footer from './footer';
@@ -67,6 +68,7 @@ export default function UserLayout() {
 
   return (
     <>
+      <Toaster position="top-center" reverseOrder={false} />
       <Header handleAccountsChanged={handleAccountsChanged} requireSwitchNetwork={requireSwitchNetwork} />
       <div className="container">
         <Outlet />

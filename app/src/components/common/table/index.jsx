@@ -1,4 +1,6 @@
 /* eslint-disable react/prop-types */
+import { ethers } from 'ethers';
+import { calculateRepayment } from '@src/utils/apr';
 import styles from './styles.module.scss';
 
 export default function Table({ title, data, action }) {
@@ -16,7 +18,7 @@ export default function Table({ title, data, action }) {
         <div className={styles['table-list-item']}>Lender</div>
         <div className={styles['table-list-item']}>Borrower</div>
         <div className={styles['table-list-item']}>Duration</div>
-        <div className={styles['table-list-item']}>Due</div>
+        <div className={styles['table-list-item']}>Created At</div>
         <div className={styles['table-list-item']}>Loan value</div>
         <div className={styles['table-list-item']}>Repayment</div>
         <div className={styles['table-list-item']}>APR</div>
@@ -25,16 +27,16 @@ export default function Table({ title, data, action }) {
       {data && data.length > 0 ? (
         data.map((item, index) => (
           <div className={styles['table-list']} key={index}>
-            <div className={styles['table-list-item']}>{item.asset}</div>
-            <div className={styles['table-list-item']}>{item.name}</div>
+            <div className={styles['table-list-item']}>{item.metadata.collection}</div>
+            <div className={styles['table-list-item']}>{item.metadata.name}</div>
             <div className={styles['table-list-item']}>{item.status}</div>
-            <div className={styles['table-list-item']}>{sliceAddress(item.lender)}</div>
-            <div className={styles['table-list-item']}>{sliceAddress(item.borrower)}</div>
-            <div className={styles['table-list-item']}>{item.duration}</div>
-            <div className={styles['table-list-item']}>{item.due}</div>
-            <div className={styles['table-list-item']}>{item.loanValue}</div>
-            <div className={styles['table-list-item']}>{item.repayment}</div>
-            <div className={styles['table-list-item']}>{item.apr}</div>
+            <div className={styles['table-list-item']}>{item.doesBorrowUser ? sliceAddress(item.lender) : sliceAddress('Lending Pool')}</div>
+            <div className={styles['table-list-item']}>{sliceAddress(item.creator)}</div>
+            <div className={styles['table-list-item']}>{item.duration} days</div>
+            <div className={styles['table-list-item']}>{new Date(item.createdAt).toLocaleDateString()}</div>
+            <div className={styles['table-list-item']}>{ethers.utils.formatUnits(item.offer, 18)} XCR</div>
+            <div className={styles['table-list-item']}>{calculateRepayment(ethers.utils.formatUnits(item.offer), item.rate * 100 / 1e4, item.duration)} XCR</div>
+            <div className={styles['table-list-item']}>{item.rate * 100 / 1e4}%</div>
             <div className={styles['table-list-item']}>
               {action ? <button onClick={() => action.handle(item)}>{action.text}</button> : '#'}
             </div>

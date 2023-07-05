@@ -6,5 +6,6 @@ export class CreateOrderDto {
   offer: number;
   duration: number;
   rate: number;
-  floorPrice: number;
+  doesBorrowUser: boolean;
+  metadata: Record<string, any>;
 }

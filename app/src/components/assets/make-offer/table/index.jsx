@@ -16,6 +16,7 @@ export default function Table({ title, data }) {
         <div className={styles['table-list-item']}>Duration</div>
         <div className={styles['table-list-item']}>Repayment</div>
         <div className={styles['table-list-item']}>Lender</div>
+        <div className={styles['table-list-item']}>Action</div>
       </div>
       {data && data.length > 0 ? (
         data.map((item, index) => (
@@ -26,6 +27,9 @@ export default function Table({ title, data }) {
             <div className={styles['table-list-item']}>{item.duration}</div>
             <div className={styles['table-list-item']}>{item.repayment}</div>
             <div className={styles['table-list-item']}>{sliceAddress(item.lender)}</div>
+            <div className={styles['table-list-item']}>
+              <button onClick={() => {}}>Accept</button>
+            </div>
           </div>
         ))
       ) : (

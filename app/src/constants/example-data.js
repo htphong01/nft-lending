@@ -102,27 +102,6 @@ export const PREVIOUS_LOANS = [
   },
 ];
 
-export const getNFTs = async (pageSize = 14) => {
-  const url = `https://polygon-mumbai.g.alchemy.com/nft/v2/RRampoJ43pj7o98Zto95wSMw3JYTI5rL/getNFTs`;
-
-  const options = {
-    method: 'GET',
-    url,
-    params: {
-      owner: '0x1F0aad64EC7c3B3F4F739Cf1fb3Aa589C975F201',
-      contractAddresses: ['0x086BdECe06069016F506f90dB30261Af654B7d0a'],
-      pageSize,
-    },
-    headers: {
-      accept: 'application/json',
-      'X-API-Key': 'weE1x8tU9IecncVSIK3t2SGLRu9edvIUuXjNAXze4WopAlXspAYAEuZju0xgJbnF',
-    },
-  };
-
-  const { data } = await axios.request(options);
-  return data.ownedNfts;
-};
-
 export const CURRENT_LOAN_REQUESTS = [
   {
     asset: 'Lil Pudgy',

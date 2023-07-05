@@ -9,8 +9,8 @@ export default function History() {
 
   return (
     <div className={styles.container}>
-      <Table title="Current Loans" data={CURRENT_LOANS} action={{ text: 'Repay', handle: handleOpenCurrentLoan }} />
-      <Table title="Previous Loans" />
+      <Table title="Current Loans" data={[]} action={{ text: 'Repay', handle: handleOpenCurrentLoan }} />
+      <Table title="Previous Loans" data={[]} />
     </div>
   );
 }

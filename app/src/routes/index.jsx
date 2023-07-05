@@ -95,7 +95,7 @@ export const userRoutes = [
         ],
       },
       {
-        path: '/assets/:contract/:id',
+        path: '/assets/:hash',
         element: <MakeOfferPage />,
       },
     ],
