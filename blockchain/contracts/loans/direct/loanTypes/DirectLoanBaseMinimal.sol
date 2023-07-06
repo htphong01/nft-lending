@@ -99,7 +99,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @notice A mapping from a loan's identifier to the loan's details, represted by the loan struct.
      */
     mapping(uint256 => LoanTerms) public override loanIdToLoan;
-    mapping(uint256 => LoanExtras) public loanIdToLoanExtras;
 
     /**
      * @notice A mapping tracking whether a loan has either been repaid or liquidated. This prevents an attacker trying
@@ -171,8 +170,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         uint256 indexed loanId,
         address indexed borrower,
         address indexed lender,
-        LoanTerms loanTerms,
-        LoanExtras loanExtras
+        LoanTerms loanTerms
     );
 
     /**
@@ -193,8 +191,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param  adminFee The amount of interest paid to the contract admins, measured in the smalled units of
      * loanERC20Denomination and determined by adminFeeInBasisPoints. This amount never exceeds the amount of interest
      * earned.
-     * @param  revenueShare The amount taken from admin fee amount shared with the partner.
-     * @param  revenueSharePartner  - The address of the partner that will receive the revenue share.
      * @param  nftCollateralContract - The ERC721 contract of the NFT collateral
      * @param  loanERC20Denomination - The ERC20 contract of the currency being used as principal/interest for this
      * loan.
@@ -207,8 +203,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         uint256 nftCollateralId,
         uint256 amountPaidToLender,
         uint256 adminFee,
-        uint256 revenueShare,
-        address revenueSharePartner,
         address nftCollateralContract,
         address loanERC20Denomination
     );
@@ -286,11 +280,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param  _nftfiHub - NFTfiHub address
      * @param  _permittedErc20s -
      */
-    constructor(
-        address _admin,
-        address _nftfiHub,
-        address[] memory _permittedErc20s
-    ) BaseLoan(_admin) {
+    constructor(address _admin, address _nftfiHub, address[] memory _permittedErc20s) BaseLoan(_admin) {
         hub = INftfiHub(_nftfiHub);
         for (uint256 i = 0; i < _permittedErc20s.length; i++) {
             _setERC20Permit(_permittedErc20s[i], true);
@@ -455,7 +445,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         // storage on Ethereum nodes, since we will never access this loan's details again, and the details are still
         // available through event data.
         delete loanIdToLoan[_loanId];
-        delete loanIdToLoanExtras[_loanId];
     }
 
     /**
@@ -504,7 +493,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         // storage on Ethereum nodes, since we will never access this loan's details again, and the details are still
         // available through event data.
         delete loanIdToLoan[_loanId];
-        delete loanIdToLoanExtras[_loanId];
     }
 
     /**
@@ -688,23 +676,19 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * registers the new loan through the loan coordinator.
      *
      * @param _loanTerms - Struct containing the loan's settings
-     * @param _loanExtras - Struct containing some loan's extra settings, needed to avoid stack too deep
      * @param _lender - The address of the lender.
-     * @param _referrer - The address of the referrer who found the lender matching the listing, Zero address to signal
      * that there is no referrer.
      */
     function _createLoan(
         LoanTerms memory _loanTerms,
-        LoanExtras memory _loanExtras,
         address _borrower,
-        address _lender,
-        address _referrer
+        address _lender
     ) internal returns (uint256) {
         // Transfer collateral from borrower to this contract to be held until
         // loan completion.
         _transferNFT(_loanTerms, _borrower, address(this));
 
-        return _createLoanNoNftTransfer(_loanTerms, _loanExtras, _borrower, _lender, _referrer);
+        return _createLoanNoNftTransfer(_loanTerms, _borrower, _lender);
     }
 
     /**
@@ -712,38 +696,23 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * registers the new loan through the loan coordinator.
      *
      * @param _loanTerms - Struct containing the loan's settings
-     * @param _loanExtras - Struct containing some loan's extra settings, needed to avoid stack too deep
      * @param _lender - The address of the lender.
-     * @param _referrer - The address of the referrer who found the lender matching the listing, Zero address to signal
      * that there is no referrer.
      */
     function _createLoanNoNftTransfer(
         LoanTerms memory _loanTerms,
-        LoanExtras memory _loanExtras,
         address _borrower,
-        address _lender,
-        address _referrer
+        address _lender
     ) internal returns (uint256) {
         ++loanId;
         _escrowTokens[_loanTerms.nftCollateralContract][_loanTerms.nftCollateralId] += 1;
 
-        uint256 referralfee = LoanChecksAndCalculations.computeReferralFee(
-            _loanTerms.loanPrincipalAmount,
-            _loanExtras.referralFeeInBasisPoints,
-            _referrer
-        );
-        uint256 principalAmount = _loanTerms.loanPrincipalAmount - referralfee;
-        if (referralfee > 0) {
-            // Transfer the referral fee from lender to referrer.
-            IERC20(_loanTerms.loanERC20Denomination).safeTransferFrom(_lender, _referrer, referralfee);
-        }
         // Transfer principal from lender to borrower.
-        IERC20(_loanTerms.loanERC20Denomination).safeTransferFrom(_lender, _borrower, principalAmount);
+        IERC20(_loanTerms.loanERC20Denomination).safeTransferFrom(_lender, _borrower, _loanTerms.loanPrincipalAmount);
 
         // Add the loan to storage before moving collateral/principal to follow
         // the Checks-Effects-Interactions pattern.
         loanIdToLoan[loanId] = _loanTerms;
-        loanIdToLoanExtras[loanId] = _loanExtras;
 
         return loanId;
     }
@@ -771,30 +740,11 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param _loanId  A unique identifier for this particular loan, sourced from the Loan Coordinator.
      */
     function _payBackLoan(uint256 _loanId, address _borrower, address _lender, LoanTerms memory _loan) internal {
-        // Fetch loan details from storage, but store them in memory for the sake of saving gas.
-        LoanExtras memory loanExtras = loanIdToLoanExtras[_loanId];
-
         (uint256 adminFee, uint256 payoffAmount) = _payoffAndFee(_loan);
 
         // Transfer principal-plus-interest-minus-fees from the caller to lender
         IERC20(_loan.loanERC20Denomination).safeTransferFrom(msg.sender, _lender, payoffAmount);
 
-        uint256 revenueShare = LoanChecksAndCalculations.computeRevenueShare(
-            adminFee,
-            loanExtras.revenueShareInBasisPoints
-        );
-        // PermittedPartners contract doesn't allow to set a revenueShareInBasisPoints for address zero so revenuShare
-        // > 0 implies that revenueSharePartner ~= address(0), BUT revenueShare can be zero for a partener when the
-        // adminFee is low
-        if (revenueShare > 0 && loanExtras.revenueSharePartner != address(0)) {
-            adminFee -= revenueShare;
-            // Transfer revenue share from the caller to permitted partner
-            IERC20(_loan.loanERC20Denomination).safeTransferFrom(
-                msg.sender,
-                loanExtras.revenueSharePartner,
-                revenueShare
-            );
-        }
         // Transfer fees from the caller to admins
         IERC20(_loan.loanERC20Denomination).safeTransferFrom(msg.sender, owner(), adminFee);
 
@@ -807,8 +757,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
             _loan.nftCollateralId,
             payoffAmount,
             adminFee,
-            revenueShare,
-            loanExtras.revenueSharePartner, // this could be a non address zero even if revenueShare is 0
             _loan.nftCollateralContract,
             _loan.loanERC20Denomination
         );
@@ -885,25 +833,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         loan = loanIdToLoan[_loanId];
         borrower = loan.borrower;
         lender = loan.lender;
-    }
-
-    /**
-     * @dev Creates a `LoanExtras` struct using data sent as the borrower's extra settings.
-     * This is needed in order to avoid stack too deep issues.
-     */
-    function _setupLoanExtras(
-        address _revenueSharePartner,
-        uint16 _referralFeeInBasisPoints
-    ) internal pure returns (LoanExtras memory) {
-        // Save loan details to a struct in memory first, to save on gas if any
-        // of the below checks fail, and to avoid the "Stack Too Deep" error by
-        // clumping the parameters together into one struct held in memory.
-        return
-            LoanExtras({
-                revenueSharePartner: _revenueSharePartner,
-                revenueShareInBasisPoints: LoanChecksAndCalculations.getRevenueSharePercent(_revenueSharePartner),
-                referralFeeInBasisPoints: _referralFeeInBasisPoints
-            });
     }
 
     /**

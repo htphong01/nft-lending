@@ -82,18 +82,15 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      *
      * @param _offer - The offer made by the lender.
      * @param _signature - The components of the lender's signature.
-     * @param _borrowerSettings - Some extra parameters that the borrower needs to set when accepting an offer.
      */
     function acceptOffer(
         Offer memory _offer,
-        Signature memory _signature,
-        BorrowerSettings memory _borrowerSettings
+        Signature memory _signature
     ) external whenNotPaused nonReentrant {
         _loanSanityChecks(_offer);
         _loanSanityChecksOffer(_offer);
         _acceptOffer(
             _setupLoanTerms(_offer, _signature.signer),
-            _setupLoanExtras(_borrowerSettings.revenueSharePartner, _borrowerSettings.referralFeeInBasisPoints),
             _offer,
             _signature
         );
@@ -125,13 +122,11 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * @notice This function is called by the borrower when accepting a lender's offer to begin a loan.
      *
      * @param _loanTerms - The main Loan Terms struct. This data is saved upon loan creation on loanIdToLoan.
-     * @param _loanExtras - The main Loan Terms struct. This data is saved upon loan creation on loanIdToLoanExtras.
      * @param _offer - The offer made by the lender.
      * @param _signature - The components of the lender's signature.
      */
     function _acceptOffer(
         LoanTerms memory _loanTerms,
-        LoanExtras memory _loanExtras,
         Offer memory _offer,
         Signature memory _signature
     ) internal {
@@ -147,10 +142,10 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
 
         require(NFTfiSigningUtils.isValidLenderSignature(_offer, _signature), "Lender signature is invalid");
 
-        uint256 loanId = _createLoan(_loanTerms, _loanExtras, msg.sender, _signature.signer, _offer.referrer);
+        uint256 loanId = _createLoan(_loanTerms, msg.sender, _signature.signer);
 
         // Emit an event with all relevant details from this transaction.
-        emit LoanStarted(loanId, msg.sender, _signature.signer, _loanTerms, _loanExtras);
+        emit LoanStarted(loanId, msg.sender, _signature.signer, _loanTerms);
     }
 
     /**

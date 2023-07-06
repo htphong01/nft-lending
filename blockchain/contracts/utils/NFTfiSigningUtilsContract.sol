@@ -60,7 +60,6 @@ contract NFTfiSigningUtilsContract {
      *   - offer.maximumRepaymentAmount
      *   - offer.nftCollateralContract
      *   - offer.nftCollateralId
-     *   - offer.referrer
      *   - offer.loanDuration
      *   - offer.loanAdminFeeInBasisPoints
      *   - signature.signer,

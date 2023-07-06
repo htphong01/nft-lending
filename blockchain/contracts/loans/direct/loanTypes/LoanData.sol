@@ -54,23 +54,6 @@ interface LoanData {
     }
 
     /**
-     * @notice Some extra Loan's settings struct. This data is saved upon loan creation.
-     * We need this to avoid stack too deep errors.
-     *
-     * @param revenueSharePartner - The address of the partner that will receive the revenue share.
-     * @param revenueShareInBasisPoints - The percent (measured in basis points) of the admin fee amount that will be
-     * taken as a revenue share for a t
-     * @param referralFeeInBasisPoints - The percent (measured in basis points) of the loan principal amount that will
-     * be taken as a fee to pay to the referrer, 0 if the lender is not paying referral fee.he partner, at the moment
-     * the loan is begun.
-     */
-    struct LoanExtras {
-        address revenueSharePartner;
-        uint16 revenueShareInBasisPoints;
-        uint16 referralFeeInBasisPoints;
-    }
-
-    /**
      * @notice The offer made by the lender. Used as parameter on both acceptOffer (initiated by the borrower) and
      * acceptListing (initiated by the lender).
      *
@@ -101,7 +84,6 @@ interface LoanData {
         uint32 loanDuration;
         uint16 loanAdminFeeInBasisPoints;
         address loanERC20Denomination;
-        address referrer;
     }
 
     /**
@@ -127,11 +109,9 @@ interface LoanData {
      *   - ListingTerms.maxLoanPrincipalAmount,
      *   - ListingTerms.nftCollateralContract,
      *   - ListingTerms.nftCollateralId,
-     *   - ListingTerms.revenueSharePartner,
      *   - ListingTerms.minLoanDuration,
      *   - ListingTerms.maxLoanDuration,
      *   - ListingTerms.maxInterestRateForDurationInBasisPoints,
-     *   - ListingTerms.referralFeeInBasisPoints,
      *   - Signature.signer,
      *   - Signature.nonce,
      *   - Signature.expiry,
@@ -143,7 +123,6 @@ interface LoanData {
      *   - Offer.maximumRepaymentAmount
      *   - Offer.nftCollateralContract
      *   - Offer.nftCollateralId
-     *   - Offer.referrer
      *   - Offer.loanDuration
      *   - Offer.loanAdminFeeInBasisPoints
      *   - Signature.signer,
@@ -157,18 +136,6 @@ interface LoanData {
         uint256 expiry;
         address signer;
         bytes signature;
-    }
-
-    /**
-     * @notice Some extra parameters that the borrower needs to set when accepting an offer.
-     *
-     * @param revenueSharePartner - The address of the partner that will receive the revenue share.
-     * @param referralFeeInBasisPoints - The percent (measured in basis points) of the loan principal amount that will
-     * be taken as a fee to pay to the referrer, 0 if the lender is not paying referral fee.
-     */
-    struct BorrowerSettings {
-        address revenueSharePartner;
-        uint16 referralFeeInBasisPoints;
     }
 
     /**

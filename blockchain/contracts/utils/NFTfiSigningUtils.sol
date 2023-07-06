@@ -74,7 +74,6 @@ library NFTfiSigningUtils {
      *   - offer.maximumRepaymentAmount
      *   - offer.nftCollateralContract
      *   - offer.nftCollateralId
-     *   - offer.referrer
      *   - offer.loanDuration
      *   - offer.loanAdminFeeInBasisPoints
      *   - signature.signer,
@@ -239,7 +238,6 @@ library NFTfiSigningUtils {
                 _offer.maximumRepaymentAmount,
                 _offer.nftCollateralContract,
                 _offer.nftCollateralId,
-                _offer.referrer,
                 _offer.loanDuration,
                 _offer.loanAdminFeeInBasisPoints
             );
