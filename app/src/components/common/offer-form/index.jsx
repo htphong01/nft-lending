@@ -1,32 +1,23 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import { useRef } from 'react';
 import { ethers } from 'ethers';
-import { useSelector } from 'react-redux';
+import { calculateRepayment } from '@src/utils/apr';
+import { useRef } from 'react';
 import { useOnClickOutside } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
-import { calculateRepayment } from '@src/utils/apr';
-import styles from '../styles.module.scss';
+import styles from './styles.module.scss';
 
 const VOTE_RESULT = {
   accepted: 87,
   rejected: 34,
 };
 
-export default function Form({ item, onClose }) {
+export default function OfferForm({ item, onClose }) {
   const ref = useRef(null);
-  const rate = useSelector((state) => state.rate.rate);
-  const currency = useSelector((state) => state.account.currency);
 
   const sliceAddress = (address) => {
     return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
   };
-
-  const calculateRealPrice = (price) => {
-    const priceBN = ethers.BigNumber.from(`${price}`);
-    const newPrice = priceBN.add(priceBN.mul(rate).div(1e7));
-    return ethers.utils.formatUnits(newPrice);
-  }
 
   const calculatePercentVote = (accepted, rejected) => {
     const total = accepted + rejected;
@@ -61,7 +52,7 @@ export default function Form({ item, onClose }) {
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Amount: </div>
-              <div className={styles.value}>{ethers.utils.formatUnits(item.offer, 18)} {currency}</div>
+              <div className={styles.value}>{ethers.utils.formatUnits(item.offer, 18)} XCR</div>
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Duration: </div>
@@ -70,7 +61,7 @@ export default function Form({ item, onClose }) {
             <div className={styles.info}>
               <div className={styles.label}>Repayment: </div>
               <div className={styles.value}>
-                {calculateRepayment(ethers.utils.formatUnits(item.offer), (item.rate * 100) / 1e4, item.duration)} {currency}
+                {calculateRepayment(ethers.utils.formatUnits(item.offer), (item.rate * 100) / 1e4, item.duration)} XCR
               </div>
             </div>
             <div className={styles.info}>
@@ -80,12 +71,12 @@ export default function Form({ item, onClose }) {
             <div className={styles.info}>
               <div className={styles.label}>Float price: </div>
               <div className={styles.value}>
-                {Number(ethers.utils.formatUnits(`${item.floorPrice}`)).toFixed(2)} {currency}
+                {Number(ethers.utils.formatUnits(`${item.floorPrice}`)).toFixed(2)} XCR
               </div>
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Oracle price: </div>
-              <div className={styles.value}>{calculateRealPrice(item.offer * 1.2)} {currency}</div>
+              <div className={styles.value}>15 XCR</div>
             </div>
           </div>
         </div>

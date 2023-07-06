@@ -12,7 +12,7 @@ export default function LendingPoolHeader() {
       <div className={styles.header}>
         <div className={styles.left}>
           <h1>Lending Pool</h1>
-          <div className={styles.description}>Stake your XCR and receive rewards.</div>
+          <div className={styles.description}>Stake your {account.currency} and receive rewards.</div>
         </div>
         <div className={styles.right}>
           <div>

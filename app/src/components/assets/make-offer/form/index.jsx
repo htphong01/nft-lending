@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { generateSignature } from '@src/utils/ethers';
 import { calculateAPR, calculateRepayment } from '@src/utils/apr';
 import styles from '../styles.module.scss';
 
 export default function Form() {
+  const currency = useSelector(state => state.account.currency);
   const [data, setData] = useState({
-    currency: 'XCR',
+    currency,
     amount: 0,
     duration: 0,
     repayment: 0,
@@ -26,8 +29,11 @@ export default function Form() {
     setData(newData);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if(Object.values(data).includes(0)) return;
+    const signature = await generateSignature(data);
+    console.log(signature)
   };
 
   return (

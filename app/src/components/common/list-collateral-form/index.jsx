@@ -18,7 +18,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
   const ref = useRef(null);
 
   const [data, setData] = useState({
-    currency: 'XCR',
+    currency: account.currency,
     offer: 0,
     duration: 0,
     repayment: 0,
@@ -77,7 +77,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
   useEffect(() => {
     if (type === COLLATERAL_FORM_TYPE.VIEW) {
       setData({
-        currency: 'XCR',
+        currency: account.currency,
         offer: ethers.utils.formatUnits(item.offer, 18),
         duration: item.duration,
         repayment: calculateRepayment(ethers.utils.formatUnits(item.offer), (item.rate * 100) / 1e4, item.duration),
@@ -87,7 +87,6 @@ export default function ListCollateralForm({ item, onClose, type }) {
     }
   }, []);
 
-  console.log(item);
   return (
     <div className={styles.container}>
       <Toaster position="top-center" reverseOrder={false} />

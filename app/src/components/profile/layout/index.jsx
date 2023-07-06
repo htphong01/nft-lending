@@ -1,13 +1,27 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Icon } from '@iconify/react';
+import { setAccount } from '@src/redux/features/accountSlice';
+import { getBalance } from '@src/utils/erc20';
 import { PROFILE_TABS } from '@src/constants';
 import cvcScanIcon from '@src/assets/cvcscan-icon.png';
 import styles from './styles.module.scss';
 
 export default function ProfileHeader() {
+  const dispatch = useDispatch();
+
   const account = useSelector((state) => state.account);
   const { pathname } = useLocation();
+
+  useEffect(() => {
+    if (account.address) {
+      getBalance(account.address)
+        .then((balance) => dispatch(setAccount({ balance })))
+        .catch(console.error);
+    }
+  }, []);
 
   return (
     <div>
@@ -39,7 +53,9 @@ export default function ProfileHeader() {
           <div>
             <div className={styles['right-item']}>
               <div className={styles['right-item-left']}>Balance:</div>
-              <div>{account.balance} XCR</div>
+              <div>
+                {account.balance} {account.currency}
+              </div>
             </div>
             <div className={styles['right-item']}>
               <div className={styles['right-item-left']}>Borrow:</div>

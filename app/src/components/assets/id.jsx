@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { getOrderByHash } from '@src/api/order.api';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import ReactLoading from 'react-loading';
 import Header from './layout';
 import MakeOffer from './make-offer';
 
 export default function Assets() {
   const { hash } = useParams();
+  const nagivate = useNavigate();
+
   const [isLoading, setIsLoading] = useState(true);
   const [order, setOrder] = useState();
 
@@ -14,6 +16,7 @@ export default function Assets() {
     if (hash) {
       getOrderByHash(hash)
         .then(({ data }) => {
+          if (!data || !data?.doesBorrowUser) nagivate('/lend/assets');
           setOrder(data);
           setIsLoading(false);
         })

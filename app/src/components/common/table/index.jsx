@@ -1,9 +1,12 @@
 /* eslint-disable react/prop-types */
 import { ethers } from 'ethers';
+import { useSelector } from 'react-redux';
 import { calculateRepayment } from '@src/utils/apr';
 import styles from './styles.module.scss';
 
 export default function Table({ title, data, action }) {
+  const currency = useSelector(state => state.account.currency);
+
   const sliceAddress = (address) => {
     return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
   };
@@ -30,12 +33,12 @@ export default function Table({ title, data, action }) {
             <div className={styles['table-list-item']}>{item.metadata.collection}</div>
             <div className={styles['table-list-item']}>{item.metadata.name}</div>
             <div className={styles['table-list-item']}>{item.status}</div>
-            <div className={styles['table-list-item']}>{item.doesBorrowUser ? sliceAddress(item.lender) : sliceAddress('Lending Pool')}</div>
+            <div className={styles['table-list-item']}>{item.doesBorrowUser ? sliceAddress(item.creator) : sliceAddress('Lending Pool')}</div>
             <div className={styles['table-list-item']}>{sliceAddress(item.creator)}</div>
             <div className={styles['table-list-item']}>{item.duration} days</div>
             <div className={styles['table-list-item']}>{new Date(item.createdAt).toLocaleDateString()}</div>
-            <div className={styles['table-list-item']}>{ethers.utils.formatUnits(item.offer, 18)} XCR</div>
-            <div className={styles['table-list-item']}>{calculateRepayment(ethers.utils.formatUnits(item.offer), item.rate * 100 / 1e4, item.duration)} XCR</div>
+            <div className={styles['table-list-item']}>{ethers.utils.formatUnits(item.offer, 18)} {currency}</div>
+            <div className={styles['table-list-item']}>{calculateRepayment(ethers.utils.formatUnits(item.offer), item.rate * 100 / 1e4, item.duration)} {currency}</div>
             <div className={styles['table-list-item']}>{item.rate * 100 / 1e4}%</div>
             <div className={styles['table-list-item']}>
               {action ? <button onClick={() => action.handle(item)}>{action.text}</button> : '#'}

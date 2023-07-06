@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import styles from './styles.module.scss';
 
 export default function Banner() {
+  const currency = useSelector(state => state.account.currency);
+
   return (
     <div className={styles.container}>
       <div className={styles.left}>
@@ -10,7 +13,7 @@ export default function Banner() {
           get a crypto loan
         </h1>
         <div className={styles.description}>
-          Use your NFT as collateral to borrow XCR <br />
+          Use your NFT as collateral to borrow {currency} <br />
           from lenders. Repay your loan, and you get your <br />
           NFT back.
         </div>
