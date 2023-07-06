@@ -1,25 +1,42 @@
 /* eslint-disable react/prop-types */
-import { ethers } from 'ethers';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+import ReactLoading from 'react-loading';
+import { getOffersByOrder } from '@src/api/offer.api';
 import { calculateRepayment } from '@src/utils/apr';
-import { OFFERS_RECEIVED } from '@src/constants/example-data';
+import { sliceAddress } from '@src/utils/misc';
 import Form from './form';
 import Table from './table';
 import styles from './styles.module.scss';
 
 export default function MakeOffer({ item }) {
+  const { hash } = useParams();
   const rate = useSelector((state) => state.rate.rate);
-  const currency = useSelector((state) => state.account.currency)
+  const currency = useSelector((state) => state.account.currency);
 
-  const sliceAddress = (address) => {
-    return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
-  };
+  const [offerList, setOfferList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const calculateRealPrice = (price) => {
-    const priceBN = ethers.BigNumber.from(`${price}`);
-    const newPrice = priceBN.add(priceBN.mul(rate).div(1e7));
-    return ethers.utils.formatUnits(newPrice);
-  }
+    return price + (price * rate) / 1e7;
+  };
+
+  const fetchOffers = async () => {
+    try {
+      console.log('fetching');
+      const { data } = await getOffersByOrder(hash);
+      setOfferList(data);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchOffers();
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -27,7 +44,10 @@ export default function MakeOffer({ item }) {
         <div className={styles.section}>
           <div>
             <div className={styles['real-price']}>
-              Real price: <b>{calculateRealPrice(item.offer * 1.2)} {currency}</b>
+              Real price:{' '}
+              <b>
+                {calculateRealPrice(item.offer * 1.2)} {currency}
+              </b>
             </div>
             <div className={styles['real-price-source']}>Fetch price from Oracle</div>
           </div>
@@ -49,7 +69,7 @@ export default function MakeOffer({ item }) {
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Amount: </div>
-            <div className={styles.value}>{ethers.utils.formatUnits(item.offer, 18)} {currency}</div>
+            <div className={styles.value}>{item.offer} {currency}</div>
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Duration: </div>
@@ -58,7 +78,7 @@ export default function MakeOffer({ item }) {
           <div className={styles.info}>
             <div className={styles.label}>Repayment: </div>
             <div className={styles.value}>
-              {calculateRepayment(ethers.utils.formatUnits(item.offer), (item.rate * 100) / 1e4, item.duration)} {currency}
+              {calculateRepayment(item.offer, (item.rate * 100) / 1e4, item.duration)} {currency}
             </div>
           </div>
           <div className={styles.info}>
@@ -67,14 +87,22 @@ export default function MakeOffer({ item }) {
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Float price: </div>
-            <div className={styles.value}>{Number(ethers.utils.formatUnits(`${item.floorPrice}`)).toFixed(2)} {currency}</div>
+            <div className={styles.value}>
+              {item.floorPrice} {currency}
+            </div>
           </div>
         </div>
         <div className={styles.section}>
-          <Form />
+          <Form order={item} fetchOffers={fetchOffers} />
         </div>
       </div>
-      <Table title="Offers received" data={OFFERS_RECEIVED} currency={currency} />
+      {isLoading ? (
+        <div className="react-loading-item">
+          <ReactLoading type="bars" color="#fff" height={100} width={120} />
+        </div>
+      ) : (
+        <Table title="Offers received" data={offerList} creator={item.creator} />
+      )}
     </div>
   );
 }

@@ -18,7 +18,7 @@ export default function Assets() {
 
   const fetchOrderList = async () => {
     try {
-      const { data } = await getOrders({ borrowFrom: 'user' });
+      const { data } = await getOrders({ lender: 'user' });
       setOrderList(data);
       setIsLoading(false);
     } catch (error) {

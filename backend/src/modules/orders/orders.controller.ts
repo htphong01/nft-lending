@@ -13,11 +13,7 @@ export class OrdersController {
   }
 
   @Get()
-  findAll(@Query('borrowFrom') borrowFrom: string) {
-    const conditions: Record<string, any> = {};
-    if (borrowFrom) {
-      conditions.doesBorrowUser = borrowFrom === 'user';
-    }
+  findAll(@Query() conditions: Record<string, any>) {
     return this.ordersService.findAll(conditions);
   }
 

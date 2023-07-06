@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
 import { calculateRepayment } from '@src/utils/apr';
+import { sliceAddress } from '@src/utils/misc';
 import styles from '../styles.module.scss';
 
 const VOTE_RESULT = {
@@ -17,10 +18,6 @@ export default function Form({ item, onClose }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
   const currency = useSelector((state) => state.account.currency);
-
-  const sliceAddress = (address) => {
-    return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
-  };
 
   const calculateRealPrice = (price) => {
     const priceBN = ethers.BigNumber.from(`${price}`);

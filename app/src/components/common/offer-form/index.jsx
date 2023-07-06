@@ -1,9 +1,10 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import { ethers } from 'ethers';
-import { calculateRepayment } from '@src/utils/apr';
 import { useRef } from 'react';
 import { useOnClickOutside } from 'usehooks-ts';
+import { calculateRepayment } from '@src/utils/apr';
+import { sliceAddress } from '@src/utils/misc';
 import { Icon } from '@iconify/react';
 import styles from './styles.module.scss';
 
@@ -14,11 +15,7 @@ const VOTE_RESULT = {
 
 export default function OfferForm({ item, onClose }) {
   const ref = useRef(null);
-
-  const sliceAddress = (address) => {
-    return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
-  };
-
+  
   const calculatePercentVote = (accepted, rejected) => {
     const total = accepted + rejected;
     return {

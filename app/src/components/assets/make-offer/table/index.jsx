@@ -1,9 +1,14 @@
 /* eslint-disable react/prop-types */
+import { useSelector } from 'react-redux';
+import { calculateRepayment } from '@src/utils/apr';
+import { sliceAddress } from '@src/utils/misc';
 import styles from './styles.module.scss';
 
-export default function Table({ title, data, currency }) {
-  const sliceAddress = (address) => {
-    return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
+export default function Table({ title, data, creator }) {
+  const account = useSelector((state) => state.account);
+
+  const handleAccept = (hash) => {
+    console.log('hash', hash);
   };
 
   return (
@@ -11,24 +16,37 @@ export default function Table({ title, data, currency }) {
       <div className={styles.heading}>{title}</div>
       <div className={styles['table-list']}>
         <div className={styles['table-list-item']}>Loan value</div>
-        <div className={styles['table-list-item']}>Interest</div>
-        <div className={styles['table-list-item']}>APR</div>
-        <div className={styles['table-list-item']}>Duration</div>
-        <div className={styles['table-list-item']}>Repayment</div>
         <div className={styles['table-list-item']}>Lender</div>
+        <div className={styles['table-list-item']}>Repayment</div>
+        <div className={styles['table-list-item']}>Duration</div>
+        <div className={styles['table-list-item']}>APR</div>
+        <div className={styles['table-list-item']}>Float price</div>
+        <div className={styles['table-list-item']}>Created At</div>
         <div className={styles['table-list-item']}>Action</div>
       </div>
       {data && data.length > 0 ? (
         data.map((item, index) => (
           <div className={styles['table-list']} key={index}>
-            <div className={styles['table-list-item']}>{item.loanValue} {currency}</div>
-            <div className={styles['table-list-item']}>{item.interest}</div>
-            <div className={styles['table-list-item']}>{item.apr}</div>
-            <div className={styles['table-list-item']}>{item.duration}</div>
-            <div className={styles['table-list-item']}>{item.repayment} {currency}</div>
-            <div className={styles['table-list-item']}>{sliceAddress(item.lender)}</div>
             <div className={styles['table-list-item']}>
-              <button onClick={() => {}}>Accept</button>
+              {item.offer} {account.currency}
+            </div>
+            <div className={styles['table-list-item']}>{sliceAddress(item.creator)}</div>
+            <div className={styles['table-list-item']}>
+              {calculateRepayment(item.offer, item.rate, item.duration)} {account.currency}
+            </div>
+            <div className={styles['table-list-item']}>{item.duration} days</div>
+            <div className={styles['table-list-item']}>{item.rate} %</div>
+            <div className={styles['table-list-item']}>
+              {item.floorPrice} {account.currency}
+            </div>
+
+            <div className={styles['table-list-item']}>{new Date(item.createdAt).toLocaleDateString()}</div>
+            <div className={styles['table-list-item']}>
+              {account.address.toLowerCase() != creator.toLowerCase() ? (
+                '#'
+              ) : (
+                <button onClick={() => handleAccept(item.hash)}>Accept</button>
+              )}
             </div>
           </div>
         ))

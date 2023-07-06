@@ -25,7 +25,7 @@ export default function LoanRequests() {
   };
 
   useEffect(() => {
-    getOrders({ borrowFrom: 'pool' })
+    getOrders({ lender: 'pool' })
       .then(({ data }) => {
         setOrderList(data);
         setIsLoading(false);

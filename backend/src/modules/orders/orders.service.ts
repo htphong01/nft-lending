@@ -19,7 +19,7 @@ export class OrdersService {
       offer: createOrderDto.offer,
       duration: createOrderDto.duration,
       rate: createOrderDto.rate,
-      doesBorrowUser: createOrderDto.doesBorrowUser
+      lender: createOrderDto.lender
     }));
     const orderHash = await sha256(bytes);
 
@@ -33,7 +33,7 @@ export class OrdersService {
 
     await this.order.create(orderHash, {
       ...createOrderDto,
-      floorPrice: createOrderDto.offer * 1.1,
+      floorPrice: (createOrderDto.offer * 1.1).toFixed(2),
       hash: orderHash,
       status: OrderStatus.OPENING,
       createdAt: new Date().getTime()
