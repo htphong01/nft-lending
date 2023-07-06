@@ -33,7 +33,7 @@ export default function Table({ title, data, action }) {
             <div className={styles['table-list-item']}>{item.metadata.collection}</div>
             <div className={styles['table-list-item']}>{item.metadata.name}</div>
             <div className={styles['table-list-item']}>{item.status}</div>
-            <div className={styles['table-list-item']}>{item.doesBorrowUser ? sliceAddress(item.lender) : sliceAddress('Lending Pool')}</div>
+            <div className={styles['table-list-item']}>{item.doesBorrowUser ? sliceAddress(item.creator) : sliceAddress('Lending Pool')}</div>
             <div className={styles['table-list-item']}>{sliceAddress(item.creator)}</div>
             <div className={styles['table-list-item']}>{item.duration} days</div>
             <div className={styles['table-list-item']}>{new Date(item.createdAt).toLocaleDateString()}</div>
