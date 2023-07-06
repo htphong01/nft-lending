@@ -18,6 +18,6 @@ export const getOfferByHash = (hash) => {
   return axios.get(`/offers/${hash}`);
 };
 
-export const getOfferByCreator = (creator) => {
+export const getOffersByCreator = (creator) => {
   return axios.get(`/offers/creator/${creator}`);
 };

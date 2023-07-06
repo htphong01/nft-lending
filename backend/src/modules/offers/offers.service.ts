@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { CreateOfferDto } from './dto/create-offer.dto';
-import { OrderStatus } from './dto/order.enum';
+import { OfferStatus } from './dto/offer.enum';
 import { UpdateOrderDto } from './dto/update-offer.dto';
 import { Offer } from './reposities/offer.reposity';
 import { verifySignature } from '../utils/signature';
@@ -40,7 +40,7 @@ export class OffersService {
       ...createOfferDto,
       floorPrice: (createOfferDto.offer * 1.1).toFixed(2),
       hash: offerHash,
-      status: OrderStatus.OPENING,
+      status: OfferStatus.OPENING,
       createdAt: new Date().getTime(),
     });
   }

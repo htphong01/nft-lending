@@ -6,8 +6,8 @@ import ReactLoading from 'react-loading';
 import { getOffersByOrder } from '@src/api/offer.api';
 import { calculateRepayment } from '@src/utils/apr';
 import { sliceAddress } from '@src/utils/misc';
-import Form from './form';
 import Table from './table';
+import Form from './form';
 import styles from './styles.module.scss';
 
 export default function MakeOffer({ item }) {
@@ -78,12 +78,12 @@ export default function MakeOffer({ item }) {
           <div className={styles.info}>
             <div className={styles.label}>Repayment: </div>
             <div className={styles.value}>
-              {calculateRepayment(item.offer, (item.rate * 100) / 1e4, item.duration)} {currency}
+              {calculateRepayment(item.offer, item.rate, item.duration)} {currency}
             </div>
           </div>
           <div className={styles.info}>
             <div className={styles.label}>APR: </div>
-            <div className={styles.value}>{(item.rate * 100) / 1e4}%</div>
+            <div className={styles.value}>{item.rate}%</div>
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Float price: </div>

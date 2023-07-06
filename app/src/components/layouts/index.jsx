@@ -23,8 +23,9 @@ export default function UserLayout() {
       const balance = await getBalance(accounts[0]);
       dispatch(
         setAccount({
-          address: accounts[0],
+          address: accounts[0].toLowerCase(),
           balance: balance,
+          currency: 'wXCR'
         })
       );
     }
