@@ -39,7 +39,7 @@ export default function ProfileHeader() {
           <div>
             <div className={styles['right-item']}>
               <div className={styles['right-item-left']}>Balance:</div>
-              <div>{account.balance} XCR</div>
+              <div>{account.balance} {account.currency}</div>
             </div>
             <div className={styles['right-item']}>
               <div className={styles['right-item-left']}>Borrow:</div>

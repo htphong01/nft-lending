@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import styles from './styles.module.scss';
 
-export default function Table({ title, data }) {
+export default function Table({ title, data, currency }) {
   const sliceAddress = (address) => {
     return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
   };
@@ -21,11 +21,11 @@ export default function Table({ title, data }) {
       {data && data.length > 0 ? (
         data.map((item, index) => (
           <div className={styles['table-list']} key={index}>
-            <div className={styles['table-list-item']}>{item.loanValue}</div>
+            <div className={styles['table-list-item']}>{item.loanValue} {currency}</div>
             <div className={styles['table-list-item']}>{item.interest}</div>
             <div className={styles['table-list-item']}>{item.apr}</div>
             <div className={styles['table-list-item']}>{item.duration}</div>
-            <div className={styles['table-list-item']}>{item.repayment}</div>
+            <div className={styles['table-list-item']}>{item.repayment} {currency}</div>
             <div className={styles['table-list-item']}>{sliceAddress(item.lender)}</div>
             <div className={styles['table-list-item']}>
               <button onClick={() => {}}>Accept</button>

@@ -4,34 +4,42 @@ import { InlineIcon } from '@iconify/react';
 import styles from '../styles.module.scss';
 import cvcScanIcon from '@src/assets/cvcscan-icon.png';
 
-export default function Stake() {
+export default function Stake({ currency }) {
   const account = useSelector((state) => state.account);
 
   const [amount, setAmount] = useState(0);
 
+  const handleSubmitStake = (e) => {
+    e.preventDefault();
+    console.log('amount', amount);
+  };
+
   return (
     <div className={styles.item}>
-      <div className={styles.content}>
+      <form className={styles.content} onSubmit={handleSubmitStake}>
         <div className={styles.header}>
           <span>Amount</span>
           <div className={styles.amount}>
             <InlineIcon icon="mdi:wallet-outline" fontSize={12} color="rgba(235, 235, 245, 0.5)" />
-            <div>{account.balance} XCR</div>
+            <div>
+              {account.balance} {currency}
+            </div>
           </div>
         </div>
         <div className={styles['stake-input']}>
-          <img src={cvcScanIcon} alt="XCR" />
+          <img src={cvcScanIcon} alt={currency} />
           <input
             type="number"
             value={amount}
             name="amount"
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0"
+            max={account.balance}
           />
-          <span>XCR</span>
+          <span>{currency}</span>
         </div>
-        <button>Stake</button>
-      </div>
+        <button type="submit">Stake</button>
+      </form>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { ethers } from 'ethers';
+import { useSelector } from 'react-redux';
 import { calculateRepayment } from '@src/utils/apr';
 import { OFFERS_RECEIVED } from '@src/constants/example-data';
 import Form from './form';
@@ -7,12 +8,18 @@ import Table from './table';
 import styles from './styles.module.scss';
 
 export default function MakeOffer({ item }) {
-  // const data = Object.entries(item).filter((element) => element[0] !== 'lender' && element[0] !== 'metadata');
-  console.log(item);
+  const rate = useSelector((state) => state.rate.rate);
+  const currency = useSelector((state) => state.account.currency)
 
   const sliceAddress = (address) => {
     return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
   };
+
+  const calculateRealPrice = (price) => {
+    const priceBN = ethers.BigNumber.from(`${price}`);
+    const newPrice = priceBN.add(priceBN.mul(rate).div(1e7));
+    return ethers.utils.formatUnits(newPrice);
+  }
 
   return (
     <div className={styles.container}>
@@ -20,9 +27,9 @@ export default function MakeOffer({ item }) {
         <div className={styles.section}>
           <div>
             <div className={styles['real-price']}>
-              Real price: <b>17.25 XCR</b>
+              Real price: <b>{calculateRealPrice(item.offer * 1.2)} {currency}</b>
             </div>
-            <div className={styles['real-price-source']}>Fetch price from Chainlink Oracle</div>
+            <div className={styles['real-price-source']}>Fetch price from Oracle</div>
           </div>
           <img src={item.metadata.image} alt={item.metadata.name} />
         </div>
@@ -42,7 +49,7 @@ export default function MakeOffer({ item }) {
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Amount: </div>
-            <div className={styles.value}>{ethers.utils.formatUnits(item.offer, 18)} XCR</div>
+            <div className={styles.value}>{ethers.utils.formatUnits(item.offer, 18)} {currency}</div>
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Duration: </div>
@@ -50,22 +57,24 @@ export default function MakeOffer({ item }) {
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Repayment: </div>
-            <div className={styles.value}>{calculateRepayment(ethers.utils.formatUnits(item.offer), item.rate * 100 / 1e4, item.duration)} XCR</div>
+            <div className={styles.value}>
+              {calculateRepayment(ethers.utils.formatUnits(item.offer), (item.rate * 100) / 1e4, item.duration)} {currency}
+            </div>
           </div>
           <div className={styles.info}>
             <div className={styles.label}>APR: </div>
-            <div className={styles.value}>{item.rate * 100 / 1e4}%</div>
+            <div className={styles.value}>{(item.rate * 100) / 1e4}%</div>
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Float price: </div>
-            <div className={styles.value}>{Number(ethers.utils.formatUnits(`${item.floorPrice}`)).toFixed(2)} XCR</div>
+            <div className={styles.value}>{Number(ethers.utils.formatUnits(`${item.floorPrice}`)).toFixed(2)} {currency}</div>
           </div>
         </div>
         <div className={styles.section}>
           <Form />
         </div>
       </div>
-      <Table title="Offers received" data={OFFERS_RECEIVED} />
+      <Table title="Offers received" data={OFFERS_RECEIVED} currency={currency} />
     </div>
   );
 }

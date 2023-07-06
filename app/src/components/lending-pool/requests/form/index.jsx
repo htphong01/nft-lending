@@ -1,10 +1,11 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import { ethers } from 'ethers';
-import { calculateRepayment } from '@src/utils/apr';
 import { useRef } from 'react';
+import { ethers } from 'ethers';
+import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
+import { calculateRepayment } from '@src/utils/apr';
 import styles from '../styles.module.scss';
 
 const VOTE_RESULT = {
@@ -14,12 +15,17 @@ const VOTE_RESULT = {
 
 export default function Form({ item, onClose }) {
   const ref = useRef(null);
-
-  const data = Object.entries(item).filter((element) => element[0] !== 'status' && element[0] !== 'metadata');
+  const rate = useSelector((state) => state.rate.rate);
 
   const sliceAddress = (address) => {
     return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
   };
+
+  const calculateRealPrice = (price) => {
+    const priceBN = ethers.BigNumber.from(`${price}`);
+    const newPrice = priceBN.add(priceBN.mul(rate).div(1e7));
+    return ethers.utils.formatUnits(newPrice);
+  }
 
   const calculatePercentVote = (accepted, rejected) => {
     const total = accepted + rejected;
@@ -78,7 +84,7 @@ export default function Form({ item, onClose }) {
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Oracle price: </div>
-              <div className={styles.value}>15 XCR</div>
+              <div className={styles.value}>{calculateRealPrice(item.offer * 1.2)} XCR</div>
             </div>
           </div>
         </div>

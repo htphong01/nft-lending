@@ -1,13 +1,16 @@
 import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { setAccount } from '@src/redux/features/accountSlice';
-import { useDispatch } from 'react-redux';
+import { setRate } from '@src/redux/features/rateSlice';
+import { useDispatch, useSelector } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
-import { getBalance } from '@src/utils/ethers';
+import { getBalance } from '@src/utils/erc20';
 import Header from './header';
 import Footer from './footer';
 
 export default function UserLayout() {
+  const rate = useSelector((state) => state.rate);
+
   const dispatch = useDispatch();
 
   const handleAccountsChanged = async (accounts) => {
@@ -50,6 +53,22 @@ export default function UserLayout() {
     }
   };
 
+  const fetchRate = () => {
+    const socket = new WebSocket('wss://ws.coincap.io/prices?assets=ethereum');
+    socket.addEventListener('message', function (event) {
+      const data = JSON.parse(event.data);
+      if (data.ethereum) {
+        const price = data.ethereum;
+        dispatch(
+          setRate({
+            price,
+            rate: rate.price != 0 ? Math.floor(Number(((price - rate.price) / rate.price).toFixed(7)) * 1e7) : 0.2,
+          })
+        );
+      }
+    });
+  };
+
   useEffect(() => {
     if (window.ethereum) {
       window.ethereum
@@ -64,6 +83,8 @@ export default function UserLayout() {
     } else {
       alert('MetaMask is not installed. Please consider installing it: https://metamask.io/download.html');
     }
+
+    fetchRate();
   }, []);
 
   return (

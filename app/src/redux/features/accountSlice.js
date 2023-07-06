@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   address: '',
   balance: 0,
+  currency: 'wXCR'
 };
 
 export const accountSlice = createSlice({
@@ -10,7 +11,7 @@ export const accountSlice = createSlice({
   initialState,
   reducers: {
     setAccount: (state, action) => {
-      state = action.payload;
+      state = {...state, ...action.payload};
       return state;
     },
   },
