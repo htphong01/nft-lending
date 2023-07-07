@@ -32,7 +32,7 @@ export default function Loans() {
     try {
       const [offerList1, offerList2] = await Promise.all([
         getOffers({ borrower: account.address, status: OfferStatus.FILLED }),
-        getOffers({ borrower: account.address, status: `${OfferStatus.EXPIRED},${OfferStatus.REPAID},${OfferStatus.LIQUIDATED}` }),
+        getOffers({ borrower: account.address, status: `${OfferStatus.REPAID},${OfferStatus.LIQUIDATED}` }),
       ]);
       setOfferList({
         current: offerList1.data,
