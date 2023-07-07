@@ -3,12 +3,16 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import ReactLoading from 'react-loading';
+import { Icon } from '@iconify/react';
+import { Link } from 'react-router-dom';
 import { getOffersByOrder } from '@src/api/offer.api';
 import { calculateRepayment } from '@src/utils/apr';
 import { sliceAddress } from '@src/utils/misc';
 import Table from './table';
 import Form from './form';
 import styles from './styles.module.scss';
+
+const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
 export default function MakeOffer({ item }) {
   const { hash } = useParams();
@@ -24,7 +28,6 @@ export default function MakeOffer({ item }) {
 
   const fetchOffers = async () => {
     try {
-      console.log('fetching');
       const { data } = await getOffersByOrder(hash);
       setOfferList(data);
       setIsLoading(false);
@@ -61,15 +64,31 @@ export default function MakeOffer({ item }) {
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Collection: </div>
-            <div className={styles.value}>{sliceAddress(item.nftAddress)}</div>
+            <div className={styles.value}>{item.metadata.collection}</div>
+          </div>
+          <div className={styles.info}>
+            <div className={styles.label}>Address: </div>
+            <div className={styles.value}>
+              <span>{sliceAddress(item.nftAddress)}</span>
+              <Link to={`${CVC_SCAN}/address/${item.nftAddress}`} target="_blank">
+                <Icon icon="uil:edit" />
+              </Link>
+            </div>
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Borrower: </div>
-            <div className={styles.value}>{sliceAddress(item.creator)}</div>
+            <div className={styles.value}>
+              <span>{sliceAddress(item.creator)}</span>
+              <Link to={`${CVC_SCAN}/address/${item.nftAddress}`} target="_blank">
+                <Icon icon="uil:edit" />
+              </Link>
+            </div>
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Amount: </div>
-            <div className={styles.value}>{item.offer} {currency}</div>
+            <div className={styles.value}>
+              {item.offer} {currency}
+            </div>
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Duration: </div>

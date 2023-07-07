@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import ReactLoading from 'react-loading';
 import { useNavigate } from 'react-router-dom';
 import { getOrders } from '@src/api/order.api';
+import { OrderStatus } from '@src/constants/enum';
 import Card from '@src/components/common/card';
 import styles from './styles.module.scss';
 
@@ -18,7 +19,7 @@ export default function Assets() {
 
   const fetchOrderList = async () => {
     try {
-      const { data } = await getOrders({ lender: 'user' });
+      const { data } = await getOrders({ lender: 'user', status: OrderStatus.OPENING });
       setOrderList(data);
       setIsLoading(false);
     } catch (error) {

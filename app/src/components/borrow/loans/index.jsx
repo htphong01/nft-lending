@@ -1,4 +1,4 @@
-import Table from '@src/components/common/table';
+import Table from '@src/components/common/offer-table';
 import { CURRENT_LOANS } from '@src/constants/example-data';
 import styles from './styles.module.scss';
 
@@ -11,7 +11,7 @@ export default function Loans() {
     <div className={styles.container}>
       <Table
         title="Current Loans as Borrower"
-        data={CURRENT_LOANS}
+        data={[]}
         action={{ text: 'Repay', handle: handleOpenCurrentLoan }}
       />
       <Table title="Previous Loans as Borrower" />

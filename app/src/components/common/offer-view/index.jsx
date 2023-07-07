@@ -11,7 +11,9 @@ import { sliceAddress } from '@src/utils/misc';
 import { getOrderByHash } from '@src/api/order.api';
 import styles from './styles.module.scss';
 
-export default function OfferView({ item, onClose }) {
+const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
+
+export default function OfferView({ item, onClose, action }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
   const currency = useSelector((state) => state.account.currency);
@@ -29,7 +31,6 @@ export default function OfferView({ item, onClose }) {
     try {
       const { data: order } = await getOrderByHash(item.order);
       setData({ ...data, order });
-      console.log({ ...data, order });
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -67,11 +68,21 @@ export default function OfferView({ item, onClose }) {
                 </div>
                 <div className={styles.info}>
                   <div className={styles.label}>Lender: </div>
-                  <div className={styles.value}>{sliceAddress(data.creator)}</div>
+                  <div className={styles.value}>
+                    <span>{sliceAddress(data.creator)}</span>
+                    <Link to={`${CVC_SCAN}/address/${data.creator}`} target="_blank">
+                      <Icon icon="uil:edit" />
+                    </Link>
+                  </div>
                 </div>
                 <div className={styles.info}>
                   <div className={styles.label}>Borrower: </div>
-                  <div className={styles.value}>{sliceAddress(data.order.creator)}</div>
+                  <div className={styles.value}>
+                    <span>{sliceAddress(data.order.creator)}</span>
+                    <Link to={`${CVC_SCAN}/address/${data.order.creator}`} target="_blank">
+                      <Icon icon="uil:edit" />
+                    </Link>
+                  </div>
                 </div>
                 <div className={styles.info}>
                   <div className={styles.label}>Amount: </div>
@@ -107,7 +118,7 @@ export default function OfferView({ item, onClose }) {
                 </div>
                 <div className={styles.info}>
                   <button onClick={() => onClose()}>Close</button>
-                  <button>Cancel</button>
+                  <button onClick={() => action.handle(data)}>{action.text}</button>
                 </div>
               </div>
             </div>

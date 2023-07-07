@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const env = import.meta.env.VITE_ENVIROMENT
+const env = import.meta.env.VITE_ENVIRONMENT
 
 const API_URL = {
     development: 'http://localhost:3000',

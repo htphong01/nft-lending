@@ -16,6 +16,7 @@ export default function Form({ order, fetchOffers }) {
     duration: 0,
     repayment: 0,
     apr: 0,
+    expiration: 0
   });
 
   const handleChange = (e) => {
@@ -45,9 +46,11 @@ export default function Form({ order, fetchOffers }) {
       const offer = {
         creator: account.address,
         order: order.hash,
+        borrower: order.creator,
         offer: data.amount,
         duration: data.duration,
         rate: data.apr,
+        expiration: data.expiration,
       };
       const signature = await generateSignature(offer);
       offer.signature = signature;
@@ -135,6 +138,18 @@ export default function Form({ order, fetchOffers }) {
               onChange={handleChange}
             />
             <div className={styles['percent-label']}>%</div>
+          </label>
+        </div>
+      </div>
+      <div className={styles.section}>
+        <div className={styles.head}>
+          Offer expiration: <span>{data.expiration} days</span>
+        </div>
+        <div className={styles.details}>
+          <div className={styles.label}>Specify an expiration period for this offer?</div>
+          <label className={styles.input}>
+            <input required={true} type="number" value={data.expiration} name="expiration" onChange={handleChange} />
+            <span>days</span>
           </label>
         </div>
       </div>

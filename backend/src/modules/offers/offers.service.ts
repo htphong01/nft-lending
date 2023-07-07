@@ -19,9 +19,11 @@ export class OffersService {
       JSON.stringify({
         creator: createOfferDto.creator,
         order: createOfferDto.order,
+        borrower: createOfferDto.borrower,
         offer: createOfferDto.offer,
         duration: createOfferDto.duration,
         rate: createOfferDto.rate,
+        expiration: createOfferDto.expiration,
       }),
     );
     const offerHash = await sha256(bytes);

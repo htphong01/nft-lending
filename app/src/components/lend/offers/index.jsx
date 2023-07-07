@@ -2,9 +2,10 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import ReactLoading from 'react-loading';
-import { getOffersByCreator } from '@src/api/offer.api';
+import { getOffers } from '@src/api/offer.api';
+import { OfferStatus } from '@src/constants/enum';
 import OfferView from '@src/components/common/offer-view';
-import Table from './table';
+import Table from '@src/components/common/offer-table';
 import styles from './styles.module.scss';
 
 export default function Offers() {
@@ -14,13 +15,13 @@ export default function Offers() {
   const [offerList, setOfferList] = useState([]);
   const [selectedOffer, setSelectedOffer] = useState();
 
-  const handleViewOffer = (offer) => {
-    setSelectedOffer(offer);
-  };
+  const handleCancelOffer = () => {
+    
+  }
 
   const fetchNFTs = async () => {
     try {
-      const { data } = await getOffersByCreator(account.address);
+      const { data } = await getOffers({ creator: account.address, status: OfferStatus.OPENING });
       setOfferList(data);
       setIsLoading(false);
     } catch (error) {
@@ -35,13 +36,13 @@ export default function Offers() {
 
   return (
     <div className={styles.container}>
-      {selectedOffer && <OfferView item={selectedOffer} onClose={setSelectedOffer} />}
+      {selectedOffer && <OfferView item={selectedOffer} onClose={setSelectedOffer} action={{  text: 'Accept', handle: handleCancelOffer }} />}
       {isLoading ? (
         <div className="react-loading-item">
           <ReactLoading type="bars" color="#fff" height={100} width={120} />
         </div>
       ) : (
-        <Table title="Offers sent" data={offerList} action={{ text: 'View', handle: handleViewOffer }} />
+        <Table title="Offers sent" data={offerList} action={{ text: 'View', handle: setSelectedOffer }} />
       )}
     </div>
   );
