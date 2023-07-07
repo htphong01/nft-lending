@@ -16,6 +16,10 @@
       flex-direction: column;
       justify-content: space-between;
 
+      &.section-image {
+        justify-content: flex-start;
+      }
+
       .heading {
         text-align: left;
       }

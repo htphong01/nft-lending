@@ -1,5 +1,4 @@
 import Table from '@src/components/common/offer-table';
-import { CURRENT_LOANS } from '@src/constants/example-data';
 import styles from './styles.module.scss';
 
 export default function Loans() {

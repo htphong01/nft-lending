@@ -1,12 +1,12 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import { useRef } from 'react';
-import { ethers } from 'ethers';
 import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
+import { Link } from 'react-router-dom';
 import { calculateRepayment } from '@src/utils/apr';
-import { sliceAddress } from '@src/utils/misc';
+import { sliceAddress, calculateRealPrice } from '@src/utils/misc';
 import styles from '../styles.module.scss';
 
 const VOTE_RESULT = {
@@ -14,14 +14,12 @@ const VOTE_RESULT = {
   rejected: 34,
 };
 
+const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
+
 export default function Form({ item, onClose }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
   const currency = useSelector((state) => state.account.currency);
-
-  const calculateRealPrice = (price) => {
-    return price + price * rate / 1e7;
-  };
 
   const calculatePercentVote = (accepted, rejected) => {
     const total = accepted + rejected;
@@ -48,11 +46,25 @@ export default function Form({ item, onClose }) {
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Collection: </div>
-              <div className={styles.value}>{sliceAddress(item.nftAddress)}</div>
+              <div className={styles.value}>{item.metadata.collection}</div>
+            </div>
+            <div className={styles.info}>
+              <div className={styles.label}>Address: </div>
+              <div className={styles.value}>
+                <span>{sliceAddress(item.nftAddress)}</span>
+                <Link to={`${CVC_SCAN}/address/${item.nftAddress}`} target="_blank">
+                  <Icon icon="uil:edit" />
+                </Link>
+              </div>
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Borrower: </div>
-              <div className={styles.value}>{sliceAddress(item.creator)}</div>
+              <div className={styles.value}>
+                <span>{sliceAddress(item.creator)}</span>
+                <Link to={`${CVC_SCAN}/address/${item.creator}`} target="_blank">
+                  <Icon icon="uil:edit" />
+                </Link>
+              </div>
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Amount: </div>
@@ -83,7 +95,7 @@ export default function Form({ item, onClose }) {
             <div className={styles.info}>
               <div className={styles.label}>Oracle price: </div>
               <div className={styles.value}>
-                {calculateRealPrice(item.offer * 1.2)} {currency}
+                {calculateRealPrice(item.offer * 1.2, rate, 1e7)} {currency}
               </div>
             </div>
           </div>
