@@ -3,4 +3,6 @@ export enum OfferStatus {
   FILLED = 1,
   CANCELLED = 2,
   EXPIRED = 3,
+  REPAID = 4,
+  LIQUIDATED = 5,
 }

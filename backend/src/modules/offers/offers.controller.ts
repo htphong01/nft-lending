@@ -22,7 +22,7 @@ export class OrdersController {
   }
 
   @Get()
-  findAll(@Query() conditions: Record<string, any>) {
+  findAll(@Query() conditions: Record<string, string>) {
     return this.offersService.findAll(conditions);
   }
 

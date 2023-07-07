@@ -35,6 +35,7 @@ export default function Stake({ currency }) {
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0"
             max={account.balance}
+            required
           />
           <span>{currency}</span>
         </div>

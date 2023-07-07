@@ -19,7 +19,7 @@ export default function Offers() {
     console.log('accept', offer)
   }
 
-  const fetchNFTs = async () => {
+  const fetchOffers = async () => {
     try {
       const { data } = await getOffers({ borrower: account.address, status: OfferStatus.OPENING });
       setOfferList(data);
@@ -31,7 +31,7 @@ export default function Offers() {
   };
 
   useEffect(() => {
-    fetchNFTs();
+    fetchOffers();
   }, [account.address]);
 
   return (

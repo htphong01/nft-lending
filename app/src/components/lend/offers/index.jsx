@@ -19,7 +19,7 @@ export default function Offers() {
     
   }
 
-  const fetchNFTs = async () => {
+  const fetchOffers = async () => {
     try {
       const { data } = await getOffers({ creator: account.address, status: OfferStatus.OPENING });
       setOfferList(data);
@@ -31,12 +31,12 @@ export default function Offers() {
   };
 
   useEffect(() => {
-    fetchNFTs();
+    fetchOffers();
   }, [account.address]);
 
   return (
     <div className={styles.container}>
-      {selectedOffer && <OfferView item={selectedOffer} onClose={setSelectedOffer} action={{  text: 'Accept', handle: handleCancelOffer }} />}
+      {selectedOffer && <OfferView item={selectedOffer} onClose={setSelectedOffer} action={{  text: 'Cancel', handle: handleCancelOffer }} />}
       {isLoading ? (
         <div className="react-loading-item">
           <ReactLoading type="bars" color="#fff" height={100} width={120} />

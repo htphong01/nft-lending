@@ -11,8 +11,7 @@ export default function Menu() {
       const item = menu.items.find((item) => item.link === pathname);
       return !!item;
     }
-
-    return menu.link === pathname;
+    return pathname.startsWith(menu.link);
   };
 
   return (
@@ -39,7 +38,7 @@ export default function Menu() {
             </li>
           ) : (
             <li className={styles['menu-item']} key={index}>
-              <Link to={menu.link} className={styles['menu-item-link']}>
+              <Link to={menu.link} className={`${styles['menu-item-link']} ${isActiveLink(menu) ? styles.active : ''}`}>
                 {menu.title}
               </Link>
             </li>

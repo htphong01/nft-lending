@@ -1,6 +1,6 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { OrderRedisService } from "src/connections/redis/order.redis.provider";
-const sha256 = require('simple-sha256')
+import { Injectable, Logger } from '@nestjs/common';
+import { OrderRedisService } from 'src/connections/redis/order.redis.provider';
+const sha256 = require('simple-sha256');
 
 const DATABASE_NAME = 'Orders';
 
@@ -8,16 +8,14 @@ const DATABASE_NAME = 'Orders';
 export class Order {
   public logger: Logger = new Logger(Order.name);
 
-  constructor(
-    private readonly redisService: OrderRedisService
-  ) { }
+  constructor(private readonly redisService: OrderRedisService) {}
 
   async getAll(): Promise<any[]> {
     const queryData = await this.redisService.hgetall(DATABASE_NAME);
     if (!queryData) return [];
 
     const dataInJSON = Object.values(queryData);
-    return dataInJSON.map(item => JSON.parse(item));
+    return dataInJSON.map((item) => JSON.parse(item));
   }
 
   async getByKey(key: string): Promise<any> {
@@ -31,9 +29,9 @@ export class Order {
     const orders = await this.getAll();
     if (!filters || Object.keys(filters).length === 0) return orders;
 
-    return orders.filter(item => {
+    return orders.filter((item) => {
       for (let key in filters) {
-        if (item[key] === undefined || item[key] != filters[key])
+        if (item[key] === undefined || !filters[key].includes(item[key]))
           return false;
       }
       return true;

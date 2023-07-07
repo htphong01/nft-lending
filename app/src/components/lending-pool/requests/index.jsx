@@ -1,25 +1,42 @@
 import { useState, useEffect } from 'react';
 import ReactLoading from 'react-loading';
 import { getOrders } from '@src/api/order.api';
+import { OrderStatus } from '@src/constants/enum';
 import Table from '@src/components/common/table';
 import Form from './form';
 import styles from './styles.module.scss';
 
 export default function LoanRequests() {
   const [isLoading, setIsLoading] = useState(true);
-  const [orderList, setOrderList] = useState([]);
+  const [orderList, setOrderList] = useState({
+    current: [],
+    previous: [],
+  });
   const [selectedLoan, setSelectedLoan] = useState(null);
 
-  useEffect(() => {
-    getOrders({ lender: 'pool' })
-      .then(({ data }) => {
-        setOrderList(data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.error(error);
-        setIsLoading(false);
+  const fetchOrders = async () => {
+    try {
+      const [orderList1, orderList2] = await Promise.all([
+        getOrders({ lender: 'pool', status: OrderStatus.OPENING }),
+        getOrders({
+          lender: 'pool',
+          status: `${OrderStatus.CANCELLED},${OrderStatus.REPAID},${OrderStatus.LIQUIDATED}`,
+        }),
+      ]);
+
+      setOrderList({
+        current: orderList1.data,
+        previous: orderList2.data,
       });
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
   }, []);
 
   return (
@@ -33,10 +50,10 @@ export default function LoanRequests() {
         <>
           <Table
             title="Current Loan Requests"
-            data={orderList}
+            data={orderList.current}
             action={{ text: 'View', handle: setSelectedLoan }}
           />
-          <Table title="Previous Loan Requests" />
+          <Table data={orderList.previous} title="Previous Loan Requests" />
         </>
       )}
     </div>
