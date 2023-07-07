@@ -23,7 +23,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
     duration: 0,
     repayment: 0,
     apr: 0,
-    borrowFrom: 'user',
+    lender: 'user',
   });
 
   const handleChange = (e) => {
@@ -52,16 +52,19 @@ export default function ListCollateralForm({ item, onClose, type }) {
           creator: account.address,
           nftAddress: NFT_CONTRACT_ADDRESS,
           nftTokenId: item.edition,
-          offer: ethers.utils.parseUnits(data.offer, 18).toString(),
+          offer: data.offer,
           duration: data.duration,
-          rate: (data.apr * 1e4) / 100,
-          doesBorrowUser: data.borrowFrom === 'user',
+          rate: data.apr,
+          lender: data.lender,
         };
         const signature = await generateSignature(order);
         order.signature = signature;
         order.metadata = item;
-        await createOrder(order);
-        toast.success('List collateral successfully!');
+        toast.promise(createOrder(order), {
+          loading: 'Listing...',
+          success: <b style={{ color: '#000' }}>List collateral successfully!</b>,
+          error: <b style={{ color: '#000' }}>An error has been occurred!</b>,
+        });
         setTimeout(() => {
           onClose();
         }, 1000);
@@ -82,7 +85,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
         duration: item.duration,
         repayment: calculateRepayment(ethers.utils.formatUnits(item.offer), (item.rate * 100) / 1e4, item.duration),
         apr: (item.rate * 100) / 1e4,
-        borrowFrom: item.doesBorrowUser ? 'user' : 'pool',
+        lender: data.lender,
       });
     }
   }, []);
@@ -93,7 +96,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
       <form className={styles.form} onSubmit={handleSubmit} ref={ref}>
         <div className={styles.title}>
           <span>{type === COLLATERAL_FORM_TYPE.VIEW ? 'View' : 'List'} Collateral</span>
-          {type === COLLATERAL_FORM_TYPE.VIEW && item.doesBorrowUser && (
+          {type === COLLATERAL_FORM_TYPE.VIEW && item.lender === 'user' && (
             <Link to={`/assets/${item.hash}`}>
               <Icon icon="uil:edit" />
             </Link>
@@ -171,7 +174,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
         </div>
         <div className={styles.section}>
           <div className={styles.head}>
-            Lender: <span>{data.borrowFrom === 'user' ? 'User' : 'Lending Pool'}</span>
+            Lender: <span>{data.lender === 'user' ? 'User' : 'Lending Pool'}</span>
           </div>
           <div className={styles.details}>
             <div className={styles.label}>Where do you want to borrow from ?</div>
@@ -180,10 +183,10 @@ export default function ListCollateralForm({ item, onClose, type }) {
                 <input
                   type="radio"
                   value="user"
-                  name="borrowFrom"
+                  name="lender"
                   onChange={handleChange}
-                  checked={data.borrowFrom === 'user'}
-                  disabled={data.borrowFrom !== 'user' && type === COLLATERAL_FORM_TYPE.VIEW}
+                  checked={data.lender === 'user'}
+                  disabled={data.lender !== 'user' && type === COLLATERAL_FORM_TYPE.VIEW}
                 />
                 <span>User</span>
               </label>
@@ -191,26 +194,22 @@ export default function ListCollateralForm({ item, onClose, type }) {
                 <input
                   type="radio"
                   value="pool"
-                  name="borrowFrom"
+                  name="lender"
                   onChange={handleChange}
-                  checked={data.borrowFrom === 'pool'}
-                  disabled={data.borrowFrom !== 'pool' && type === COLLATERAL_FORM_TYPE.VIEW}
+                  checked={data.lender === 'pool'}
+                  disabled={data.lender !== 'pool' && type === COLLATERAL_FORM_TYPE.VIEW}
                 />
                 <span>Lending Pool</span>
               </label>
             </div>
           </div>
         </div>
-        {type === COLLATERAL_FORM_TYPE.VIEW && !item.doesBorrowUser && (
+        {type === COLLATERAL_FORM_TYPE.VIEW && item.lender === 'pool' && (
           <div className={styles.section}>
             <div className={styles.head}>
-              Voting Result: {' '}
-              <span>
-                (87 Accepted & 34 Rejected)
-              </span>
+              Voting Result: <span>(87 Accepted & 34 Rejected)</span>
             </div>
-            <div className={styles.details}>
-            </div>
+            <div className={styles.details}></div>
           </div>
         )}
         <div className={styles['button-wrap']}>

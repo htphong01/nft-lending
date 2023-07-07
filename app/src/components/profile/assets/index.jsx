@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
 import ReactLoading from 'react-loading';
 import { useSelector } from 'react-redux';
@@ -27,7 +28,8 @@ export default function Assets() {
 
   useEffect(() => {
     fetchNFTs();
-  }, []);
+  }, [account.address]);
+  
   return (
     <div className={styles.container}>
       {selectedNFT && (

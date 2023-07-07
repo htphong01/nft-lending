@@ -16,7 +16,7 @@ export default function Assets() {
     if (hash) {
       getOrderByHash(hash)
         .then(({ data }) => {
-          if (!data || !data?.doesBorrowUser) nagivate('/lend/assets');
+          if (!data || data.lender === 'pool') nagivate('/lend/assets');
           setOrder(data);
           setIsLoading(false);
         })

@@ -1,96 +1,129 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import { useRef } from 'react';
-import { ethers } from 'ethers';
+import { useRef, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
+import ReactLoading from 'react-loading';
 import { Icon } from '@iconify/react';
 import { calculateRepayment } from '@src/utils/apr';
-import styles from '../styles.module.scss';
+import { sliceAddress } from '@src/utils/misc';
+import { getOrderByHash } from '@src/api/order.api';
+import styles from './styles.module.scss';
 
-const VOTE_RESULT = {
-  accepted: 87,
-  rejected: 34,
-};
+const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
-export default function Form({ item, onClose }) {
+export default function OfferView({ item, onClose, action }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
   const currency = useSelector((state) => state.account.currency);
 
-  const sliceAddress = (address) => {
-    return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
-  };
+  const [data, setData] = useState(item);
+  const [isLoading, setIsLoading] = useState(true);
 
   const calculateRealPrice = (price) => {
-    const priceBN = ethers.BigNumber.from(`${price}`);
-    const newPrice = priceBN.add(priceBN.mul(rate).div(1e7));
-    return ethers.utils.formatUnits(newPrice);
-  }
-
-  const calculatePercentVote = (accepted, rejected) => {
-    const total = accepted + rejected;
-    return {
-      accepted: ((accepted * 100) / total).toFixed(2),
-      rejected: ((rejected * 100) / total).toFixed(2),
-    };
+    return price + (price * rate) / 1e7;
   };
 
   useOnClickOutside(ref, () => onClose());
+
+  const fetchOrder = async () => {
+    try {
+      const { data: order } = await getOrderByHash(item.order);
+      setData({ ...data, order });
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.log('error', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrder();
+  }, []);
 
   return (
     <div className={styles['form-container']}>
       <div className={styles.form} ref={ref}>
         <Icon icon="material-symbols:close" className={styles['close-btn']} onClick={() => onClose()} />
-        <div className={styles.row}>
-          <div className={styles.section}>
-            <img src={item.metadata.image} alt="NFT Image" />
+        {isLoading ? (
+          <div className="react-loading-item mb-60 mt-60">
+            <ReactLoading type="bars" color="#fff" height={100} width={120} />
           </div>
-          <div className={styles.section}>
-            <div className={styles.info}>
-              <div className={styles.label}>Name: </div>
-              <div className={styles.value}>{item.metadata.name}</div>
-            </div>
-            <div className={styles.info}>
-              <div className={styles.label}>Collection: </div>
-              <div className={styles.value}>{sliceAddress(item.nftAddress)}</div>
-            </div>
-            <div className={styles.info}>
-              <div className={styles.label}>Borrower: </div>
-              <div className={styles.value}>{sliceAddress(item.creator)}</div>
-            </div>
-            <div className={styles.info}>
-              <div className={styles.label}>Amount: </div>
-              <div className={styles.value}>{ethers.utils.formatUnits(item.offer, 18)} {currency}</div>
-            </div>
-            <div className={styles.info}>
-              <div className={styles.label}>Duration: </div>
-              <div className={styles.value}>{item.duration} days</div>
-            </div>
-            <div className={styles.info}>
-              <div className={styles.label}>Repayment: </div>
-              <div className={styles.value}>
-                {calculateRepayment(ethers.utils.formatUnits(item.offer), (item.rate * 100) / 1e4, item.duration)} {currency}
+        ) : (
+          <>
+            <div className={styles.row}>
+              <div className={styles.section}>
+                <img src={data.order.metadata.image} alt="NFT Image" />
+              </div>
+              <div className={styles.section}>
+                <div className={styles.info}>
+                  <div className={styles.label}>Name:</div>
+                  <div className={styles.value}>
+                    <span>{data.order.metadata.name}</span>
+                    <Link to={`/assets/${data.order.hash}`} target="_blank">
+                      <Icon icon="uil:edit" />
+                    </Link>
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Lender: </div>
+                  <div className={styles.value}>
+                    <span>{sliceAddress(data.creator)}</span>
+                    <Link to={`${CVC_SCAN}/address/${data.creator}`} target="_blank">
+                      <Icon icon="uil:edit" />
+                    </Link>
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Borrower: </div>
+                  <div className={styles.value}>
+                    <span>{sliceAddress(data.order.creator)}</span>
+                    <Link to={`${CVC_SCAN}/address/${data.order.creator}`} target="_blank">
+                      <Icon icon="uil:edit" />
+                    </Link>
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Amount: </div>
+                  <div className={styles.value}>
+                    {data.offer} {currency}
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Duration: </div>
+                  <div className={styles.value}>{data.duration} days</div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Repayment: </div>
+                  <div className={styles.value}>
+                    {calculateRepayment(data.offer, data.rate, data.duration)} {currency}
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>APR: </div>
+                  <div className={styles.value}>{data.rate}%</div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Float price: </div>
+                  <div className={styles.value}>
+                    {data.floorPrice} {currency}
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Oracle price: </div>
+                  <div className={styles.value}>
+                    {calculateRealPrice(data.offer * 1.2)} {currency}
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <button onClick={() => onClose()}>Close</button>
+                  <button onClick={() => action.handle(data)}>{action.text}</button>
+                </div>
               </div>
             </div>
-            <div className={styles.info}>
-              <div className={styles.label}>APR: </div>
-              <div className={styles.value}>{(item.rate * 100) / 1e4}%</div>
-            </div>
-            <div className={styles.info}>
-              <div className={styles.label}>Float price: </div>
-              <div className={styles.value}>
-                {Number(ethers.utils.formatUnits(`${item.floorPrice}`)).toFixed(2)} {currency}
-              </div>
-            </div>
-            <div className={styles.info}>
-              <div className={styles.label}>Oracle price: </div>
-              <div className={styles.value}>{calculateRealPrice(item.offer * 1.2)} {currency}</div>
-            </div>
-          </div>
-        </div>
-        <div className={styles.row}>
-          <div className={styles.section}>
+            <div className={styles.row}>
+              {/* <div className={styles.section}>
             <div
               className={`${styles.chart} ${styles['chart-accept']}`}
               style={{
@@ -111,8 +144,10 @@ export default function Form({ item, onClose }) {
           <div className={`${styles.section} ${styles['section-btn']} `}>
             <button className={styles['accept-btn']}>Accept</button>
             <button className={styles['reject-btn']}>Reject</button>
-          </div>
-        </div>
+          </div> */}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

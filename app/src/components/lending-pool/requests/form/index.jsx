@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
 import { calculateRepayment } from '@src/utils/apr';
+import { sliceAddress } from '@src/utils/misc';
 import styles from '../styles.module.scss';
 
 const VOTE_RESULT = {
@@ -18,15 +19,9 @@ export default function Form({ item, onClose }) {
   const rate = useSelector((state) => state.rate.rate);
   const currency = useSelector((state) => state.account.currency);
 
-  const sliceAddress = (address) => {
-    return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
-  };
-
   const calculateRealPrice = (price) => {
-    const priceBN = ethers.BigNumber.from(`${price}`);
-    const newPrice = priceBN.add(priceBN.mul(rate).div(1e7));
-    return ethers.utils.formatUnits(newPrice);
-  }
+    return price + price * rate / 1e7;
+  };
 
   const calculatePercentVote = (accepted, rejected) => {
     const total = accepted + rejected;
@@ -61,7 +56,9 @@ export default function Form({ item, onClose }) {
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Amount: </div>
-              <div className={styles.value}>{ethers.utils.formatUnits(item.offer, 18)} {currency}</div>
+              <div className={styles.value}>
+                {item.offer} {currency}
+              </div>
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Duration: </div>
@@ -70,22 +67,24 @@ export default function Form({ item, onClose }) {
             <div className={styles.info}>
               <div className={styles.label}>Repayment: </div>
               <div className={styles.value}>
-                {calculateRepayment(ethers.utils.formatUnits(item.offer), (item.rate * 100) / 1e4, item.duration)} {currency}
+                {calculateRepayment(item.offer, item.rate, item.duration)} {currency}
               </div>
             </div>
             <div className={styles.info}>
               <div className={styles.label}>APR: </div>
-              <div className={styles.value}>{(item.rate * 100) / 1e4}%</div>
+              <div className={styles.value}>{item.rate}%</div>
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Float price: </div>
               <div className={styles.value}>
-                {Number(ethers.utils.formatUnits(`${item.floorPrice}`)).toFixed(2)} {currency}
+                {item.floorPrice} {currency}
               </div>
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Oracle price: </div>
-              <div className={styles.value}>{calculateRealPrice(item.offer * 1.2)} {currency}</div>
+              <div className={styles.value}>
+                {calculateRealPrice(item.offer * 1.2)} {currency}
+              </div>
             </div>
           </div>
         </div>

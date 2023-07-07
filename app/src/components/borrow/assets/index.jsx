@@ -26,7 +26,8 @@ export default function Assets() {
 
   useEffect(() => {
     fetchNFTs();
-  }, []);
+  }, [account.address]);
+
   return (
     <div className={styles.container}>
       {selectedNFT && (

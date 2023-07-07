@@ -26,6 +26,14 @@ body {
   margin-bottom: 400px;
 }
 
+.mb-60 {
+  margin-bottom: 60px;
+}
+
+.mt-60 {
+  margin-top: 60px;
+}
+
 @media screen and (max-width: 767px) {
   .container {
     padding: 0 24px;
