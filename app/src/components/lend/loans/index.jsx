@@ -34,7 +34,7 @@ export default function Loans() {
         getOffers({ creator: account.address, status: OfferStatus.FILLED }),
         getOffers({
           creator: account.address,
-          status: `${OfferStatus.EXPIRED},${OfferStatus.REPAID},${OfferStatus.LIQUIDATED}`,
+          status: `${OfferStatus.REPAID},${OfferStatus.LIQUIDATED}`,
         }),
       ]);
       setOfferList({
