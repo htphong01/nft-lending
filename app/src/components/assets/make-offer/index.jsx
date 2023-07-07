@@ -79,7 +79,7 @@ export default function MakeOffer({ item }) {
             <div className={styles.label}>Borrower: </div>
             <div className={styles.value}>
               <span>{sliceAddress(item.creator)}</span>
-              <Link to={`${CVC_SCAN}/address/${item.nftAddress}`} target="_blank">
+              <Link to={`${CVC_SCAN}/address/${item.creator}`} target="_blank">
                 <Icon icon="uil:edit" />
               </Link>
             </div>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getOrderByHash } from '@src/api/order.api';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactLoading from 'react-loading';
-import Header from './layout';
+import HeaderBanner from '@src/components/layouts/header-banner';
 import MakeOffer from './make-offer';
 
 export default function Assets() {
@@ -36,7 +36,7 @@ export default function Assets() {
 
   return (
     <>
-      <Header item={order} />
+      <HeaderBanner title={order.metadata.collection} description={order.metadata.name} right={false} />
       <MakeOffer item={order} />
     </>
   );

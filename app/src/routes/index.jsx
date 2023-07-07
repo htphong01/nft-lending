@@ -1,21 +1,19 @@
 import HomePage from '@src/pages';
 import UserLayout from '@src/components/layouts';
-import ProfileLayout from '@src/components/profile/layout';
 import HistoryPage from '@src/pages/profile/history';
 import AssetsPage from '@src/pages/profile/assets';
 import CollateralsPage from '@src/pages/profile/collaterals';
-import BorrowLayout from '@src/components/borrow/layout';
+import HeaderBanner from '@src/components/layouts/header-banner';
 import BorrowAssetsPage from '@src/pages/borrow/assets';
 import BorrowLoansPage from '@src/pages/borrow/loans';
 import BorrowOffersPage from '@src/pages/borrow/offers';
-import LendLayout from '@src/components/lend/layout';
 import LendAssetsPage from '@src/pages/lend/assets';
 import LendLoansPage from '@src/pages/lend/loans';
 import LendOffersPage from '@src/pages/lend/offers';
 import MakeOfferPage from '@src/pages/assets/make-offer';
-import LendingPoolLayout from '@src/components/lending-pool/layout';
 import LendingPoolPage from '@src/pages/lending-pool';
 import LendingPoolRequestsPage from '@src/pages/lending-pool/requests';
+import { BORROW_TABS, LEND_TABS, LENDING_POOL_TABS, PROFILE_TABS } from '@src/constants';
 
 export const userRoutes = [
   {
@@ -28,7 +26,7 @@ export const userRoutes = [
       },
       {
         path: '/profile',
-        element: <ProfileLayout />,
+        element: <HeaderBanner tabs={PROFILE_TABS} />,
         children: [
           {
             path: '/profile/history',
@@ -46,7 +44,13 @@ export const userRoutes = [
       },
       {
         path: '/borrow',
-        element: <BorrowLayout />,
+        element: (
+          <HeaderBanner
+            title="Get a loan"
+            description="Put your NFT assets up as collateral for a loan."
+            tabs={BORROW_TABS}
+          />
+        ),
         children: [
           {
             path: '/borrow/assets',
@@ -64,7 +68,13 @@ export const userRoutes = [
       },
       {
         path: '/lend',
-        element: <LendLayout />,
+        element: (
+          <HeaderBanner
+            title="Give a loan"
+            description="Offer loans to other users on their non-fungible tokens."
+            tabs={LEND_TABS}
+          />
+        ),
         children: [
           {
             path: '/lend/assets',
@@ -82,7 +92,14 @@ export const userRoutes = [
       },
       {
         path: '/lending-pool',
-        element: <LendingPoolLayout />,
+        element: (
+          <HeaderBanner
+            title="Lending Pool"
+            description="Stake your wXCR and receive rewards."
+            right={false}
+            tabs={LENDING_POOL_TABS}
+          />
+        ),
         children: [
           {
             path: '/lending-pool',
