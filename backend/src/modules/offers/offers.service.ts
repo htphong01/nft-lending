@@ -60,7 +60,7 @@ export class OffersService {
   }
 
   async findByOrder(order: string) {
-    return await this.offer.getAll(order);
+    return await this.offer.find({ order });
   }
 
   update(id: number, updateOrderDto: UpdateOrderDto) {

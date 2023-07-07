@@ -10,10 +10,8 @@ export class Offer {
 
   constructor(private readonly redisService: OrderRedisService) {}
 
-  async getAll(order: string = ''): Promise<any[]> {
-    const queryData = await this.redisService.hgetall(
-      order ? `${DATABASE_NAME}:${order}` : DATABASE_NAME,
-    );
+  async getAll(): Promise<any[]> {
+    const queryData = await this.redisService.hgetall(DATABASE_NAME);
     if (!queryData) return [];
 
     const dataInJSON = Object.values(queryData);
@@ -28,19 +26,13 @@ export class Offer {
   }
 
   async find(filters: any): Promise<any[]> {
-    const keys = await this.redisService.keys(`${DATABASE_NAME}:*`);
-    const queries = keys.map((key) => this.redisService.hgetall(key));
-    const data = await Promise.all(queries);
-    let offers = [];
-    data.map((item) => {
-      offers.push(...Object.values(item));
-    });
-    offers = offers.map((item) => JSON.parse(item));
+    const offers = await this.getAll();
     if (!filters || Object.keys(filters).length === 0) return offers;
 
     return offers.filter((item) => {
-      for (const key in filters) {
-        if (item[key] === undefined || item[key] != filters[key]) return false;
+      for (let key in filters) {
+        if (item[key] === undefined || !filters[key].includes(item[key]))
+          return false;
       }
       return true;
     });
@@ -53,7 +45,7 @@ export class Offer {
   ): Promise<boolean> {
     try {
       await this.redisService.hset(
-        `${DATABASE_NAME}:${orderHash}`,
+        DATABASE_NAME,
         offerHash,
         JSON.stringify(data),
       );

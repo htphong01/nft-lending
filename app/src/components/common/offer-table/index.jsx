@@ -1,15 +1,11 @@
 /* eslint-disable react/prop-types */
 import { useSelector } from 'react-redux';
 import { calculateRepayment } from '@src/utils/apr';
-import { sliceAddress } from '@src/utils/misc';
+import { sliceAddress, getOfferStatusText } from '@src/utils/misc';
 import styles from './styles.module.scss';
 
 export default function Table({ title, data, action }) {
   const account = useSelector((state) => state.account);
-
-  const handleAccept = (hash) => {
-    console.log('hash', hash);
-  };
 
   return (
     <div className={styles.table}>
@@ -22,7 +18,7 @@ export default function Table({ title, data, action }) {
         <div className={styles['table-list-item']}>Repayment</div>
         <div className={styles['table-list-item']}>Duration</div>
         <div className={styles['table-list-item']}>APR</div>
-        <div className={styles['table-list-item']}>Float price</div>
+        <div className={styles['table-list-item']}>Status</div>
         <div className={styles['table-list-item']}>Created At</div>
         <div className={styles['table-list-item']}>Expiration</div>
         <div className={styles['table-list-item']}>Action</div>
@@ -42,7 +38,7 @@ export default function Table({ title, data, action }) {
             <div className={styles['table-list-item']}>{item.duration} days</div>
             <div className={styles['table-list-item']}>{item.rate} %</div>
             <div className={styles['table-list-item']}>
-              {item.floorPrice} {account.currency}
+              {getOfferStatusText(item.status)}
             </div>
 
             <div className={styles['table-list-item']}>{new Date(item.createdAt).toLocaleDateString()}</div>
