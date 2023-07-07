@@ -7,7 +7,7 @@ import { useOnClickOutside } from 'usehooks-ts';
 import ReactLoading from 'react-loading';
 import { Icon } from '@iconify/react';
 import { calculateRepayment } from '@src/utils/apr';
-import { sliceAddress } from '@src/utils/misc';
+import { sliceAddress, calculateRealPrice } from '@src/utils/misc';
 import { getOrderByHash } from '@src/api/order.api';
 import styles from './styles.module.scss';
 
@@ -20,10 +20,6 @@ export default function OfferView({ item, onClose, action }) {
 
   const [data, setData] = useState(item);
   const [isLoading, setIsLoading] = useState(true);
-
-  const calculateRealPrice = (price) => {
-    return price + (price * rate) / 1e7;
-  };
 
   useOnClickOutside(ref, () => onClose());
 
@@ -113,7 +109,7 @@ export default function OfferView({ item, onClose, action }) {
                 <div className={styles.info}>
                   <div className={styles.label}>Oracle price: </div>
                   <div className={styles.value}>
-                    {calculateRealPrice(data.offer * 1.2)} {currency}
+                    {calculateRealPrice(data.offer * 1.2, rate, 1e7)} {currency}
                   </div>
                 </div>
                 <div className={styles.info}>

@@ -9,14 +9,17 @@ import toast, { Toaster } from 'react-hot-toast';
 import { createOrder } from '@src/api/order.api';
 import { generateSignature } from '@src/utils/ethers';
 import { calculateAPR, calculateRepayment } from '@src/utils/apr';
+import { calculateRealPrice, getRandomNumber } from '@src/utils/misc';
 import { COLLATERAL_FORM_TYPE, NFT_CONTRACT_ADDRESS } from '@src/constants';
 import styles from './styles.module.scss';
 
 export default function ListCollateralForm({ item, onClose, type }) {
   const account = useSelector((state) => state.account);
+  const rate = useSelector((state) => state.rate.rate);
 
   const ref = useRef(null);
 
+  const [randomPrice, _] = useState(getRandomNumber(10, 30));
   const [data, setData] = useState({
     currency: account.currency,
     offer: 0,
@@ -47,7 +50,10 @@ export default function ListCollateralForm({ item, onClose, type }) {
       if (type === COLLATERAL_FORM_TYPE.VIEW) {
         console.log('item', item);
       } else {
-        if (Object.values(data).includes(0)) return;
+        if (Object.values(data).includes(0)) {
+          toast.error('Please fill required information!');
+          return;
+        }
         const order = {
           creator: account.address,
           nftAddress: NFT_CONTRACT_ADDRESS,
@@ -81,11 +87,11 @@ export default function ListCollateralForm({ item, onClose, type }) {
     if (type === COLLATERAL_FORM_TYPE.VIEW) {
       setData({
         currency: account.currency,
-        offer: ethers.utils.formatUnits(item.offer, 18),
+        offer: item.offer,
         duration: item.duration,
-        repayment: calculateRepayment(ethers.utils.formatUnits(item.offer), (item.rate * 100) / 1e4, item.duration),
-        apr: (item.rate * 100) / 1e4,
-        lender: data.lender,
+        repayment: calculateRepayment(item.offer, item.rate, item.duration),
+        apr: item.rate,
+        lender: item.lender,
       });
     }
   }, []);
@@ -101,6 +107,9 @@ export default function ListCollateralForm({ item, onClose, type }) {
               <Icon icon="uil:edit" />
             </Link>
           )}
+        </div>
+        <div className={styles.title}>
+          Real price: {calculateRealPrice(randomPrice * 1.2, rate, 1e7)} {data.currency}
         </div>
         <div className={styles['sub-title']}>Proposed loan agreement</div>
         <div className={styles.section}>
@@ -206,10 +215,10 @@ export default function ListCollateralForm({ item, onClose, type }) {
         </div>
         {type === COLLATERAL_FORM_TYPE.VIEW && item.lender === 'pool' && (
           <div className={styles.section}>
-            <div className={styles.head}>
-              Voting Result: <span>(87 Accepted & 34 Rejected)</span>
+            <div className={styles.head}>Status:</div>
+            <div className={styles.details}>
+              <span>87 Accepted - 34 Rejected</span>
             </div>
-            <div className={styles.details}></div>
           </div>
         )}
         <div className={styles['button-wrap']}>

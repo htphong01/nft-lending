@@ -7,7 +7,7 @@ import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 import { getOffersByOrder } from '@src/api/offer.api';
 import { calculateRepayment } from '@src/utils/apr';
-import { sliceAddress } from '@src/utils/misc';
+import { sliceAddress, calculateRealPrice } from '@src/utils/misc';
 import Table from './table';
 import Form from './form';
 import styles from './styles.module.scss';
@@ -21,10 +21,6 @@ export default function MakeOffer({ item }) {
 
   const [offerList, setOfferList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const calculateRealPrice = (price) => {
-    return price + (price * rate) / 1e7;
-  };
 
   const fetchOffers = async () => {
     try {
@@ -44,12 +40,12 @@ export default function MakeOffer({ item }) {
   return (
     <div className={styles.container}>
       <div className={styles['make-offer']}>
-        <div className={styles.section}>
+        <div className={`${styles.section} ${styles['section-image']}`}>
           <div>
             <div className={styles['real-price']}>
               Real price:{' '}
               <b>
-                {calculateRealPrice(item.offer * 1.2)} {currency}
+                {calculateRealPrice(item.offer * 1.2, rate, 1e7)} {currency}
               </b>
             </div>
             <div className={styles['real-price-source']}>Fetch price from Oracle</div>
@@ -65,6 +61,10 @@ export default function MakeOffer({ item }) {
           <div className={styles.info}>
             <div className={styles.label}>Collection: </div>
             <div className={styles.value}>{item.metadata.collection}</div>
+          </div>
+          <div className={styles.info}>
+            <div className={styles.label}>Token ID: </div>
+            <div className={styles.value}>{item.nftTokenId}</div>
           </div>
           <div className={styles.info}>
             <div className={styles.label}>Address: </div>

@@ -1,5 +1,4 @@
 import Table from '@src/components/common/table';
-import { CURRENT_LOANS, PREVIOUS_LOANS } from '@src/constants/example-data';
 import styles from './styles.module.scss';
 
 export default function History() {

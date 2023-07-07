@@ -66,6 +66,19 @@
               font-weight: bold;
               width: 40%;
             }
+
+            .value {
+              display: flex;
+              align-items: center;
+    
+              > span {
+                margin-right: 12px;
+              }
+    
+              > a {
+                height: 14px;
+              }
+            }
           }
 
           &.section-btn {
