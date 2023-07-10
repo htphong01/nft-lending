@@ -7,11 +7,10 @@ import {
 } from "@nestjs/common";
 import { Contract, JsonRpcProvider } from "ethers";
 import { Nft } from "./reposities/nft.reposity";
-import config from '../../config';
-
+import { Crawl } from "./reposities/crawl.reposity";
+import config from 'src/config';
 import * as FACTORY_ABI from "./abi/ERC721.json";
-
-const DATABASE_NAME = 'collection';
+import { SyncNftDto } from "./dto/sync-nft.dto";
 
 @Injectable()
 export class NftsService implements OnModuleInit {
@@ -19,7 +18,7 @@ export class NftsService implements OnModuleInit {
   private rpcProvider: JsonRpcProvider;
   private nftContract: Contract;
 
-  constructor(private readonly nft: Nft) {}
+  constructor(private readonly nft: Nft, private readonly crawl: Crawl) { }
 
   onModuleInit() {
     this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
@@ -30,33 +29,13 @@ export class NftsService implements OnModuleInit {
     );
   }
 
-  // async getCollectionListByAddress(address: string) {
-  //   try {
-  //     // Initialize collection list with default collection
-  //     const dèfaultCollection: CollectionResponseDTO[] = [{
-  //       name: "SW3 Dapp Default Collection",
-  //       symbol: "SW3DAPP",
-  //       address: BLOCKCHAIN_CONFIG.COLLECTION_DEFAULT_ADDRESS,
-  //       is_default: true
-  //     }];
-
-  //     // Retrieve all collections of the user
-  //     const collectionKeys = await this.cacheService.keys(`${DATABASE_NAME}:${address.toLowerCase()}:*`);
-  //     const requests = collectionKeys.map(key => this.cacheService.get(key))
-  //     const data = await Promise.all(requests);
-  //     if (!data) return dèfaultCollection;
-
-  //     const collections: CollectionResponseDTO[] = data.map((item: CollectionResponseDTO) => {
-  //       return {
-  //         ...item,
-  //         is_default: false
-  //       }
-  //     });
-  //     return dèfaultCollection.concat(collections);
-  //   } catch (error) {
-  //     throw new HttpException(error.response.data, error.response.status);
-  //   }
-  // }
+  async getNfts(address: string) {
+    try {
+      return {}
+    } catch (error) {
+      throw new HttpException(error.response.data, error.response.status);
+    }
+  }
 
   async handleNftEvent() {
     try {
@@ -66,19 +45,17 @@ export class NftsService implements OnModuleInit {
         return;
       }
 
-      let crawlLatestBlock = await this.nft.getByKey('crawlLatestBlock');
+      let crawlLatestBlock = await this.crawl.getCrawlLatestBlock();
       if (!crawlLatestBlock || crawlLatestBlock === 0) {
-        crawlLatestBlock = onChainLatestBlock - 15;
-        await this.nft.create('crawlLatestBlock', crawlLatestBlock, {
-          ttl: -1,
-        });
+        crawlLatestBlock = onChainLatestBlock - 1;
+        await this.crawl.setCrawlLatestBlock(crawlLatestBlock);
       }
 
       let toBlock;
-      if (onChainLatestBlock - 15 <= crawlLatestBlock) {
+      if (onChainLatestBlock - 1 <= crawlLatestBlock) {
         toBlock = crawlLatestBlock;
       } else {
-        toBlock = onChainLatestBlock - 15;
+        toBlock = onChainLatestBlock - 1;
       }
 
       // Avoid error exceed maximum block range
@@ -88,29 +65,31 @@ export class NftsService implements OnModuleInit {
 
       // Fetch events data
       const events = await this.nftContract.queryFilter(
-        'NFTDeployed',
+        'Transfer',
         crawlLatestBlock,
         toBlock
       );
 
       // Update latest block
-      await this.nft.create('crawlLatestBlock', toBlock, {
-        ttl: -1,
-      });
+      await this.crawl.setCrawlLatestBlock(toBlock);
 
       // Retrieve all event informations
       if (!events || events.length === 0) return;
       for (let i = 0; i < events.length; i++) {
-        const event = events[i];
-
-        if (!event || event.blockNumber <= crawlLatestBlock) continue;
+        const event: any = events[i];
+        if (!event) continue;
         if (Object.keys(event).length === 0) continue;
 
-        // await this.setCollectionByAddress(String(event.args.deployer).toLowerCase(), {
-        //   name: event.args.name,
-        //   symbol: event.args.symbol,
-        //   address: event.args.nft
-        // });
+        const tokenId = Number(BigInt(event.args.tokenId).toString());
+        await this.syncNft({
+          owner: event.args.to,
+          tokenId: tokenId,
+          tokenURI: (await this.nftContract.tokenURI(tokenId)),
+          collectionName: (await this.nftContract.name()),
+          collectionSymbol: (await this.nftContract.symbol()),
+          collectionAddress: event.address.toLowerCase(),
+          isAvalable: false
+        });
       }
     } catch (error) {
       if (error.response?.data) {
@@ -121,13 +100,11 @@ export class NftsService implements OnModuleInit {
     }
   }
 
-  // async setCollectionByAddress(address: string, collection: Collection) {
-  //   try {
-  //     await this.cacheService.set(`${DATABASE_NAME}:${address}:${collection.address}`, collection, {
-  //       ttl: REDIS_CONFIG.UNEXPIRED_TIME,
-  //     });
-  //   } catch (error) {
-  //     throw new HttpException(error.response.data, error.response.status);
-  //   }
-  // }
+  async syncNft(nftInfo: SyncNftDto) {
+    try {
+      await this.nft.sync(nftInfo);
+    } catch (error) {
+      throw new HttpException(error.response.data, error.response.status);
+    }
+  }
 }

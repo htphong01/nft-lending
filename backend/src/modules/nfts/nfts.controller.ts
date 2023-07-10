@@ -7,8 +7,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { NftsService } from './nfts.service';
-import { CreateOfferDto } from './dto/create-offer.dto';
-import { UpdateOrderDto } from './dto/update-offer.dto';
 
 @Controller('nfts')
 export class NftsController {

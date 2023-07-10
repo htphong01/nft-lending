@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { NftsService } from "./nfts.service";
+
 @Injectable()
-export class TransactionSchedule {
+export class NftsSchedule {
 
   constructor(
     private nftsService: NftsService,

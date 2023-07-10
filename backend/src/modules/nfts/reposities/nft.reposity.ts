@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { OrderRedisService } from 'src/connections/redis/order.redis.provider';
+import { VoteRedisService } from 'src/connections/redis/vote.redis.provider';
+import { SyncNftDto } from '../dto/sync-nft.dto';
 const sha256 = require('simple-sha256');
 
 const DATABASE_NAME = 'Nfts';
@@ -8,7 +9,7 @@ const DATABASE_NAME = 'Nfts';
 export class Nft {
   public logger: Logger = new Logger(Nft.name);
 
-  constructor(private readonly redisService: OrderRedisService) {}
+  constructor(private readonly redisService: VoteRedisService) {}
 
   async getAll(): Promise<any[]> {
     const queryData = await this.redisService.hgetall(DATABASE_NAME);
@@ -38,27 +39,13 @@ export class Nft {
     });
   }
 
-  async create(
-    orderHash: string,
-    offerHash: string,
-    data: any,
-  ): Promise<boolean> {
+  async sync(data: SyncNftDto): Promise<boolean> {
     try {
       await this.redisService.hset(
-        DATABASE_NAME,
-        offerHash,
-        JSON.stringify(data),
+        `${DATABASE_NAME}:${data.collectionAddress}`,
+        data.tokenId.toString(),
+        JSON.stringify(data)
       );
-      return true;
-    } catch (error) {
-      this.logger.error(error);
-      return false;
-    }
-  }
-
-  async update(id: string, data: any): Promise<boolean> {
-    try {
-      await this.redisService.hset(DATABASE_NAME, id, JSON.stringify(data));
       return true;
     } catch (error) {
       this.logger.error(error);
