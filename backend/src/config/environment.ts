@@ -17,5 +17,6 @@ export const Environment = {
   REDIS_ORDER_DB: Number(process.env.REDIS_ORDER_DB || 1),
 
   // Web3 host
-  NETWORK_RPC_URL: process.env.NETWORK_RPC_URL || 'ws://localhost:8545'
+  NETWORK_RPC_URL: process.env.NETWORK_RPC_URL || 'https://rpc-kura.cross.technology/',
+  COLLECTION_ADDRESS: process.env.COLLECTION_ADDRESS || '0xF31a2E258BeC65A46fb54cd808294Ce215070150'
 };
