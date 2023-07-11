@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ethers } from 'ethers';
 import { NFT_CONTRACT_ADDRESS } from '@src/constants';
-import { ERC721_ABI } from '@src/abi/erc721';
+import { ERC721_ABI } from '@src/abi';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
 

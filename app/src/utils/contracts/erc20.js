@@ -1,4 +1,4 @@
-import { ERC20_ABI } from '@src/abi/erc20';
+import { ERC20_ABI } from '@src/abi';
 import { WXCR_ADDRESS } from '@src/constants';
 import { ethers } from 'ethers';
 
@@ -24,5 +24,5 @@ export const checkAllowance = async (spender, account, amount, contractAddress =
 export const approveERC20 = async (spender, amount = ethers.constants.MaxInt256, contractAddress = WXCR_ADDRESS) => {
   const signer = provider.getSigner();
   const contract = new ethers.Contract(contractAddress, ERC20_ABI, signer);
-  return contract.approve(spender, ethers.constants.MaxInt256);
+  return contract.approve(spender, amount);
 };

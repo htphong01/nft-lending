@@ -18,3 +18,7 @@ export const generateSignature = async (data) => {
   const signature = await signer.signMessage(orderHash);
   return signature;
 };
+
+export const getBlockNumber = async () => {
+  return provider.getBlockNumber();
+}

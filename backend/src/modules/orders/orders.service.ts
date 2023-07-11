@@ -25,6 +25,7 @@ export class OrdersService {
         duration: createOrderDto.duration,
         rate: createOrderDto.rate,
         lender: createOrderDto.lender,
+        blockNumber: createOrderDto.blockNumber,
       }),
     );
     const orderHash = await sha256(bytes);
