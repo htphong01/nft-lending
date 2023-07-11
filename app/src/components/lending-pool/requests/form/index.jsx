@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import { calculateRepayment } from '@src/utils/apr';
 import { generateSignature } from '@src/utils/ethers';
-import { submitVote, getVote } from '@src/api/vote.api';
+import { submitVote, getVote, getTotalStake } from '@src/api/vote.api';
 import { sliceAddress, calculateRealPrice } from '@src/utils/misc';
 import styles from '../styles.module.scss';
 
@@ -63,9 +63,11 @@ export default function Form({ item, onClose }) {
     getVote({ voter: account.address, orderHash: item.hash }).then(({ data }) => {
       if (data.length > 0) {
         setIsAccepted(data[0].isAccepted);
+      } else {
+        setIsAccepted();
       }
     });
-  }, []);
+  }, [account.address]);
 
   return (
     <div className={styles['form-container']}>
