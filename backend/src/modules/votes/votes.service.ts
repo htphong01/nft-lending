@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import sha256 from 'simple-sha256';
 import { verifySignature } from '../utils/signature';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { Vote } from './reposities/vote.reposity';
+const sha256 = require('simple-sha256');
 
 @Injectable()
 export class VotesService {
@@ -12,7 +12,7 @@ export class VotesService {
     const bytes = new TextEncoder().encode(
       JSON.stringify({
         voter: createVoteDto.voter,
-        oderHash: createVoteDto.orderHash,
+        orderHash: createVoteDto.orderHash,
         isAccepted: createVoteDto.isAccepted,
       }),
     );

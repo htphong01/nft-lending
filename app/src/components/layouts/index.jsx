@@ -4,7 +4,7 @@ import { setAccount } from '@src/redux/features/accountSlice';
 import { setRate } from '@src/redux/features/rateSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
-import { getBalance } from '@src/utils/erc20';
+import { getBalance } from '@src/utils/contracts/erc20';
 import Header from './header';
 import Footer from './footer';
 import ConnectMetamask from './connect-metamask';

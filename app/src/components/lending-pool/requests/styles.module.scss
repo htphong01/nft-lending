@@ -70,11 +70,11 @@
             .value {
               display: flex;
               align-items: center;
-    
+
               > span {
                 margin-right: 12px;
               }
-    
+
               > a {
                 height: 14px;
               }
@@ -94,8 +94,26 @@
               font-weight: bold;
               cursor: pointer;
 
+              display: flex;
+              align-items: center;
+              justify-content: center;
+
+              > span {
+                margin-right: 8px;
+              }
+
               &:hover {
                 opacity: 0.8;
+              }
+
+              &:disabled {
+                border: 1px solid #999999;
+                background-color: #cccccc;
+                color: #666666;
+
+                &:hover {
+                  opacity: 1;
+                }
               }
             }
 

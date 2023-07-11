@@ -1,11 +1,14 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
 import { calculateRepayment } from '@src/utils/apr';
+import { generateSignature } from '@src/utils/ethers';
+import { submitVote, getVote } from '@src/api/vote.api';
 import { sliceAddress, calculateRealPrice } from '@src/utils/misc';
 import styles from '../styles.module.scss';
 
@@ -19,7 +22,9 @@ const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 export default function Form({ item, onClose }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
-  const currency = useSelector((state) => state.account.currency);
+  const account = useSelector((state) => state.account);
+
+  const [isAccepted, setIsAccepted] = useState();
 
   const calculatePercentVote = (accepted, rejected) => {
     const total = accepted + rejected;
@@ -29,10 +34,43 @@ export default function Form({ item, onClose }) {
     };
   };
 
+  const handleSubmitVote = async (vote) => {
+    if (isAccepted !== undefined) return;
+    try {
+      const voteData = {
+        voter: account.address,
+        orderHash: item.hash,
+        isAccepted: vote,
+      };
+
+      const signature = await generateSignature(voteData);
+      voteData.signature = signature;
+
+      toast.promise(submitVote(voteData), {
+        loading: 'Listing...',
+        success: <b style={{ color: '#000' }}>Vote successfully!</b>,
+        error: <b style={{ color: '#000' }}>An error has been occurred!</b>,
+      });
+      setIsAccepted(vote);
+    } catch (error) {
+      toast.error('An error has been occurred!');
+    }
+  };
+
   useOnClickOutside(ref, () => onClose());
+
+  useEffect(() => {
+    getVote({ voter: account.address, orderHash: item.hash }).then(({ data }) => {
+      if (data.length > 0) {
+        setIsAccepted(data[0].isAccepted);
+      }
+    });
+  }, []);
 
   return (
     <div className={styles['form-container']}>
+      <Toaster position="top-center" reverseOrder={false} />
+
       <div className={styles.form} ref={ref}>
         <Icon icon="material-symbols:close" className={styles['close-btn']} onClick={() => onClose()} />
         <div className={styles.row}>
@@ -69,7 +107,7 @@ export default function Form({ item, onClose }) {
             <div className={styles.info}>
               <div className={styles.label}>Amount: </div>
               <div className={styles.value}>
-                {item.offer} {currency}
+                {item.offer} {account.currency}
               </div>
             </div>
             <div className={styles.info}>
@@ -79,7 +117,7 @@ export default function Form({ item, onClose }) {
             <div className={styles.info}>
               <div className={styles.label}>Repayment: </div>
               <div className={styles.value}>
-                {calculateRepayment(item.offer, item.rate, item.duration)} {currency}
+                {calculateRepayment(item.offer, item.rate, item.duration)} {account.currency}
               </div>
             </div>
             <div className={styles.info}>
@@ -89,13 +127,13 @@ export default function Form({ item, onClose }) {
             <div className={styles.info}>
               <div className={styles.label}>Float price: </div>
               <div className={styles.value}>
-                {item.floorPrice} {currency}
+                {item.floorPrice} {account.currency}
               </div>
             </div>
             <div className={styles.info}>
               <div className={styles.label}>Oracle price: </div>
               <div className={styles.value}>
-                {calculateRealPrice(item.offer * 1.2, rate, 1e7)} {currency}
+                {calculateRealPrice(item.offer * 1.2, rate, 1e7)} {account.currency}
               </div>
             </div>
           </div>
@@ -120,8 +158,26 @@ export default function Form({ item, onClose }) {
             </div>
           </div>
           <div className={`${styles.section} ${styles['section-btn']} `}>
-            <button className={styles['accept-btn']}>Accept</button>
-            <button className={styles['reject-btn']}>Reject</button>
+            <button
+              className={styles['accept-btn']}
+              disabled={isAccepted === false}
+              onClick={() => handleSubmitVote(true)}
+            >
+              <span>
+                {isAccepted === true ? 'You ' : ''} Accept{isAccepted === true ? 'ed' : ''}
+              </span>
+              {isAccepted === true && <Icon icon="material-symbols:check" />}
+            </button>
+            <button
+              className={styles['reject-btn']}
+              disabled={isAccepted === true}
+              onClick={() => handleSubmitVote(false)}
+            >
+              <span>
+                {isAccepted === false ? 'You ' : ''} Reject{isAccepted === false ? 'ed' : ''}
+              </span>
+              {isAccepted === false && <Icon icon="gridicons:cross" />}
+            </button>
           </div>
         </div>
       </div>
