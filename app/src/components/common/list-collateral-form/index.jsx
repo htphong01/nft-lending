@@ -72,7 +72,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
           error: <b style={{ color: '#000' }}>An error has been occurred!</b>,
         });
         setTimeout(() => {
-          onClose();
+          onClose(true);
         }, 1000);
       }
     } catch (error) {

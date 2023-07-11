@@ -3,35 +3,34 @@ import {
   HttpStatus,
   Inject,
   Injectable,
-  OnModuleInit
-} from "@nestjs/common";
-import { Contract, JsonRpcProvider } from "ethers";
-import { Nft } from "./reposities/nft.reposity";
-import { Crawl } from "./reposities/crawl.reposity";
+  OnModuleInit,
+} from '@nestjs/common';
+import { Contract, JsonRpcProvider } from 'ethers';
+import { Nft } from './reposities/nft.reposity';
+import { Crawl } from './reposities/crawl.reposity';
 import config from 'src/config';
-import * as FACTORY_ABI from "./abi/ERC721.json";
-import { SyncNftDto } from "./dto/sync-nft.dto";
+import * as FACTORY_ABI from './abi/ERC721.json';
+import { SyncNftDto } from './dto/sync-nft.dto';
 
 @Injectable()
 export class NftsService implements OnModuleInit {
-
   private rpcProvider: JsonRpcProvider;
   private nftContract: Contract;
 
-  constructor(private readonly nft: Nft, private readonly crawl: Crawl) { }
+  constructor(private readonly nft: Nft, private readonly crawl: Crawl) {}
 
   onModuleInit() {
     this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
     this.nftContract = new Contract(
       config.ENV.COLLECTION_ADDRESS,
       FACTORY_ABI,
-      this.rpcProvider
+      this.rpcProvider,
     );
   }
 
   async getNfts(address: string) {
     try {
-      return {}
+      return {};
     } catch (error) {
       throw new HttpException(error.response.data, error.response.status);
     }
@@ -60,14 +59,14 @@ export class NftsService implements OnModuleInit {
 
       // Avoid error exceed maximum block range
       if (toBlock - crawlLatestBlock > 5000) {
-        toBlock = crawlLatestBlock + 5000
+        toBlock = crawlLatestBlock + 5000;
       }
 
       // Fetch events data
       const events = await this.nftContract.queryFilter(
         'Transfer',
         crawlLatestBlock,
-        toBlock
+        toBlock,
       );
 
       // Update latest block
@@ -82,13 +81,13 @@ export class NftsService implements OnModuleInit {
 
         const tokenId = Number(BigInt(event.args.tokenId).toString());
         await this.syncNft({
-          owner: event.args.to,
+          owner: event.args.to.toLowerCase(),
           tokenId: tokenId,
-          tokenURI: (await this.nftContract.tokenURI(tokenId)),
-          collectionName: (await this.nftContract.name()),
-          collectionSymbol: (await this.nftContract.symbol()),
+          tokenURI: await this.nftContract.tokenURI(tokenId),
+          collectionName: await this.nftContract.name(),
+          collectionSymbol: await this.nftContract.symbol(),
           collectionAddress: event.address.toLowerCase(),
-          isAvalable: false
+          isAvailable: true,
         });
       }
     } catch (error) {
@@ -106,5 +105,9 @@ export class NftsService implements OnModuleInit {
     } catch (error) {
       throw new HttpException(error.response.data, error.response.status);
     }
+  }
+
+  async findAll(conditions: Record<string, any> = {}) {
+    return await this.nft.find(conditions);
   }
 }

@@ -10,12 +10,12 @@ import { NftsService } from './nfts.service';
 
 @Controller('nfts')
 export class NftsController {
-  constructor(private readonly offersService: NftsService) {}
+  constructor(private readonly nftsService: NftsService) {}
 
-  // @Get()
-  // findAll(@Query() conditions: Record<string, string>) {
-  //   return this.offersService.findAll(conditions);
-  // }
+  @Get()
+  findAll(@Query() conditions: Record<string, string>) {
+    return this.nftsService.findAll(conditions);
+  }
 
   // @Get(':id')
   // findOne(@Param('id') id: string) {

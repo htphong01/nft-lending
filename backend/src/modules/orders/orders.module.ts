@@ -3,9 +3,10 @@ import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { ConnectionsModule } from 'src/connections/connections.module';
 import { ReposityModule } from './reposities/reposity.module';
+import { NftsModule } from '../nfts/nfts.module';
 
 @Module({
-  imports: [ConnectionsModule, ReposityModule],
+  imports: [ConnectionsModule, ReposityModule, NftsModule],
   controllers: [OrdersController],
   providers: [OrdersService]
 })
