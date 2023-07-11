@@ -5,5 +5,5 @@ export class SyncNftDto {
   collectionName: string;
   collectionSymbol: string;
   collectionAddress: string;
-  isAvalable: boolean;
+  isAvailable: boolean;
 }

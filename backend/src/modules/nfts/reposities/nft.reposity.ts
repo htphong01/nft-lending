@@ -27,16 +27,42 @@ export class Nft {
   }
 
   async find(filters: any): Promise<any[]> {
-    const offers = await this.getAll();
-    if (!filters || Object.keys(filters).length === 0) return offers;
+    const { page = 1, size = 10, ...restFilter } = filters;
 
-    return offers.filter((item) => {
-      for (let key in filters) {
-        if (item[key] === undefined || !filters[key].includes(item[key]))
-          return false;
-      }
-      return true;
-    });
+    const nfts = await this.redisService.hgetall(
+      `${DATABASE_NAME}:${restFilter.collectionAddress}`,
+    );
+    if (!restFilter || Object.keys(restFilter).length === 0)
+      return Object.values(nfts);
+
+    return Object.values(nfts)
+      .map((item) => JSON.parse(item))
+      .filter((item) => {
+        for (let key in restFilter) {
+          if (item[key] === undefined || !restFilter[key].includes(item[key]))
+            return false;
+        }
+        return true;
+      })
+      .slice((page - 1) * size, page * size);
+  }
+  async update(
+    collectionAddress: string,
+    id: string,
+    data: Record<string, any>,
+  ): Promise<any> {
+    const queryData = await this.redisService.hget(
+      `${DATABASE_NAME}:${collectionAddress}`,
+      id,
+    );
+    if (!queryData) return;
+
+    await this.redisService.hset(
+      `${DATABASE_NAME}:${collectionAddress}`,
+      id,
+      JSON.stringify({ ...JSON.parse(queryData.toString()), ...data }),
+    );
+    return true;
   }
 
   async sync(data: SyncNftDto): Promise<boolean> {
@@ -44,7 +70,7 @@ export class Nft {
       await this.redisService.hset(
         `${DATABASE_NAME}:${data.collectionAddress}`,
         data.tokenId.toString(),
-        JSON.stringify(data)
+        JSON.stringify(data),
       );
       return true;
     } catch (error) {

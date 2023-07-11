@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import ReactLoading from 'react-loading';
 import { useSelector } from 'react-redux';
-import { getNFTs } from '@src/utils/erc721';
+import axios from 'axios';
+import { getNfts } from '@src/api/nfts.api';
 import Card from '@src/components/common/card';
 import ListCollateralForm from '@src/components/common/list-collateral-form';
 import { COLLATERAL_FORM_TYPE } from '@src/constants';
@@ -17,7 +18,11 @@ export default function Assets() {
 
   const fetchNFTs = async () => {
     try {
-      const nfts = await getNFTs(account.address);
+      const { data } = await getNfts({
+        owner: account.address,
+        isAvailable: true,
+      });
+      const nfts = (await Promise.all(data.map((item) => axios.get(item.tokenURI)))).map((res) => res.data);
       setListNFT(nfts);
       setIsLoading(false);
     } catch (error) {
@@ -26,14 +31,19 @@ export default function Assets() {
     }
   };
 
+  const handleOnClose = (isRefetch = false) => {
+    setSelectedNFT();
+    if (isRefetch) fetchNFTs();
+  };
+
   useEffect(() => {
     fetchNFTs();
   }, [account.address]);
-  
+
   return (
     <div className={styles.container}>
       {selectedNFT && (
-        <ListCollateralForm item={selectedNFT} onClose={setSelectedNFT} type={COLLATERAL_FORM_TYPE.EDIT} />
+        <ListCollateralForm item={selectedNFT} onClose={handleOnClose} type={COLLATERAL_FORM_TYPE.EDIT} />
       )}
       <div className={styles.heading}>Your assets</div>
       {isLoading ? (
@@ -43,7 +53,7 @@ export default function Assets() {
       ) : listNFT.length > 0 ? (
         <div className={styles['list-nfts']}>
           {listNFT.map((item, index) => (
-            <Card key={index} item={item.data} action={{ text: 'List collateral', handle: setSelectedNFT }} />
+            <Card key={index} item={item} action={{ text: 'List collateral', handle: setSelectedNFT }} />
           ))}
         </div>
       ) : (

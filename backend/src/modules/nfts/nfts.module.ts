@@ -8,7 +8,8 @@ import { NftsSchedule } from './nfts.schedule';
 
 @Module({
   imports: [ScheduleModule.forRoot(), ConnectionsModule, ReposityModule],
+  exports: [ReposityModule],
   controllers: [NftsController],
-  providers: [NftsService, NftsSchedule]
+  providers: [NftsService, NftsSchedule],
 })
 export class NftsModule {}
