@@ -1,18 +1,17 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.18;
 
-import "./interfaces/INftfiHub.sol";
+import "./interfaces/IPermittedNFTs.sol";
 import "./utils/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
- * @title  NftfiHub
- * @author NFTfi
- * @dev Registry for the contracts supported by NFTfi protocol.
+ * @title  PermittedNFTs
+ * @dev Registry for the contracts supported by Loan protocol.
  */
-contract NftfiHub is Ownable, Pausable, ReentrancyGuard, INftfiHub {
+contract PermittedNFTs is Ownable, Pausable, ReentrancyGuard, IPermittedNFTs {
     /* ******* */
     /* STORAGE */
     /* ******* */

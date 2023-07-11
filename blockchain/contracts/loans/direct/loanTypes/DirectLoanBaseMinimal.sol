@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.18;
 
@@ -8,7 +8,7 @@ import "./LoanChecksAndCalculations.sol";
 import "../../BaseLoan.sol";
 import "../../../utils/NftReceiver.sol";
 import "../../../utils/NFTfiSigningUtils.sol";
-import "../../../interfaces/INftfiHub.sol";
+import "../../../interfaces/IPermittedNFTs.sol";
 import "../../../interfaces/IPermittedERC20s.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -18,33 +18,32 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @title  DirectLoanBase
- * @author NFTfi
- * @notice Main contract for NFTfi Direct Loans Type. This contract manages the ability to create NFT-backed
+ * @notice Main contract for Loan Direct Loans Type. This contract manages the ability to create NFT-backed
  * peer-to-peer loans.
  *
  * There are two ways to commence an NFT-backed loan:
  *
  * a. The borrower accepts a lender's offer by calling `acceptOffer`.
- *   1. the borrower calls nftContract.approveAll(NFTfi), approving the NFTfi contract to move their NFT's on their
+ *   1. the borrower calls nftContract.approveAll(Loan), approving the Loan contract to move their NFT's on their
  * be1alf.
- *   2. the lender calls erc20Contract.approve(NFTfi), allowing NFTfi to move the lender's ERC20 tokens on their
+ *   2. the lender calls erc20Contract.approve(Loan), allowing Loan to move the lender's ERC20 tokens on their
  * behalf.
  *   3. the lender signs an off-chain message, proposing its offer terms.
  *   4. the borrower calls `acceptOffer` to accept these terms and enter into the loan. The NFT is stored in
  * the contract, the borrower receives the loan principal in the specified ERC20 currency, the lender receives an
- * NFTfi promissory note (in ERC721 form) that represents the rights to either the principal-plus-interest, or the
+ * Loan promissory note (in ERC721 form) that represents the rights to either the principal-plus-interest, or the
  * underlying NFT collateral if the borrower does not pay back in time, and the borrower receives obligation receipt
  * (in ERC721 form) that gives them the right to pay back the loan and get the collateral back.
  *
  * b. The lender accepts a borrowe's binding terms by calling `acceptListing`.
- *   1. the borrower calls nftContract.approveAll(NFTfi), approving the NFTfi contract to move their NFT's on their
+ *   1. the borrower calls nftContract.approveAll(Loan), approving the Loan contract to move their NFT's on their
  * be1alf.
- *   2. the lender calls erc20Contract.approve(NFTfi), allowing NFTfi to move the lender's ERC20 tokens on their
+ *   2. the lender calls erc20Contract.approve(Loan), allowing Loan to move the lender's ERC20 tokens on their
  * behalf.
  *   3. the borrower signs an off-chain message, proposing its binding terms.
  *   4. the lender calls `acceptListing` with an offer matching the binding terms and enter into the loan. The NFT is
  * stored in the contract, the borrower receives the loan principal in the specified ERC20 currency, the lender
- * receives an NFTfi promissory note (in ERC721 form) that represents the rights to either the principal-plus-interest,
+ * receives an Loan promissory note (in ERC721 form) that represents the rights to either the principal-plus-interest,
  * or the underlying NFT collateral if the borrower does not pay back in time, and the borrower receives obligation
  * receipt (in ERC721 form) that gives them the right to pay back the loan and get the collateral back.
  *
@@ -57,10 +56,10 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
  * back.
  *
  * A loan may end in one of two ways:
- * - First, a borrower may call NFTfi.payBackLoan() and pay back the loan plus interest at any time, in which case they
+ * - First, a borrower may call Loan.payBackLoan() and pay back the loan plus interest at any time, in which case they
  * receive their NFT back in the same transaction.
  * - Second, if the loan's duration has passed and the loan has not been paid back yet, a lender can call
- * NFTfi.liquidateOverdueLoan(), in which case they receive the underlying NFT collateral and forfeit the rights to the
+ * Loan.liquidateOverdueLoan(), in which case they receive the underlying NFT collateral and forfeit the rights to the
  * principal-plus-interest, which the borrower now keeps.
  *
  *
@@ -116,13 +115,13 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @notice A mapping that takes both a user's address and a loan nonce that was first used when signing an off-chain
      * order and checks whether that nonce has previously either been used for a loan, or has been pre-emptively
      * cancelled. The nonce referred to here is not the same as an Ethereum account's nonce. We are referring instead to
-     * nonces that are used by both the lender and the borrower when they are first signing off-chain NFTfi orders.
+     * nonces that are used by both the lender and the borrower when they are first signing off-chain Loan orders.
      *
      * These nonces can be any uint256 value that the user has not previously used to sign an off-chain order. Each
-     * nonce can be used at most once per user within NFTfi, regardless of whether they are the lender or the borrower
+     * nonce can be used at most once per user within Loan, regardless of whether they are the lender or the borrower
      * in that situation. This serves two purposes. First, it prevents replay attacks where an attacker would submit a
      * user's off-chain order more than once. Second, it allows a user to cancel an off-chain order by calling
-     * NFTfi.cancelLoanCommitmentBeforeLoanHasBegun(), which marks the nonce as used and prevents any future loan from
+     * Loan.cancelLoanCommitmentBeforeLoanHasBegun(), which marks the nonce as used and prevents any future loan from
      * using the user's off-chain order that contains that nonce.
      */
     mapping(address => mapping(uint256 => bool)) internal _nonceHasBeenUsedForUser;
@@ -133,7 +132,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      */
     mapping(address => bool) private erc20Permits;
 
-    INftfiHub public immutable hub;
+    IPermittedNFTs public immutable permittedNFTs;
 
     /* ****** */
     /* EVENTS */
@@ -157,13 +156,13 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     event MaximumLoanDurationUpdated(uint256 newMaximumLoanDuration);
 
     /**
-     * @notice This event is fired whenever a borrower begins a loan by calling NFTfi.beginLoan(), which can only occur
-     * after both the lender and borrower have approved their ERC721 and ERC20 contracts to use NFTfi, and when they
+     * @notice This event is fired whenever a borrower begins a loan by calling Loan.beginLoan(), which can only occur
+     * after both the lender and borrower have approved their ERC721 and ERC20 contracts to use Loan, and when they
      * both have signed off-chain messages that agree on the terms of the loan.
      *
      * @param  loanId - A unique identifier for this particular loan, sourced from the Loan Coordinator.
      * @param  borrower - The address of the borrower.
-     * @param  lender - The address of the lender. The lender can change their address by transferring the NFTfi ERC721
+     * @param  lender - The address of the lender. The lender can change their address by transferring the Loan ERC721
      * token that they received when the loan began.
      */
     event LoanStarted(
@@ -175,36 +174,36 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
 
     /**
      * @notice This event is fired whenever a borrower successfully repays their loan, paying
-     * principal-plus-interest-minus-fee to the lender in loanERC20Denomination, paying fee to owner in
-     * loanERC20Denomination, and receiving their NFT collateral back.
+     * principal-plus-interest-minus-fee to the lender in erc20Denomination, paying fee to owner in
+     * erc20Denomination, and receiving their NFT collateral back.
      *
      * @param  loanId - A unique identifier for this particular loan, sourced from the Loan Coordinator.
      * @param  borrower - The address of the borrower.
-     * @param  lender - The address of the lender. The lender can change their address by transferring the NFTfi ERC721
+     * @param  lender - The address of the lender. The lender can change their address by transferring the Loan ERC721
      * token that they received when the loan began.
-     * @param  loanPrincipalAmount - The original sum of money transferred from lender to borrower at the beginning of
-     * the loan, measured in loanERC20Denomination's smallest units.
+     * @param  principalAmount - The original sum of money transferred from lender to borrower at the beginning of
+     * the loan, measured in erc20Denomination's smallest units.
      * @param  nftCollateralId - The ID within the NFTCollateralContract for the NFT being used as collateral for this
      * loan. The NFT is stored within this contract during the duration of the loan.
      * @param  amountPaidToLender The amount of ERC20 that the borrower paid to the lender, measured in the smalled
-     * units of loanERC20Denomination.
+     * units of erc20Denomination.
      * @param  adminFee The amount of interest paid to the contract admins, measured in the smalled units of
-     * loanERC20Denomination and determined by adminFeeInBasisPoints. This amount never exceeds the amount of interest
+     * erc20Denomination and determined by adminFeeInBasisPoints. This amount never exceeds the amount of interest
      * earned.
      * @param  nftCollateralContract - The ERC721 contract of the NFT collateral
-     * @param  loanERC20Denomination - The ERC20 contract of the currency being used as principal/interest for this
+     * @param  erc20Denomination - The ERC20 contract of the currency being used as principal/interest for this
      * loan.
      */
     event LoanRepaid(
         uint256 indexed loanId,
         address indexed borrower,
         address indexed lender,
-        uint256 loanPrincipalAmount,
+        uint256 principalAmount,
         uint256 nftCollateralId,
         uint256 amountPaidToLender,
         uint256 adminFee,
         address nftCollateralContract,
-        address loanERC20Denomination
+        address erc20Denomination
     );
 
     /**
@@ -214,10 +213,10 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      *
      * @param  loanId - A unique identifier for this particular loan, sourced from the Loan Coordinator.
      * @param  borrower - The address of the borrower.
-     * @param  lender - The address of the lender. The lender can change their address by transferring the NFTfi ERC721
+     * @param  lender - The address of the lender. The lender can change their address by transferring the Loan ERC721
      * token that they received when the loan began.
-     * @param  loanPrincipalAmount - The original sum of money transferred from lender to borrower at the beginning of
-     * the loan, measured in loanERC20Denomination's smallest units.
+     * @param  principalAmount - The original sum of money transferred from lender to borrower at the beginning of
+     * the loan, measured in erc20Denomination's smallest units.
      * @param  nftCollateralId - The ID within the NFTCollateralContract for the NFT being used as collateral for this
      * loan. The NFT is stored within this contract during the duration of the loan.
      * @param  loanMaturityDate - The unix time (measured in seconds) that the loan became due and was eligible for
@@ -229,7 +228,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         uint256 indexed loanId,
         address indexed borrower,
         address indexed lender,
-        uint256 loanPrincipalAmount,
+        uint256 principalAmount,
         uint256 nftCollateralId,
         uint256 loanMaturityDate,
         uint256 loanLiquidationDate,
@@ -247,7 +246,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * borrower will always have to pay this amount to retrieve their collateral, regardless of whether they repay
      * early.
      * @param renegotiationFee Agreed upon fee in loan denomination that borrower pays for the lender for the
-     * renegotiation, has to be paid with an ERC20 transfer loanERC20Denomination token, uses transfer from,
+     * renegotiation, has to be paid with an ERC20 transfer erc20Denomination token, uses transfer from,
      * frontend will have to propmt an erc20 approve for this from the borrower to the lender
      * @param renegotiationAdminFee renegotiationFee admin portion based on determined by adminFeeInBasisPoints
      */
@@ -274,14 +273,14 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     /* *********** */
 
     /**
-     * @dev Sets `hub`
+     * @dev Sets `permittedNFTs`
      *
      * @param _admin - Initial admin of this contract.
-     * @param  _nftfiHub - NFTfiHub address
+     * @param  _permittedNFT - PermittedNFT address
      * @param  _permittedErc20s -
      */
-    constructor(address _admin, address _nftfiHub, address[] memory _permittedErc20s) BaseLoan(_admin) {
-        hub = INftfiHub(_nftfiHub);
+    constructor(address _admin, address _permittedNFT, address[] memory _permittedErc20s) BaseLoan(_admin) {
+        permittedNFTs = IPermittedNFTs(_permittedNFT);
         for (uint256 i = 0; i < _permittedErc20s.length; i++) {
             _setERC20Permit(_permittedErc20s[i], true);
         }
@@ -384,11 +383,11 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param _renegotiationFee Agreed upon fee in ether that borrower pays for the lender for the renegitiation
      * @param _lenderNonce - The nonce referred to here is not the same as an Ethereum account's nonce. We are
      * referring instead to nonces that are used by both the lender and the borrower when they are first signing
-     * off-chain NFTfi orders. These nonces can be any uint256 value that the user has not previously used to sign an
-     * off-chain order. Each nonce can be used at most once per user within NFTfi, regardless of whether they are the
+     * off-chain Loan orders. These nonces can be any uint256 value that the user has not previously used to sign an
+     * off-chain order. Each nonce can be used at most once per user within Loan, regardless of whether they are the
      * lender or the borrower in that situation. This serves two purposes:
      * - First, it prevents replay attacks where an attacker would submit a user's off-chain order more than once.
-     * - Second, it allows a user to cancel an off-chain order by calling NFTfi.cancelLoanCommitmentBeforeLoanHasBegun()
+     * - Second, it allows a user to cancel an off-chain order by calling Loan.cancelLoanCommitmentBeforeLoanHasBegun()
      * , which marks the nonce as used and prevents any future loan from using the user's off-chain order that contains
      * that nonce.
      * @param _expiry - The date when the renegotiation offer expires
@@ -470,7 +469,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         (address borrower, address lender, LoanTerms memory loan) = _getPartiesAndData(_loanId);
 
         // Ensure that the loan is indeed overdue, since we can only liquidate overdue loans.
-        uint256 loanMaturityDate = uint256(loan.loanStartTime) + uint256(loan.loanDuration);
+        uint256 loanMaturityDate = uint256(loan.loanStartTime) + uint256(loan.duration);
         require(block.timestamp > loanMaturityDate, "Loan is not overdue yet");
 
         require(msg.sender == lender, "Only lender can liquidate");
@@ -482,7 +481,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
             _loanId,
             borrower,
             lender,
-            loan.loanPrincipalAmount,
+            loan.principalAmount,
             loan.nftCollateralId,
             loanMaturityDate,
             block.timestamp,
@@ -501,12 +500,12 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * off-chain order that contains this nonce at all.
      *
      * The nonce referred to here is not the same as an Ethereum account's nonce. We are referring
-     * instead to nonces that are used by both the lender and the borrower when they are first signing off-chain NFTfi
+     * instead to nonces that are used by both the lender and the borrower when they are first signing off-chain Loan
      * orders. These nonces can be any uint256 value that the user has not previously used to sign an off-chain order.
-     * Each nonce can be used at most once per user within NFTfi, regardless of whether they are the lender or the
+     * Each nonce can be used at most once per user within Loan, regardless of whether they are the lender or the
      * borrower in that situation. This serves two purposes. First, it prevents replay attacks where an attacker would
      * submit a user's off-chain order more than once. Second, it allows a user to cancel an off-chain order by calling
-     * NFTfi.cancelLoanCommitmentBeforeLoanHasBegun(), which marks the nonce as used and prevents any future loan from
+     * Loan.cancelLoanCommitmentBeforeLoanHasBegun(), which marks the nonce as used and prevents any future loan from
      * using the user's off-chain order that contains that nonce.
      *
      * @param  _nonce - User nonce
@@ -538,11 +537,11 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param _user - The address of the user. This function works for both lenders and borrowers alike.
      * @param  _nonce - The nonce referred to here is not the same as an Ethereum account's nonce. We are referring
      * instead to nonces that are used by both the lender and the borrower when they are first signing off-chain
-     * NFTfi orders. These nonces can be any uint256 value that the user has not previously used to sign an off-chain
-     * order. Each nonce can be used at most once per user within NFTfi, regardless of whether they are the lender or
+     * Loan orders. These nonces can be any uint256 value that the user has not previously used to sign an off-chain
+     * order. Each nonce can be used at most once per user within Loan, regardless of whether they are the lender or
      * the borrower in that situation. This serves two purposes:
      * - First, it prevents replay attacks where an attacker would submit a user's off-chain order more than once.
-     * - Second, it allows a user to cancel an off-chain order by calling NFTfi.cancelLoanCommitmentBeforeLoanHasBegun()
+     * - Second, it allows a user to cancel an off-chain order by calling Loan.cancelLoanCommitmentBeforeLoanHasBegun()
      * , which marks the nonce as used and prevents any future loan from using the user's off-chain order that contains
      * that nonce.
      *
@@ -580,16 +579,16 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * borrower will always have to pay this amount to retrieve their collateral, regardless of whether they repay
      * early.
      * @param _renegotiationFee Agreed upon fee in loan denomination that borrower pays for the lender and
-     * the admin for the renegotiation, has to be paid with an ERC20 transfer loanERC20Denomination token,
+     * the admin for the renegotiation, has to be paid with an ERC20 transfer erc20Denomination token,
      * uses transfer from, frontend will have to propmt an erc20 approve for this from the borrower to the lender,
-     * admin fee is calculated by the loan's loanAdminFeeInBasisPoints value
+     * admin fee is calculated by the loan's adminFeeInBasisPoints value
      * @param _lenderNonce - The nonce referred to here is not the same as an Ethereum account's nonce. We are
      * referring instead to nonces that are used by both the lender and the borrower when they are first signing
-     * off-chain NFTfi orders. These nonces can be any uint256 value that the user has not previously used to sign an
-     * off-chain order. Each nonce can be used at most once per user within NFTfi, regardless of whether they are the
+     * off-chain Loan orders. These nonces can be any uint256 value that the user has not previously used to sign an
+     * off-chain order. Each nonce can be used at most once per user within Loan, regardless of whether they are the
      * lender or the borrower in that situation. This serves two purposes:
      * - First, it prevents replay attacks where an attacker would submit a user's off-chain order more than once.
-     * - Second, it allows a user to cancel an off-chain order by calling NFTfi.cancelLoanCommitmentBeforeLoanHasBegun()
+     * - Second, it allows a user to cancel an off-chain order by calling Loan.cancelLoanCommitmentBeforeLoanHasBegun()
      , which marks the nonce as used and prevents any future loan from using the user's off-chain order that contains
      * that nonce.
      * @param _expiry - The date when the renegotiation offer expires
@@ -645,19 +644,19 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         if (_renegotiationFee > 0) {
             renegotiationAdminFee = LoanChecksAndCalculations.computeAdminFee(
                 _renegotiationFee,
-                loan.loanAdminFeeInBasisPoints
+                loan.adminFeeInBasisPoints
             );
             // Transfer principal-plus-interest-minus-fees from the caller (always has to be borrower) to lender
-            IERC20(loan.loanERC20Denomination).safeTransferFrom(
+            IERC20(loan.erc20Denomination).safeTransferFrom(
                 borrower,
                 lender,
                 _renegotiationFee - renegotiationAdminFee
             );
             // Transfer fees from the caller (always has to be borrower) to admins
-            IERC20(loan.loanERC20Denomination).safeTransferFrom(borrower, owner(), renegotiationAdminFee);
+            IERC20(loan.erc20Denomination).safeTransferFrom(borrower, owner(), renegotiationAdminFee);
         }
 
-        loan.loanDuration = _newLoanDuration;
+        loan.duration = _newLoanDuration;
         loan.maximumRepaymentAmount = _newMaximumRepaymentAmount;
 
         emit LoanRenegotiated(
@@ -708,7 +707,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         _escrowTokens[_loanTerms.nftCollateralContract][_loanTerms.nftCollateralId] += 1;
 
         // Transfer principal from lender to borrower.
-        IERC20(_loanTerms.loanERC20Denomination).safeTransferFrom(_lender, _borrower, _loanTerms.loanPrincipalAmount);
+        IERC20(_loanTerms.erc20Denomination).safeTransferFrom(_lender, _borrower, _loanTerms.principalAmount);
 
         // Add the loan to storage before moving collateral/principal to follow
         // the Checks-Effects-Interactions pattern.
@@ -743,22 +742,22 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         (uint256 adminFee, uint256 payoffAmount) = _payoffAndFee(_loan);
 
         // Transfer principal-plus-interest-minus-fees from the caller to lender
-        IERC20(_loan.loanERC20Denomination).safeTransferFrom(msg.sender, _lender, payoffAmount);
+        IERC20(_loan.erc20Denomination).safeTransferFrom(msg.sender, _lender, payoffAmount);
 
         // Transfer fees from the caller to admins
-        IERC20(_loan.loanERC20Denomination).safeTransferFrom(msg.sender, owner(), adminFee);
+        IERC20(_loan.erc20Denomination).safeTransferFrom(msg.sender, owner(), adminFee);
 
         // Emit an event with all relevant details from this transaction.
         emit LoanRepaid(
             _loanId,
             _borrower,
             _lender,
-            _loan.loanPrincipalAmount,
+            _loan.principalAmount,
             _loan.nftCollateralId,
             payoffAmount,
             adminFee,
             _loan.nftCollateralContract,
-            _loan.loanERC20Denomination
+            _loan.erc20Denomination
         );
     }
 
@@ -813,12 +812,12 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      *
      */
     function _loanSanityChecks(LoanData.Offer memory _offer) internal view {
-        require(getERC20Permit(_offer.loanERC20Denomination), "Currency denomination is not permitted");
-        require(hub.getNFTPermit(_offer.nftCollateralContract), "NFT collateral contract is not permitted");
-        require(uint256(_offer.loanDuration) <= maximumLoanDuration, "Loan duration exceeds maximum loan duration");
-        require(uint256(_offer.loanDuration) != 0, "Loan duration cannot be zero");
+        require(getERC20Permit(_offer.erc20Denomination), "Currency denomination is not permitted");
+        require(permittedNFTs.getNFTPermit(_offer.nftCollateralContract), "NFT collateral contract is not permitted");
+        require(uint256(_offer.duration) <= maximumLoanDuration, "Loan duration exceeds maximum loan duration");
+        require(uint256(_offer.duration) != 0, "Loan duration cannot be zero");
         require(
-            _offer.loanAdminFeeInBasisPoints == adminFeeInBasisPoints,
+            _offer.adminFeeInBasisPoints == adminFeeInBasisPoints,
             "The admin fee has changed since this order was signed."
         );
     }

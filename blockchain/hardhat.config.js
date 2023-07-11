@@ -38,32 +38,10 @@ const config = {
             allowUnlimitedContractSize: false,
             blockGasLimit: 500e9,
         },
-        // Mainnet chains
-        ethereum: {
-            url: process.env.ETHEREUM_RPC,
+        cvc_testnet: {
+            url: "https://rpc-kura.cross.technology",
             accounts: [process.env.SYSTEM_PRIVATE_KEY],
-        },
-        binance: {
-            url: process.env.BINANCE_RPC,
-            accounts: [process.env.SYSTEM_PRIVATE_KEY],
-        },
-        polygon: {
-            url: process.env.POLYGON_RPC,
-            accounts: [process.env.SYSTEM_PRIVATE_KEY],
-        },
-        // Testnet chains
-        goerli: {
-            url: process.env.GOERLI_RPC,
-            accounts: [process.env.SYSTEM_TEST_PRIVATE_KEY],
-        },
-        binance_testnet: {
-            url: process.env.BINANCE_TESTNET_RPC,
-            accounts: [process.env.SYSTEM_TEST_PRIVATE_KEY],
-        },
-        mumbai: {
-            url: process.env.MUMBAI_RPC,
-            accounts: [process.env.SYSTEM_TEST_PRIVATE_KEY],
-        },
+        }
     },
     etherscan: {
         apiKey: {

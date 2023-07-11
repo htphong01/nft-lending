@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: MIT
 
 import "./LoanData.sol";
 
@@ -14,7 +14,7 @@ interface IDirectLoanBase {
     )
         external
         view
-        returns (uint256, uint256, uint256, address, uint32, uint16, uint16, uint64, address, address, address, bool);
+        returns (uint256, uint256, uint256, address, uint32, uint16, uint64, address, address, address, bool);
 
     function loanRepaidOrLiquidated(uint256) external view returns (bool);
 

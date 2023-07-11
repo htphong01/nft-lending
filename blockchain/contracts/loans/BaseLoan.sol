@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.18;
 
@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
  * @title  BaseLoan
- * @author NFTfi
  * @dev Implements base functionalities common to all Loan types.
  * Mostly related to governance and security.
  */

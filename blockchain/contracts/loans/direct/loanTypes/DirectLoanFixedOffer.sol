@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.18;
 
@@ -6,34 +6,33 @@ import "./DirectLoanBaseMinimal.sol";
 
 /**
  * @title  DirectLoanFixed
- * @author NFTfi
- * @notice Main contract for NFTfi Direct Loans Fixed Type. This contract manages the ability to create NFT-backed
+ * @notice Main contract for Loan Direct Loans Fixed Type. This contract manages the ability to create NFT-backed
  * peer-to-peer loans of type Fixed (agreed to be a fixed-repayment loan) where the borrower pays the
  * maximumRepaymentAmount regardless of whether they repay early or not.
  *
  * There are two ways to commence an NFT-backed loan:
  *
  * a. The borrower accepts a lender's offer by calling `acceptOffer`.
- *   1. the borrower calls nftContract.approveAll(NFTfi), approving the NFTfi contract to move their NFT's on their
+ *   1. the borrower calls nftContract.approveAll(Loan), approving the Loan contract to move their NFT's on their
  * be1alf.
- *   2. the lender calls erc20Contract.approve(NFTfi), allowing NFTfi to move the lender's ERC20 tokens on their
+ *   2. the lender calls erc20Contract.approve(Loan), allowing Loan to move the lender's ERC20 tokens on their
  * behalf.
  *   3. the lender signs an off-chain message, proposing its offer terms.
  *   4. the borrower calls `acceptOffer` to accept these terms and enter into the loan. The NFT is stored in
  * the contract, the borrower receives the loan principal in the specified ERC20 currency, the lender receives an
- * NFTfi promissory note (in ERC721 form) that represents the rights to either the principal-plus-interest, or the
+ * Loan promissory note (in ERC721 form) that represents the rights to either the principal-plus-interest, or the
  * underlying NFT collateral if the borrower does not pay back in time, and the borrower receives obligation receipt
  * (in ERC721 form) that gives them the right to pay back the loan and get the collateral back.
  *
  * b. The lender accepts a borrowe's binding terms by calling `acceptListing`.
- *   1. the borrower calls nftContract.approveAll(NFTfi), approving the NFTfi contract to move their NFT's on their
+ *   1. the borrower calls nftContract.approveAll(Loan), approving the Loan contract to move their NFT's on their
  * be1alf.
- *   2. the lender calls erc20Contract.approve(NFTfi), allowing NFTfi to move the lender's ERC20 tokens on their
+ *   2. the lender calls erc20Contract.approve(Loan), allowing Loan to move the lender's ERC20 tokens on their
  * behalf.
  *   3. the borrower signs an off-chain message, proposing its binding terms.
  *   4. the lender calls `acceptListing` with an offer matching the binding terms and enter into the loan. The NFT is
  * stored in the contract, the borrower receives the loan principal in the specified ERC20 currency, the lender
- * receives an NFTfi promissory note (in ERC721 form) that represents the rights to either the principal-plus-interest,
+ * receives an Loan promissory note (in ERC721 form) that represents the rights to either the principal-plus-interest,
  * or the underlying NFT collateral if the borrower does not pay back in time, and the borrower receives obligation
  * receipt (in ERC721 form) that gives them the right to pay back the loan and get the collateral back.
  *
@@ -47,10 +46,10 @@ import "./DirectLoanBaseMinimal.sol";
  *
  *
  * A loan may end in one of two ways:
- * - First, a borrower may call NFTfi.payBackLoan() and pay back the loan plus interest at any time, in which case they
+ * - First, a borrower may call Loan.payBackLoan() and pay back the loan plus interest at any time, in which case they
  * receive their NFT back in the same transaction.
  * - Second, if the loan's duration has passed and the loan has not been paid back yet, a lender can call
- * NFTfi.liquidateOverdueLoan(), in which case they receive the underlying NFT collateral and forfeit the rights to the
+ * Loan.liquidateOverdueLoan(), in which case they receive the underlying NFT collateral and forfeit the rights to the
  * principal-plus-interest, which the borrower now keeps.
  */
 contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
@@ -62,14 +61,14 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * @dev Sets `hub` and permitted erc20-s
      *
      * @param _admin - Initial admin of this contract.
-     * @param  _nftfiHub - NFTfiHub address
+     * @param  _permittedNFT - PermittedNFT address
      * @param  _permittedErc20s - list of permitted ERC20 token contract addresses
      */
     constructor(
         address _admin,
-        address _nftfiHub,
+        address _permittedNFT,
         address[] memory _permittedErc20s
-    ) DirectLoanBaseMinimal(_admin, _nftfiHub, _permittedErc20s) {
+    ) DirectLoanBaseMinimal(_admin, _permittedNFT, _permittedErc20s) {
         // solhint-disable-previous-line no-empty-blocks
     }
 
@@ -134,7 +133,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
         // Here, these are uint256 numbers that should uniquely identify
         // each signature for each user (i.e. each user should only create one
         // off-chain signature for each nonce, with a nonce being any arbitrary
-        // uint256 value that they have not used yet for an off-chain NFTfi
+        // uint256 value that they have not used yet for an off-chain Loan
         // signature).
         require(!_nonceHasBeenUsedForUser[_signature.signer][_signature.nonce], "Lender nonce invalid");
 
@@ -151,20 +150,18 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
     /**
      * @dev Creates a `LoanTerms` struct using data sent as the lender's `_offer` on `acceptOffer`.
      * This is needed in order to avoid stack too deep issues.
-     * Since this is a Fixed loan type loanInterestRateForDurationInBasisPoints is ignored.
      */
     function _setupLoanTerms(Offer memory _offer, address _lender) internal view returns (LoanTerms memory) {
         return
             LoanTerms({
-                loanERC20Denomination: _offer.loanERC20Denomination,
-                loanPrincipalAmount: _offer.loanPrincipalAmount,
+                erc20Denomination: _offer.erc20Denomination,
+                principalAmount: _offer.principalAmount,
                 maximumRepaymentAmount: _offer.maximumRepaymentAmount,
                 nftCollateralContract: _offer.nftCollateralContract,
                 nftCollateralId: _offer.nftCollateralId,
                 loanStartTime: uint64(block.timestamp),
-                loanDuration: _offer.loanDuration,
-                loanInterestRateForDurationInBasisPoints: uint16(0),
-                loanAdminFeeInBasisPoints: _offer.loanAdminFeeInBasisPoints,
+                duration: _offer.duration,
+                adminFeeInBasisPoints: _offer.adminFeeInBasisPoints,
                 borrower: msg.sender,
                 lender: _lender,
                 status: true
@@ -180,10 +177,10 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
         LoanTerms memory _loanTerms
     ) internal pure override returns (uint256 adminFee, uint256 payoffAmount) {
         // Calculate amounts to send to lender and admins
-        uint256 interestDue = _loanTerms.maximumRepaymentAmount - _loanTerms.loanPrincipalAmount;
+        uint256 interestDue = _loanTerms.maximumRepaymentAmount - _loanTerms.principalAmount;
         adminFee = LoanChecksAndCalculations.computeAdminFee(
             interestDue,
-            uint256(_loanTerms.loanAdminFeeInBasisPoints)
+            uint256(_loanTerms.adminFeeInBasisPoints)
         );
         payoffAmount = _loanTerms.maximumRepaymentAmount - adminFee;
     }
@@ -194,7 +191,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      */
     function _loanSanityChecksOffer(LoanData.Offer memory _offer) internal pure {
         require(
-            _offer.maximumRepaymentAmount >= _offer.loanPrincipalAmount,
+            _offer.maximumRepaymentAmount >= _offer.principalAmount,
             "Negative interest rate loans are not allowed."
         );
     }

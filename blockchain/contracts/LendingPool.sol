@@ -29,6 +29,8 @@ contract LendingPool is ILendingPool, Permission {
      */
     uint256 public totalStake;
 
+    mapping(address => uint256) public totalStakedPerUsers;
+
     /**
      *  @notice Accumulated compound interest rate of everyday since the beginning.
      */
@@ -102,6 +104,8 @@ contract LendingPool is ILendingPool, Permission {
         uint256 discountFactor = tokenToDiscountFactor(_amount);
         sToken.mintDiscountFactor(msg.sender, discountFactor);
 
+        totalStakedPerUsers[msg.sender] += _amount;
+
         // Increase total amount of stake.
         totalStake += _amount;
 
@@ -122,6 +126,7 @@ contract LendingPool is ILendingPool, Permission {
 
         // Update total stake.
         totalStake -= _amount;
+        totalStakedPerUsers[msg.sender] -= _amount;
 
         // Calculate and burn discount factor for the stakeholder.
         uint256 discountFactor = tokenToDiscountFactor(_amount);

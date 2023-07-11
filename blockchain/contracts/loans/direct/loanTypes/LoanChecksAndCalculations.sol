@@ -1,17 +1,15 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.18;
 
 import "./IDirectLoanBase.sol";
 import "./LoanData.sol";
-import "../../../interfaces/INftfiHub.sol";
 import "../../../interfaces/IPermittedERC20s.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 /**
  * @title  LoanChecksAndCalculations
- * @author NFTfi
  * @notice Helper library for LoanBase
  */
 library LoanChecksAndCalculations {
@@ -29,35 +27,17 @@ library LoanChecksAndCalculations {
         require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
 
         // Fetch loan details from storage, but store them in memory for the sake of saving gas.
-        (, , , , uint32 loanDuration, , , uint64 loanStartTime, , , , ) = IDirectLoanBase(address(this)).loanIdToLoan(
+        (, , , , uint32 duration, , uint64 loanStartTime, , , , ) = IDirectLoanBase(address(this)).loanIdToLoan(
             _loanId
         );
 
         // When a loan exceeds the loan term, it is expired. At this stage the Lender can call Liquidate Loan to resolve
         // the loan.
-        require(block.timestamp <= (uint256(loanStartTime) + uint256(loanDuration)), "Loan is expired");
+        require(block.timestamp <= (uint256(loanStartTime) + uint256(duration)), "Loan is expired");
     }
 
     function checkLoanIdValidity(uint256 _loanId) public view {
         require(IDirectLoanBase(address(this)).isValidLoanId(_loanId), "invalid loanId");
-    }
-
-    /**
-     * @dev Function that the partner is permitted and returns its shared percent.
-     *
-     * @param _revenueSharePartner - Partner's address
-     *
-     * @return The revenue share percent for the partner.
-     */
-    function getRevenueSharePercent(address _revenueSharePartner) external pure returns (uint16) {
-        // return soon if no partner is set to avoid a public call
-        if (_revenueSharePartner == address(0)) {
-            return 0;
-        }
-
-        uint16 revenueSharePercent = 25;
-
-        return revenueSharePercent;
     }
 
     /**
@@ -74,11 +54,11 @@ library LoanChecksAndCalculations {
      * early.
      * @param _lenderNonce - The nonce referred to here is not the same as an Ethereum account's nonce. We are
      * referring instead to nonces that are used by both the lender and the borrower when they are first signing
-     * off-chain NFTfi orders. These nonces can be any uint256 value that the user has not previously used to sign an
-     * off-chain order. Each nonce can be used at most once per user within NFTfi, regardless of whether they are the
+     * off-chain Loan orders. These nonces can be any uint256 value that the user has not previously used to sign an
+     * off-chain order. Each nonce can be used at most once per user within Loan, regardless of whether they are the
      * lender or the borrower in that situation. This serves two purposes:
      * - First, it prevents replay attacks where an attacker would submit a user's off-chain order more than once.
-     * - Second, it allows a user to cancel an off-chain order by calling NFTfi.cancelLoanCommitmentBeforeLoanHasBegun()
+     * - Second, it allows a user to cancel an off-chain order by calling Loan.cancelLoanCommitmentBeforeLoanHasBegun()
      , which marks the nonce as used and prevents any future loan from using the user's off-chain order that contains
      * that nonce.
      * @return Borrower and Lender addresses
@@ -99,7 +79,7 @@ library LoanChecksAndCalculations {
         );
         require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
         require(
-            _newMaximumRepaymentAmount >= _loan.loanPrincipalAmount,
+            _newMaximumRepaymentAmount >= _loan.principalAmount,
             "Negative interest rate loans are not allowed."
         );
 
@@ -120,21 +100,21 @@ library LoanChecksAndCalculations {
         LoanData.Offer memory _offer
     ) external pure {
         // offer vs listing validations
-        require(_offer.loanERC20Denomination == _listingTerms.loanERC20Denomination, "Invalid loanERC20Denomination");
+        require(_offer.erc20Denomination == _listingTerms.erc20Denomination, "Invalid erc20Denomination");
         require(
-            _offer.loanPrincipalAmount >= _listingTerms.minLoanPrincipalAmount &&
-                _offer.loanPrincipalAmount <= _listingTerms.maxLoanPrincipalAmount,
-            "Invalid loanPrincipalAmount"
+            _offer.principalAmount >= _listingTerms.minLoanPrincipalAmount &&
+                _offer.principalAmount <= _listingTerms.maxLoanPrincipalAmount,
+            "Invalid principalAmount"
         );
-        uint256 maxRepaymentLimit = _offer.loanPrincipalAmount +
-            (_offer.loanPrincipalAmount * _listingTerms.maxInterestRateForDurationInBasisPoints) /
+        uint256 maxRepaymentLimit = _offer.principalAmount +
+            (_offer.principalAmount * _listingTerms.maxInterestRateForDurationInBasisPoints) /
             HUNDRED_PERCENT;
         require(_offer.maximumRepaymentAmount <= maxRepaymentLimit, "maxInterestRateForDurationInBasisPoints violated");
 
         require(
-            _offer.loanDuration >= _listingTerms.minLoanDuration &&
-                _offer.loanDuration <= _listingTerms.maxLoanDuration,
-            "Invalid loanDuration"
+            _offer.duration >= _listingTerms.minLoanDuration &&
+                _offer.duration <= _listingTerms.maxLoanDuration,
+            "Invalid duration"
         );
     }
 
@@ -179,7 +159,7 @@ library LoanChecksAndCalculations {
      * the referrer.
      *
      * @param _loanPrincipalAmount - The original sum of money transferred from lender to borrower at the beginning of
-     * the loan, measured in loanERC20Denomination's smallest units.
+     * the loan, measured in erc20Denomination's smallest units.
      * @param _referralFeeInBasisPoints - The percent (measured in basis points) of the loan principal amount that will
      * be taken as a fee to pay to the referrer, 0 if the lender is not paying referral fee.
      * @param _referrer - The address of the referrer who found the lender matching the listing, Zero address to signal
