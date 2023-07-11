@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import ReactLoading from 'react-loading';
-import { getNFTs } from '@src/utils/erc721';
+import { getNFTs } from '@src/utils/contracts/erc721';
 import Card from '@src/components/common/card';
 import ListCollateralForm from '@src/components/common/list-collateral-form';
 import { COLLATERAL_FORM_TYPE } from '@src/constants';

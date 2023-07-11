@@ -80,7 +80,8 @@ export class NftsService implements OnModuleInit {
         if (Object.keys(event).length === 0) continue;
 
         const tokenId = Number(BigInt(event.args.tokenId).toString());
-        await this.syncNft({
+
+        let nftData = {
           owner: event.args.to.toLowerCase(),
           tokenId: tokenId,
           tokenURI: await this.nftContract.tokenURI(tokenId),
@@ -88,7 +89,18 @@ export class NftsService implements OnModuleInit {
           collectionSymbol: await this.nftContract.symbol(),
           collectionAddress: event.address.toLowerCase(),
           isAvailable: true,
+        };
+
+        const existedNft = await this.findAll({
+          tokenId: tokenId.toString(),
+          collectionAddress: event.address.toLowerCase(),
         });
+
+        if (existedNft.length > 0) {
+          nftData = { ...existedNft[0], owner: event.args.to.toLowerCase() };
+        }
+
+        await this.syncNft(nftData);
       }
     } catch (error) {
       if (error.response?.data) {
