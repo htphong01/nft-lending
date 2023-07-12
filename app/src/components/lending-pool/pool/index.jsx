@@ -115,7 +115,7 @@ export default function Pool() {
         <div className={styles.body}>
           <div className={styles.row}>
             <div className={styles['section-item']}>
-              <Information title="Total stakers" value="100+ Holders" icon={stakerIcon} />
+              <Information title="Total stakers" value="30+ Holders" icon={stakerIcon} />
             </div>
             <div className={styles['section-item']}>
               <Information title="Pool balance" value={`${balance.pool} ${account.currency}`} icon={aprIcon} />
