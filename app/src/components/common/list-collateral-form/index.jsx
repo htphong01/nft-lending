@@ -28,6 +28,10 @@ export default function ListCollateralForm({ item, onClose, type }) {
     lender: 'user',
   });
 
+  const calculatePercentVote = (input, total) => {
+    return ((input * 100) / total).toFixed(2);
+  };
+
   const handleChange = (e) => {
     const newData = {
       ...data,
@@ -64,7 +68,11 @@ export default function ListCollateralForm({ item, onClose, type }) {
         };
         const signature = await generateSignature(order);
         order.signature = signature;
-        order.metadata = item;
+        order.metadata = {
+          name: item.name,
+          image: item.image,
+          collection: item.collection,
+        };
         toast.promise(createOrder(order), {
           loading: 'Listing...',
           success: <b style={{ color: '#000' }}>List collateral successfully!</b>,
@@ -216,7 +224,11 @@ export default function ListCollateralForm({ item, onClose, type }) {
           <div className={styles.section}>
             <div className={styles.head}>Status:</div>
             <div className={styles.details}>
-              <span>87 Accepted - 34 Rejected</span>
+              <span>
+                {' '}
+                {calculatePercentVote(item.vote.accepted, item.vote.total)}% Accepted -{' '}
+                {calculatePercentVote(item.vote.rejected, item.vote.total)}% Rejected
+              </span>
             </div>
           </div>
         )}
@@ -224,7 +236,9 @@ export default function ListCollateralForm({ item, onClose, type }) {
           <button type="button" onClick={() => onClose()}>
             Close
           </button>
-          <button type="submit">{type === COLLATERAL_FORM_TYPE.VIEW ? 'Unlist' : 'List'} Collateral</button>
+          <button type="submit" disabled={data.lender === 'pool' && type === COLLATERAL_FORM_TYPE.VIEW}>
+            {type === COLLATERAL_FORM_TYPE.VIEW ? 'Unlist' : 'List'} Collateral
+          </button>
         </div>
       </form>
     </div>

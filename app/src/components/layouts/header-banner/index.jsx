@@ -1,16 +1,45 @@
 /* eslint-disable react/prop-types */
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useSelector } from 'react-redux';
+import toast, { Toaster } from 'react-hot-toast';
+import { getStakedPerUser } from '@src/utils/contracts/lending-pool';
 import styles from './styles.module.scss';
 import cvcScanIcon from '@src/assets/cvcscan-icon.png';
 
 export default function HeaderBanner({ title = '', description = '', tabs = [], right = true }) {
-  const account = useSelector((state) => state.account);
+  const navigate = useNavigate();
   const { pathname } = useLocation();
+  const account = useSelector((state) => state.account);
+
+  const handleNavigate = async (url) => {
+    try {
+      if (url === '/lending-pool/requests') {
+        const balance = await getStakedPerUser(account.address);
+        if (balance == 0) {
+          toast.error('You must stake to Lending Pool to use this feature!', {
+            duration: 3000,
+            style: {
+              fontWeight: 600,
+            },
+          });
+          return;
+        }
+      }
+      navigate(url);
+    } catch (error) {
+      toast.error('An error has been occurred!', {
+        duration: 3000,
+        style: {
+          fontWeight: 600,
+        },
+      });
+    }
+  };
 
   return (
     <div>
+      <Toaster position="top-center" reverseOrder={false} />
       <div className={styles.header}>
         <div className={styles.left}>
           {pathname.startsWith('/profile') ? (
@@ -68,13 +97,13 @@ export default function HeaderBanner({ title = '', description = '', tabs = [], 
       {tabs.length > 0 && (
         <div className={styles.tabs}>
           {tabs.map((tab, index) => (
-            <Link
+            <div
               key={index}
               className={`${styles['tab-item']} ${pathname === tab.url ? styles.active : ''}`}
-              to={tab.url}
+              onClick={() => handleNavigate(tab.url)}
             >
               {tab.text}
-            </Link>
+            </div>
           ))}
         </div>
       )}

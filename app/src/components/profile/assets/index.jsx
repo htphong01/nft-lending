@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import ReactLoading from 'react-loading';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
 import { getNfts } from '@src/api/nfts.api';
 import Card from '@src/components/common/card';
 import ListCollateralForm from '@src/components/common/list-collateral-form';
@@ -22,8 +21,7 @@ export default function Assets() {
         owner: account.address,
         isAvailable: true,
       });
-      const nfts = (await Promise.all(data.map((item) => axios.get(item.tokenURI)))).map((res) => res.data);
-      setListNFT(nfts);
+      setListNFT(data);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -53,7 +51,7 @@ export default function Assets() {
       ) : listNFT.length > 0 ? (
         <div className={styles['list-nfts']}>
           {listNFT.map((item, index) => (
-            <Card key={index} item={item} action={{ text: 'List collateral', handle: setSelectedNFT }} />
+            <Card key={index} item={item.metadata} action={{ text: 'List collateral', handle: setSelectedNFT }} />
           ))}
         </div>
       ) : (

@@ -39,7 +39,10 @@ export class Nft {
       .map((item) => JSON.parse(item))
       .filter((item) => {
         for (let key in restFilter) {
-          if (item[key] === undefined || !restFilter[key].includes(item[key]))
+          if (
+            item[key] === undefined ||
+            !restFilter[key].split(',').includes(item[key].toString())
+          )
             return false;
         }
         return true;

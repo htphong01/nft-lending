@@ -60,13 +60,13 @@ export default function Form({ order, fetchOffers }) {
         success: <b style={{ color: '#000' }}>Make offer successfully!</b>,
         error: <b style={{ color: '#000' }}>An error has been occurred!</b>,
       });
-      // setData({
-      //   currency: account.currency,
-      //   amount: 0,
-      //   duration: 0,
-      //   repayment: 0,
-      //   apr: 0,
-      // });
+      setData({
+        currency: account.currency,
+        amount: 0,
+        duration: 0,
+        repayment: 0,
+        apr: 0,
+      });
       fetchOffers();
     } catch (error) {
       console.log('error', error);

@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import ReactLoading from 'react-loading';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { getStakedPerUser } from '@src/utils/contracts/lending-pool';
 import { getOrders } from '@src/api/order.api';
 import { OrderStatus } from '@src/constants/enum';
 import Table from '@src/components/common/table';
@@ -7,6 +10,10 @@ import Form from './form';
 import styles from './styles.module.scss';
 
 export default function LoanRequests() {
+  const navigate = useNavigate();
+
+  const account = useSelector((state) => state.account);
+
   const [isLoading, setIsLoading] = useState(true);
   const [orderList, setOrderList] = useState({
     current: [],
@@ -38,6 +45,14 @@ export default function LoanRequests() {
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  useEffect(() => {
+    if (account.address) {
+      getStakedPerUser(account.address).then((balance) => {
+        if (balance == 0) navigate('/lending-pool');
+      });
+    }
+  }, [account.address]);
 
   return (
     <div className={styles.container}>

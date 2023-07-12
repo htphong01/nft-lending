@@ -60,6 +60,7 @@ export class VotesService {
       }),
       this.order.update(createVoteDto.orderHash, { vote: currentVote }),
     ]);
+    return currentVote;
   }
 
   async findAll(conditions: Record<string, any> = {}) {

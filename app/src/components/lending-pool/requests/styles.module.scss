@@ -48,12 +48,18 @@
         .section {
           display: flex;
           flex-direction: column;
-          justify-content: space-around;
+          justify-content: space-between;
 
           > img {
             width: 100%;
             border-radius: 12px;
             background-color: rgb(54, 40, 72);
+          }
+
+          > .note {
+            font-size: 13px;
+            margin-top: 8px;
+            font-weight: bold;
           }
 
           .info {
@@ -83,6 +89,8 @@
 
           &.section-btn {
             justify-content: center !important;
+            height: 84px;
+
             > button {
               border: none;
               outline: none;
@@ -133,6 +141,7 @@
             text-align: center;
             line-height: 36px;
             font-size: 14px;
+            font-weight: bold;
 
             &.chart-accept {
               background-color: rgb(146, 108, 227);
