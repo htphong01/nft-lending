@@ -5,9 +5,16 @@ import { OrdersModule } from '../orders/orders.module';
 import { DacsModule } from '../dacs/dacs.module';
 import { VotesController } from './votes.controller';
 import { VotesService } from './votes.service';
+import { LendingPoolModule } from '../lending-pool/lending-pool.module';
 
 @Module({
-  imports: [ConnectionsModule, ReposityModule, OrdersModule, DacsModule],
+  imports: [
+    ConnectionsModule,
+    ReposityModule,
+    OrdersModule,
+    DacsModule,
+    LendingPoolModule,
+  ],
   controllers: [VotesController],
   providers: [VotesService],
 })

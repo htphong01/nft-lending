@@ -5,11 +5,11 @@ import {
 } from '@nestjs/common';
 import config from 'src/config';
 import { verifySignature } from '../utils/signature';
-import { getStakedPerUser } from '../utils/lending-pool';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { Vote } from './reposities/vote.reposity';
 import { Order } from './../orders/reposities/order.reposity';
 import { DacsService } from '../dacs/dacs.service';
+import { LendingPoolService } from '../lending-pool/lending-pool.service';
 const sha256 = require('simple-sha256');
 
 @Injectable()
@@ -18,6 +18,7 @@ export class VotesService {
     private readonly vote: Vote,
     private readonly order: Order,
     private readonly dacs: DacsService,
+    private readonly lendingPool: LendingPoolService,
   ) {}
 
   async create(createVoteDto: CreateVoteDto) {
@@ -43,9 +44,12 @@ export class VotesService {
     }
 
     const currentVote = currentOrder.vote;
-    const stakedPerUser = await getStakedPerUser(createVoteDto.voter, {
-      blockTag: currentOrder.vote.blockNumber,
-    });
+    const stakedPerUser = await this.lendingPool.getStakedPerUser(
+      createVoteDto.voter,
+      {
+        blockTag: currentOrder.vote.blockNumber,
+      },
+    );
 
     if (stakedPerUser === 0) {
       throw new UnauthorizedException();
