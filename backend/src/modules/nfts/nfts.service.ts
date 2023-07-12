@@ -6,6 +6,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider } from 'ethers';
+import axios from 'axios';
 import { Nft } from './reposities/nft.reposity';
 import { Crawl } from './reposities/crawl.reposity';
 import config from 'src/config';
@@ -81,6 +82,10 @@ export class NftsService implements OnModuleInit {
 
         const tokenId = Number(BigInt(event.args.tokenId).toString());
 
+        const { data } = await axios.get(
+          await this.nftContract.tokenURI(tokenId),
+        );
+
         let nftData = {
           owner: event.args.to.toLowerCase(),
           tokenId: tokenId,
@@ -88,6 +93,7 @@ export class NftsService implements OnModuleInit {
           collectionName: await this.nftContract.name(),
           collectionSymbol: await this.nftContract.symbol(),
           collectionAddress: event.address.toLowerCase(),
+          metadata: data,
           isAvailable: true,
         };
 

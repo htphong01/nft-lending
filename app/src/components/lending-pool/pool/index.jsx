@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import toast, { Toaster } from 'react-hot-toast';
 import ReactLoading from 'react-loading';
 import { setAccount } from '@src/redux/features/accountSlice';
-import { stake, unstake, getTotalBalance, getTotalStake, getPoolBalance } from '@src/utils/contracts/lending-pool';
+import { stake, unstake, getTotalBalanceOfUser, getStakedPerUser, getPoolBalance } from '@src/utils/contracts/lending-pool';
 import { checkAllowance, approveERC20, getBalance } from '@src/utils/contracts/erc20';
 import { LENDING_POOL_ADDRESS } from '@src/constants';
 import Stake from './stake';
@@ -35,8 +35,8 @@ export default function Pool() {
       dispatch(setAccount({ balance: currentBalance }));
 
       const [totalBalance, totalStaked, poolBalance] = await Promise.all([
-        getTotalBalance(account.address),
-        getTotalStake(account.address),
+        getTotalBalanceOfUser(account.address),
+        getStakedPerUser(account.address),
         getPoolBalance(),
       ]);
 
