@@ -9,6 +9,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './reposities/order.reposity';
 import { Nft } from './../nfts/reposities/nft.reposity';
 import { verifySignature } from '../utils/signature';
+import { getBlockNumber, getTotalStaked } from '../utils/lending-pool';
 const sha256 = require('simple-sha256');
 
 @Injectable()
@@ -25,7 +26,6 @@ export class OrdersService {
         duration: createOrderDto.duration,
         rate: createOrderDto.rate,
         lender: createOrderDto.lender,
-        blockNumber: createOrderDto.blockNumber,
       }),
     );
     const orderHash = await sha256(bytes);
@@ -40,14 +40,26 @@ export class OrdersService {
       throw new UnauthorizedException();
     }
 
+    const newOrder: Record<string, any> = {
+      ...createOrderDto,
+      floorPrice: (createOrderDto.offer * 1.1).toFixed(2),
+      hash: orderHash,
+      status: OrderStatus.OPENING,
+      createdAt: new Date().getTime(),
+    };
+
+    if (createOrderDto.lender === 'pool') {
+      const blockNumber = await getBlockNumber();
+      newOrder.vote = {
+        blockNumber,
+        total: await getTotalStaked({ blockTag: blockNumber }),
+        accepted: 0,
+        rejected: 0,
+      };
+    }
+
     await Promise.all([
-      this.order.create(orderHash, {
-        ...createOrderDto,
-        floorPrice: (createOrderDto.offer * 1.1).toFixed(2),
-        hash: orderHash,
-        status: OrderStatus.OPENING,
-        createdAt: new Date().getTime(),
-      }),
+      this.order.create(orderHash, newOrder),
       this.nft.update(
         createOrderDto.nftAddress,
         createOrderDto.nftTokenId.toString(),

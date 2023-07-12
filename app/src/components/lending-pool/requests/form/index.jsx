@@ -8,14 +8,9 @@ import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import { calculateRepayment } from '@src/utils/apr';
 import { generateSignature } from '@src/utils/ethers';
-import { submitVote, getVote, getTotalStake } from '@src/api/vote.api';
+import { submitVote, getVote } from '@src/api/vote.api';
 import { sliceAddress, calculateRealPrice } from '@src/utils/misc';
 import styles from '../styles.module.scss';
-
-const VOTE_RESULT = {
-  accepted: 87,
-  rejected: 34,
-};
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
@@ -26,12 +21,8 @@ export default function Form({ item, onClose }) {
 
   const [isAccepted, setIsAccepted] = useState();
 
-  const calculatePercentVote = (accepted, rejected) => {
-    const total = accepted + rejected;
-    return {
-      accepted: ((accepted * 100) / total).toFixed(2),
-      rejected: ((rejected * 100) / total).toFixed(2),
-    };
+  const calculatePercentVote = (input, total) => {
+    return ((input * 100) / total).toFixed(2);
   };
 
   const handleSubmitVote = async (vote) => {
@@ -145,18 +136,18 @@ export default function Form({ item, onClose }) {
             <div
               className={`${styles.chart} ${styles['chart-accept']}`}
               style={{
-                width: `${calculatePercentVote(VOTE_RESULT.accepted, VOTE_RESULT.rejected).accepted}%`,
+                width: `${calculatePercentVote(item.vote.accepted, item.vote.total)}%`,
               }}
             >
-              {VOTE_RESULT.accepted}
+              {calculatePercentVote(item.vote.accepted, item.vote.total)}%
             </div>
             <div
               className={`${styles.chart} ${styles['chart-reject']}`}
               style={{
-                width: `${calculatePercentVote(VOTE_RESULT.accepted, VOTE_RESULT.rejected).rejected}%`,
+                width: `${calculatePercentVote(item.vote.rejected, item.vote.total)}%`,
               }}
             >
-              {VOTE_RESULT.rejected}
+              {calculatePercentVote(item.vote.rejected, item.vote.total)}%
             </div>
           </div>
           <div className={`${styles.section} ${styles['section-btn']} `}>

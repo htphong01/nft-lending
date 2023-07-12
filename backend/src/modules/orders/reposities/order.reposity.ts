@@ -50,7 +50,14 @@ export class Order {
 
   async update(id: string, data: any): Promise<boolean> {
     try {
-      await this.redisService.hset(DATABASE_NAME, id, JSON.stringify(data));
+      const queryData = await this.redisService.hget(DATABASE_NAME, id);
+      if (!queryData) return;
+
+      await this.redisService.hset(
+        DATABASE_NAME,
+        id,
+        JSON.stringify({ ...JSON.parse(queryData.toString()), ...data }),
+      );
       return true;
     } catch (error) {
       this.logger.error(error);

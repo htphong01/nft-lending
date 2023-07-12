@@ -1,12 +1,18 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { verifySignature } from '../utils/signature';
+import { getStakedPerUser } from '../utils/lending-pool';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { Vote } from './reposities/vote.reposity';
+import { Order } from './../orders/reposities/order.reposity';
 const sha256 = require('simple-sha256');
 
 @Injectable()
 export class VotesService {
-  constructor(private readonly vote: Vote) {}
+  constructor(private readonly vote: Vote, private readonly order: Order) {}
 
   async create(createVoteDto: CreateVoteDto) {
     const bytes = new TextEncoder().encode(
@@ -25,11 +31,35 @@ export class VotesService {
       throw new UnauthorizedException();
     }
 
-    await this.vote.create(voteHash, {
-      ...createVoteDto,
-      hash: voteHash,
-      createdAt: new Date().getTime(),
+    const currentOrder = await this.order.getByKey(createVoteDto.orderHash);
+    if (currentOrder.lender !== 'pool') {
+      throw new BadRequestException();
+    }
+
+    const currentVote = currentOrder.vote;
+    const stakedPerUser = await getStakedPerUser(createVoteDto.voter, {
+      blockTag: currentOrder.vote.blockNumber,
     });
+
+    if (stakedPerUser === 0) {
+      throw new UnauthorizedException();
+    }
+
+    if (createVoteDto.isAccepted) {
+      currentVote.accepted = Number(currentVote.accepted) + stakedPerUser;
+    } else {
+      currentVote.rejected = Number(currentVote.rejected) + stakedPerUser;
+    }
+
+    await Promise.all([
+      this.vote.create(voteHash, {
+        ...createVoteDto,
+        staked: stakedPerUser,
+        hash: voteHash,
+        createdAt: new Date().getTime(),
+      }),
+      this.order.update(createVoteDto.orderHash, { vote: currentVote }),
+    ]);
   }
 
   async findAll(conditions: Record<string, any> = {}) {

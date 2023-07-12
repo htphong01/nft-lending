@@ -7,6 +7,5 @@ export class CreateOrderDto {
   offer: number;
   duration: number;
   rate: number;
-  blockNumber: number;
   metadata: Record<string, any>;
 }
