@@ -68,7 +68,7 @@ export default function LoanRequests() {
             data={orderList.current}
             action={{ text: 'View', handle: setSelectedLoan }}
           />
-          <Table data={orderList.previous} title="Previous Loan Requests" />
+          <Table title="Previous Loan Requests" data={[]} />
         </>
       )}
     </div>

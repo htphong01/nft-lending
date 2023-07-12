@@ -3,16 +3,22 @@ import {
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
+import config from 'src/config';
 import { verifySignature } from '../utils/signature';
 import { getStakedPerUser } from '../utils/lending-pool';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { Vote } from './reposities/vote.reposity';
 import { Order } from './../orders/reposities/order.reposity';
+import { DacsService } from '../dacs/dacs.service';
 const sha256 = require('simple-sha256');
 
 @Injectable()
 export class VotesService {
-  constructor(private readonly vote: Vote, private readonly order: Order) {}
+  constructor(
+    private readonly vote: Vote,
+    private readonly order: Order,
+    private readonly dacs: DacsService,
+  ) {}
 
   async create(createVoteDto: CreateVoteDto) {
     const bytes = new TextEncoder().encode(
@@ -51,13 +57,18 @@ export class VotesService {
       currentVote.rejected = Number(currentVote.rejected) + stakedPerUser;
     }
 
+    const newVote: Record<string, any> = {
+      ...createVoteDto,
+      staked: stakedPerUser,
+      hash: voteHash,
+      createdAt: new Date().getTime(),
+    };
+
+    const dacs_cid = await this.dacs.upload(newVote);
+    newVote.dacs_url = `${config.ENV.SERVER_HOST}:${config.ENV.SERVER_PORT}/dacs/${dacs_cid}`;
+
     await Promise.all([
-      this.vote.create(voteHash, {
-        ...createVoteDto,
-        staked: stakedPerUser,
-        hash: voteHash,
-        createdAt: new Date().getTime(),
-      }),
+      this.vote.create(voteHash, newVote),
       this.order.update(createVoteDto.orderHash, { vote: currentVote }),
     ]);
     return currentVote;
