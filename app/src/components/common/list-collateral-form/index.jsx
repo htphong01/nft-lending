@@ -6,7 +6,7 @@ import { useOnClickOutside } from 'usehooks-ts';
 import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import { createOrder } from '@src/api/order.api';
-import { generateSignature, getBlockNumber } from '@src/utils/ethers';
+import { generateSignature } from '@src/utils/ethers';
 import { calculateAPR, calculateRepayment } from '@src/utils/apr';
 import { calculateRealPrice, getRandomNumber } from '@src/utils/misc';
 import { COLLATERAL_FORM_TYPE, NFT_CONTRACT_ADDRESS } from '@src/constants';
@@ -61,7 +61,6 @@ export default function ListCollateralForm({ item, onClose, type }) {
           duration: data.duration,
           rate: data.apr,
           lender: data.lender,
-          blockNumber: await getBlockNumber(),
         };
         const signature = await generateSignature(order);
         order.signature = signature;

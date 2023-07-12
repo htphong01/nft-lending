@@ -7,7 +7,8 @@ import { NftsModule } from '../nfts/nfts.module';
 
 @Module({
   imports: [ConnectionsModule, ReposityModule, NftsModule],
+  exports: [ReposityModule],
   controllers: [OrdersController],
-  providers: [OrdersService]
+  providers: [OrdersService],
 })
-export class OrdersModule { }
+export class OrdersModule {}

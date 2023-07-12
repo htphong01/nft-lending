@@ -9,7 +9,7 @@ const lendingPoolContract = new Contract(
   rpcProvider,
 );
 
-export const getStakedBalance = async (
+export const getStakedPerUser = async (
   account: string,
   options: Record<string, any>,
 ): Promise<number> => {
@@ -17,4 +17,13 @@ export const getStakedBalance = async (
     ...options,
   });
   return Number(ethers.formatEther(balance));
+};
+
+export const getTotalStaked = async (options: Record<string, any>) => {
+  const balance = await lendingPoolContract.totalStake({ ...options });
+  return ethers.formatUnits(balance, 18);
+};
+
+export const getBlockNumber = async () => {
+  return rpcProvider.getBlockNumber();
 };
