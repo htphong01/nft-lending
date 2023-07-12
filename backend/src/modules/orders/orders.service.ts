@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
+import config from 'src/config';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderStatus } from './dto/order.enum';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -10,11 +11,16 @@ import { Order } from './reposities/order.reposity';
 import { Nft } from './../nfts/reposities/nft.reposity';
 import { verifySignature } from '../utils/signature';
 import { getBlockNumber, getTotalStaked } from '../utils/lending-pool';
+import { DacsService } from '../dacs/dacs.service';
 const sha256 = require('simple-sha256');
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly order: Order, private readonly nft: Nft) {}
+  constructor(
+    private readonly order: Order,
+    private readonly nft: Nft,
+    private readonly dacs: DacsService,
+  ) {}
 
   async create(createOrderDto: CreateOrderDto) {
     const bytes = new TextEncoder().encode(
@@ -57,6 +63,9 @@ export class OrdersService {
         rejected: 0,
       };
     }
+
+    const dacs_cid = await this.dacs.upload(newOrder);
+    newOrder.dacs_url = `${config.ENV.SERVER_HOST}:${config.ENV.SERVER_PORT}/dacs/${dacs_cid}`;
 
     await Promise.all([
       this.order.create(orderHash, newOrder),

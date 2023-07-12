@@ -1,6 +1,7 @@
 export const Environment = {
   SERVER_PORT: Number(process.env.SERVER_PORT || 3000),
   SOCKET_PORT: Number(process.env.SOCKET_PORT || 3001),
+  SERVER_HOST: process.env.SERVER_HOST || 'http://localhost',
 
   // Redis Web socket client config
   REDIS_VOTE_HOST: process.env.REDIS_VOTE_HOST || 'localhost',
@@ -19,5 +20,5 @@ export const Environment = {
   // Web3 host
   NETWORK_RPC_URL: process.env.NETWORK_RPC_URL || 'https://rpc-kura.cross.technology/',
   COLLECTION_ADDRESS: process.env.COLLECTION_ADDRESS || '0xF31a2E258BeC65A46fb54cd808294Ce215070150',
-  LENDING_POOL_ADDRESS: process.env.LENDING_POOL_ADDRESS || '0x9E489999948549E4ba2F88AF304d2FE75602E30B'
+  LENDING_POOL_ADDRESS: process.env.LENDING_POOL_ADDRESS || '0x9E489999948549E4ba2F88AF304d2FE75602E30B',
 };

@@ -3,16 +3,21 @@ import {
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
+import config from 'src/config';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { OfferStatus } from './dto/offer.enum';
 import { UpdateOrderDto } from './dto/update-offer.dto';
 import { Offer } from './reposities/offer.reposity';
 import { verifySignature } from '../utils/signature';
+import { DacsService } from '../dacs/dacs.service';
 const sha256 = require('simple-sha256');
 
 @Injectable()
 export class OffersService {
-  constructor(private readonly offer: Offer) {}
+  constructor(
+    private readonly offer: Offer,
+    private readonly dacs: DacsService,
+  ) {}
 
   async create(createOfferDto: CreateOfferDto) {
     const bytes = new TextEncoder().encode(
@@ -38,13 +43,18 @@ export class OffersService {
       throw new UnauthorizedException();
     }
 
-    await this.offer.create(createOfferDto.order, offerHash, {
+    const newOffer: Record<string, any> = {
       ...createOfferDto,
       floorPrice: (createOfferDto.offer * 1.1).toFixed(2),
       hash: offerHash,
       status: OfferStatus.OPENING,
       createdAt: new Date().getTime(),
-    });
+    };
+
+    const dacs_cid = await this.dacs.upload(newOffer);
+    newOffer.dacs_url = `${config.ENV.SERVER_HOST}:${config.ENV.SERVER_PORT}/dacs/${dacs_cid}`;
+
+    await this.offer.create(createOfferDto.order, offerHash, newOffer);
   }
 
   async findAll(conditions: Record<string, any> = {}) {
