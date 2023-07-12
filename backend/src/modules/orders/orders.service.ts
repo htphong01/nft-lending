@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import config from 'src/config';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderStatus } from './dto/order.enum';
@@ -10,8 +6,8 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './reposities/order.reposity';
 import { Nft } from './../nfts/reposities/nft.reposity';
 import { verifySignature } from '../utils/signature';
-import { getBlockNumber, getTotalStaked } from '../utils/lending-pool';
 import { DacsService } from '../dacs/dacs.service';
+import { LendingPoolService } from '../lending-pool/lending-pool.service';
 const sha256 = require('simple-sha256');
 
 @Injectable()
@@ -20,6 +16,7 @@ export class OrdersService {
     private readonly order: Order,
     private readonly nft: Nft,
     private readonly dacs: DacsService,
+    private readonly lendingPool: LendingPoolService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto) {
@@ -55,10 +52,10 @@ export class OrdersService {
     };
 
     if (createOrderDto.lender === 'pool') {
-      const blockNumber = await getBlockNumber();
+      const blockNumber = await this.lendingPool.getBlockNumber();
       newOrder.vote = {
         blockNumber,
-        total: await getTotalStaked({ blockTag: blockNumber }),
+        total: await this.lendingPool.getTotalStaked({ blockTag: blockNumber }),
         accepted: 0,
         rejected: 0,
       };
