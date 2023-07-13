@@ -1,24 +1,38 @@
 import {
+  HttpException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
-  BadRequestException,
+  OnModuleInit,
 } from '@nestjs/common';
 import config from 'src/config';
+import { Contract, JsonRpcProvider } from 'ethers';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { OfferStatus } from './dto/offer.enum';
-import { UpdateOrderDto } from './dto/update-offer.dto';
 import { Offer } from './reposities/offer.reposity';
 import { verifySignature, generateOfferMessage } from '../utils/signature';
 import { DacsService } from '../dacs/dacs.service';
 import { ethers } from 'ethers';
-const sha256 = require('simple-sha256');
+import * as FACTORY_ABI from './abi/LOAN.json';
 
 @Injectable()
-export class OffersService {
+export class OffersService implements OnModuleInit {
+  private rpcProvider: JsonRpcProvider;
+  private nftContract: Contract;
+
   constructor(
     private readonly offer: Offer,
     private readonly dacs: DacsService,
   ) {}
+
+  onModuleInit() {
+    this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
+    this.nftContract = new Contract(
+      config.ENV.COLLECTION_ADDRESS,
+      FACTORY_ABI,
+      this.rpcProvider,
+    );
+  }
 
   async create(createOfferDto: CreateOfferDto) {
     const offerHash = generateOfferMessage(
@@ -68,11 +82,30 @@ export class OffersService {
     return await this.offer.find({ order });
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
+  async handleEvents(rpcProvider: JsonRpcProvider, from: number, to: number) {
+    try {
+      const nftContract = new Contract(
+        config.ENV.LOAN_ADDRESS,
+        FACTORY_ABI,
+        rpcProvider,
+      );
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+      // Fetch events data
+      const events = await nftContract.queryFilter('LoanStarted', from, to);
+
+      // Retrieve all event informations
+      if (!events || events.length === 0) return;
+      for (let i = 0; i < events.length; i++) {
+        const event: any = events[i];
+        if (!event) continue;
+        if (Object.keys(event).length === 0) continue;
+      }
+    } catch (error) {
+      if (error.response?.data) {
+        throw new HttpException(error.response.data, error.response.status);
+      } else {
+        throw new HttpException(error.body, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    }
   }
 }

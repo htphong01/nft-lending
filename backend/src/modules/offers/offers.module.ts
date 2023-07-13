@@ -7,6 +7,7 @@ import { DacsModule } from '../dacs/dacs.module';
 
 @Module({
   imports: [ConnectionsModule, ReposityModule, DacsModule],
+  exports: [OffersService],
   controllers: [OrdersController],
   providers: [OffersService],
 })

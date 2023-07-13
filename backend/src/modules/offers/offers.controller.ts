@@ -41,13 +41,13 @@ export class OrdersController {
     return this.offersService.findByOrder(order);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.offersService.update(+id, updateOrderDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
+  //   return this.offersService.update(+id, updateOrderDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.offersService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.offersService.remove(+id);
+  // }
 }

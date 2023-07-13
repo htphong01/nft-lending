@@ -13,3 +13,8 @@ export const acceptOffer = (offer, signature) => {
   const contract = loanContract(signer);
   return contract.acceptOffer(offer, signature);
 };
+
+export const payBackLoan = (loanId) => {
+  const contract = loanContract(signer);
+  return contract.payBackLoan(loanId);
+};
