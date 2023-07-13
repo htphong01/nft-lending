@@ -5,10 +5,17 @@ import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
+import ReactLoading from 'react-loading';
 import { createOrder } from '@src/api/order.api';
-import { generateSignature } from '@src/utils/ethers';
-import { calculateAPR, calculateRepayment } from '@src/utils/apr';
-import { calculateRealPrice, getRandomNumber } from '@src/utils/misc';
+import {
+  generateSignature,
+  calculateAPR,
+  calculateRepayment,
+  calculateRealPrice,
+  getRandomNumber,
+  checkApproved,
+  approveERC721,
+} from '@src/utils';
 import { COLLATERAL_FORM_TYPE, NFT_CONTRACT_ADDRESS } from '@src/constants';
 import styles from './styles.module.scss';
 
@@ -18,6 +25,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
 
   const ref = useRef(null);
 
+  const [isLoading, setIsLoading] = useState(false);
   const [randomPrice, _] = useState(getRandomNumber(10, 30));
   const [data, setData] = useState({
     currency: account.currency,
@@ -49,6 +57,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       if (type === COLLATERAL_FORM_TYPE.VIEW) {
         console.log('item', item);
@@ -73,6 +82,11 @@ export default function ListCollateralForm({ item, onClose, type }) {
           image: item.image,
           collection: item.collection,
         };
+        if (!(await checkApproved(item.edition))) {
+          const tx = await approveERC721(item.edition);
+          await tx.wait();
+        }
+
         toast.promise(createOrder(order), {
           loading: 'Listing...',
           success: <b style={{ color: '#000' }}>List collateral successfully!</b>,
@@ -81,8 +95,10 @@ export default function ListCollateralForm({ item, onClose, type }) {
         setTimeout(() => {
           onClose(true);
         }, 1000);
+        setIsLoading(false);
       }
     } catch (error) {
+      setIsLoading(false);
       toast.error('An error has been occurred!');
       console.log('error', error);
     }
@@ -105,6 +121,11 @@ export default function ListCollateralForm({ item, onClose, type }) {
 
   return (
     <div className={styles.container}>
+      {isLoading && (
+        <div className="screen-loading-overlay">
+          <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
+        </div>
+      )}
       <Toaster position="top-center" reverseOrder={false} />
       <form className={styles.form} onSubmit={handleSubmit} ref={ref}>
         <div className={styles.title}>

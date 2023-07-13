@@ -5,6 +5,11 @@ import { ethers } from 'ethers';
 const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
 const signer = provider.getSigner();
 
-const loanContract = (signerOrProvider) => {
+export const loanContract = (signerOrProvider) => {
   return new ethers.Contract(LOAN_ADDRESS, LOAN_ABI, signerOrProvider);
+};
+
+export const acceptOffer = (offer, signature) => {
+  const contract = loanContract(signer);
+  return contract.acceptOffer(offer, signature);
 };

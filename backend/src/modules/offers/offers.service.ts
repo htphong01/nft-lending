@@ -8,8 +8,9 @@ import { CreateOfferDto } from './dto/create-offer.dto';
 import { OfferStatus } from './dto/offer.enum';
 import { UpdateOrderDto } from './dto/update-offer.dto';
 import { Offer } from './reposities/offer.reposity';
-import { verifySignature } from '../utils/signature';
+import { verifySignature, generateOfferMessage } from '../utils/signature';
 import { DacsService } from '../dacs/dacs.service';
+import { ethers } from 'ethers';
 const sha256 = require('simple-sha256');
 
 @Injectable()
@@ -20,24 +21,18 @@ export class OffersService {
   ) {}
 
   async create(createOfferDto: CreateOfferDto) {
-    const bytes = new TextEncoder().encode(
-      JSON.stringify({
-        creator: createOfferDto.creator,
-        order: createOfferDto.order,
-        borrower: createOfferDto.borrower,
-        offer: createOfferDto.offer,
-        duration: createOfferDto.duration,
-        rate: createOfferDto.rate,
-        expiration: createOfferDto.expiration,
-      }),
+    const offerHash = generateOfferMessage(
+      createOfferDto,
+      createOfferDto.signature,
+      config.ENV.LOAN_ADDRESS,
+      config.ENV.CHAIN_ID,
     );
-    const offerHash = await sha256(bytes);
 
     if (
       !verifySignature(
         createOfferDto.creator,
-        offerHash,
-        createOfferDto.signature,
+        ethers.getBytes(offerHash),
+        createOfferDto.signature.signature,
       )
     ) {
       throw new UnauthorizedException();
@@ -48,7 +43,7 @@ export class OffersService {
       floorPrice: (createOfferDto.offer * 1.1).toFixed(2),
       hash: offerHash,
       status: OfferStatus.OPENING,
-      createdAt: new Date().getTime(),
+      // createdAt: new Date().getTime(),
     };
 
     const dacs_cid = await this.dacs.upload(newOffer);
