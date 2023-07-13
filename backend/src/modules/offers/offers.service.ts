@@ -5,14 +5,14 @@ import {
   UnauthorizedException,
   OnModuleInit,
 } from '@nestjs/common';
+import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
-import { Contract, JsonRpcProvider } from 'ethers';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { OfferStatus } from './dto/offer.enum';
-import { Offer } from './reposities/offer.reposity';
 import { verifySignature, generateOfferMessage } from '../utils/signature';
+import { Offer } from './reposities/offer.reposity';
 import { DacsService } from '../dacs/dacs.service';
-import { ethers } from 'ethers';
+import { Nft } from './../nfts/reposities/nft.reposity';
 import * as FACTORY_ABI from './abi/LOAN.json';
 
 @Injectable()
@@ -22,6 +22,7 @@ export class OffersService implements OnModuleInit {
 
   constructor(
     private readonly offer: Offer,
+    private readonly nft: Nft,
     private readonly dacs: DacsService,
   ) {}
 
@@ -84,23 +85,46 @@ export class OffersService implements OnModuleInit {
 
   async handleEvents(rpcProvider: JsonRpcProvider, from: number, to: number) {
     try {
-      const nftContract = new Contract(
+      const loanContract = new Contract(
         config.ENV.LOAN_ADDRESS,
         FACTORY_ABI,
         rpcProvider,
       );
 
       // Fetch events data
-      const events = await nftContract.queryFilter('LoanStarted', from, to);
+      const events = await loanContract.queryFilter('*', 0, to);
+      const iface = new ethers.Interface(FACTORY_ABI);
 
-      // Retrieve all event informations
-      if (!events || events.length === 0) return;
       for (let i = 0; i < events.length; i++) {
         const event: any = events[i];
         if (!event) continue;
         if (Object.keys(event).length === 0) continue;
+
+        console.log(i, iface.parseLog(event));
+
+        // switch (event.fragment.name) {
+        //   case 'LoanStarted': {
+        //     const loanId = event.args.loanId;
+        //     await this.offer.update(loanId, { status: OfferStatus.FILLED });
+        //     break;
+        //   }
+        //   case 'LoanRepaid': {
+        //     const loanId = event.args.loanId;
+        //     await this.offer.update(loanId, { status: OfferStatus.REPAID });
+        //     break;
+        //   }
+        //   case 'LoanLiquidated': {
+        //     const loanId = event.args.loanId;
+        //     await this.offer.update(loanId, { status: OfferStatus.LIQUIDATED });
+        //     break;
+        //   }
+        //   default: {
+        //     break;
+        //   }
+        // }
       }
     } catch (error) {
+      console.log(error);
       if (error.response?.data) {
         throw new HttpException(error.response.data, error.response.status);
       } else {

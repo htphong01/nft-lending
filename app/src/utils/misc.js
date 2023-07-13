@@ -29,11 +29,11 @@ export const getOrderStatusText = (status) => {
 };
 
 export const convertOfferDataToSign = (offer) => {
-  const repayment = (offer.offer + (offer.offer * offer.rate) / 1e2).toString();
+  const repayment = Number(offer.offer) + (offer.offer * offer.rate) / 100;
 
   const offerData = {
     offer: ethers.utils.parseUnits(offer.offer, 18),
-    repayment: ethers.utils.parseUnits(repayment, 18),
+    repayment: ethers.utils.parseUnits(`${repayment}`, 18),
     nftTokenId: offer.nftTokenId,
     nftAddress: offer.nftAddress,
     duration: offer.duration * ONE_DAY,

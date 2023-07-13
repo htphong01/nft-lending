@@ -17,7 +17,7 @@ import { SchedulesModule } from './modules/schedules/schedules.module';
     VotesModule,
     DacsModule,
     LendingPoolModule,
-    SchedulesModule
+    SchedulesModule,
   ],
   providers: [ConnectionsModule],
 })

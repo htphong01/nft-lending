@@ -33,13 +33,14 @@ export const generateOfferMessage = (
     adminFeeInBasisPoints,
     erc20Denomination,
   } = offerData;
-  const repayment = offer + (offer * rate) / 100;
+  const repayment = Number(offer) + (offer * rate) / 100;
+  console.log('repayment', repayment);
   const encodedOffer = ethers.solidityPacked(
     ['address', 'uint256', 'uint256', 'address', 'uint256', 'uint32', 'uint16'],
     [
       erc20Denomination,
       ethers.parseUnits(offer, 18),
-      ethers.parseUnits(repayment, 18),
+      ethers.parseUnits(`${repayment}`, 18),
       nftAddress,
       nftTokenId,
       duration * 24 * 60 * 60,

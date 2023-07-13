@@ -3,10 +3,11 @@ import { Module } from '@nestjs/common';
 import { ConnectionsModule } from 'src/connections/connections.module';
 import { ReposityModule } from './reposities/reposity.module';
 import { OffersModule } from '../offers/offers.module';
+import { CrawlsSchedule } from './crawls.schedule';
 
 @Module({
   imports: [ConnectionsModule, ReposityModule, OffersModule, NftsModule],
   controllers: [],
-  providers: [],
+  providers: [CrawlsSchedule],
 })
 export class SchedulesModule {}

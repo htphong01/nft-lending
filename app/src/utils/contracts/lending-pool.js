@@ -12,7 +12,6 @@ const lendingPoolContract = (signerOrProvider) => {
 export const getTotalBalanceOfUser = async (address, options) => {
   const contract = new ethers.Contract(WXCRs_ADDRESS, WXCRS_ABI, provider);
   const balance = await contract.balanceOf(address, { ...options });
-  console.log('balance', balance);
   return Number(ethers.utils.formatEther(balance)).toFixed(2);
 };
 

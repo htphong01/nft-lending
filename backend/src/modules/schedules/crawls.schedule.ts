@@ -51,6 +51,12 @@ export class CrawlsSchedule implements OnModuleInit {
       toBlock,
     );
 
+    await this.offersService.handleEvents(
+      this.rpcProvider,
+      crawlLatestBlock,
+      toBlock,
+    );
+
     await this.crawl.setCrawlLatestBlock(toBlock);
   }
 }

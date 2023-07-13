@@ -56,7 +56,11 @@ export class NftsService {
         });
 
         if (existedNft.length > 0) {
-          nftData = { ...existedNft[0], owner: event.args.to.toLowerCase() };
+          nftData = {
+            ...existedNft[0],
+            isAvailable: true,
+            owner: event.args.to.toLowerCase(),
+          };
         }
 
         await this.syncNft(nftData);

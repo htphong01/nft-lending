@@ -15,13 +15,12 @@ export default function Table({ title, data, creator }) {
   const handleAccept = async (item) => {
     try {
       setIsLoading(true);
-      console.log('item', item);
 
-      const payment = item.offer + (item.offer * item.rate) / 100;
+      const repayment = Number(item.offer) + (item.offer * item.rate) / 100;
 
       const offer = {
         principalAmount: ethers.utils.parseUnits(item.offer, 18),
-        maximumRepaymentAmount: ethers.utils.parseUnits(payment, 18),
+        maximumRepaymentAmount: ethers.utils.parseUnits(`${repayment}`, 18),
         nftCollateralId: item.nftTokenId,
         nftCollateralContract: item.nftAddress,
         duration: item.duration * 24 * 60 * 60,

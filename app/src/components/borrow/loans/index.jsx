@@ -7,6 +7,8 @@ import { OfferStatus, FormType } from '@src/constants/enum';
 import OfferView from '@src/components/common/offer-view';
 import Table from '@src/components/common/offer-table';
 import styles from './styles.module.scss';
+import { payBackLoan, checkAllowance, approveERC20 } from '@src/utils';
+import { ethers } from 'ethers';
 
 export default function Loans() {
   const account = useSelector((state) => state.account);
@@ -19,8 +21,18 @@ export default function Loans() {
   const [selectedOffer, setSelectedOffer] = useState();
   const [offerViewType, setOfferViewType] = useState(FormType.VIEW);
 
-  const handleRepayOffer = (offer) => {
-    console.log('accept', offer);
+  const handleRepayOffer = async (offer) => {
+    const repayment = Number(offer.offer) + (offer.offer * offer.rate) / 100;
+    try {
+      if (!(await checkAllowance(account.address, ethers.utils.parseUnits(`${repayment}`, 18)))) {
+        const tx = await approveERC20(ethers.utils.parseUnits(`${repayment}`, 18));
+        await tx.wait();
+      }
+      const tx = await payBackLoan(1);
+      await tx.wait();
+    } catch (error) {
+      console.log('error', error);
+    }
   };
 
   const handleViewOffer = (offer, type) => {
