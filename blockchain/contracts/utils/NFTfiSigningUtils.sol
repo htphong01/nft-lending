@@ -148,7 +148,7 @@ library NFTfiSigningUtils {
      * - chainId
      */
     function isValidLenderRenegotiationSignature(
-        uint256 _loanId,
+        bytes32 _loanId,
         uint32 _newLoanDuration,
         uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,
@@ -170,7 +170,7 @@ library NFTfiSigningUtils {
      *
      */
     function isValidLenderRenegotiationSignature(
-        uint256 _loanId,
+        bytes32 _loanId,
         uint32 _newLoanDuration,
         uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,

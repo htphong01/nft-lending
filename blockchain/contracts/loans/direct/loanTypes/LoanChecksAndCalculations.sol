@@ -20,7 +20,7 @@ library LoanChecksAndCalculations {
      *
      * @param _loanId - The id of the loan being repaid
      */
-    function payBackChecks(uint32 _loanId) external view {
+    function payBackChecks(bytes32 _loanId) external view {
         checkLoanIdValidity(_loanId);
         // Sanity check that payBackLoan() and liquidateOverdueLoan() have never been called on this loanId.
         // Depending on how the rest of the code turns out, this check may be unnecessary.
@@ -36,7 +36,7 @@ library LoanChecksAndCalculations {
         require(block.timestamp <= (uint256(loanStartTime) + uint256(duration)), "Loan is expired");
     }
 
-    function checkLoanIdValidity(uint256 _loanId) public view {
+    function checkLoanIdValidity(bytes32 _loanId) public view {
         require(IDirectLoanBase(address(this)).isValidLoanId(_loanId), "invalid loanId");
     }
 
@@ -65,7 +65,7 @@ library LoanChecksAndCalculations {
      */
     function renegotiationChecks(
         LoanData.LoanTerms memory _loan,
-        uint256 _loanId,
+        bytes32 _loanId,
         uint32 _newLoanDuration,
         uint256 _newMaximumRepaymentAmount,
         uint256 _lenderNonce
@@ -78,10 +78,7 @@ library LoanChecksAndCalculations {
             "New duration exceeds maximum loan duration"
         );
         require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
-        require(
-            _newMaximumRepaymentAmount >= _loan.principalAmount,
-            "Negative interest rate loans are not allowed."
-        );
+        require(_newMaximumRepaymentAmount >= _loan.principalAmount, "Negative interest rate loans are not allowed.");
 
         require(
             !IDirectLoanBase(address(this)).getWhetherNonceHasBeenUsedForUser(_loan.lender, _lenderNonce),
@@ -112,8 +109,7 @@ library LoanChecksAndCalculations {
         require(_offer.maximumRepaymentAmount <= maxRepaymentLimit, "maxInterestRateForDurationInBasisPoints violated");
 
         require(
-            _offer.duration >= _listingTerms.minLoanDuration &&
-                _offer.duration <= _listingTerms.maxLoanDuration,
+            _offer.duration >= _listingTerms.minLoanDuration && _offer.duration <= _listingTerms.maxLoanDuration,
             "Invalid duration"
         );
     }

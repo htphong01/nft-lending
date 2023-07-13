@@ -11,6 +11,13 @@ interface LoanData {
     /* DATA TYPES */
     /* ********** */
 
+    enum LoanStatus {
+        ACTIVE,
+        CANCELLED,
+        REPAID,
+        LIQUIDATED
+    }
+
     /**
      * @notice The main Loan Terms struct. This data is saved upon loan creation.
      *
@@ -44,7 +51,7 @@ interface LoanData {
         address nftCollateralContract;
         address borrower;
         address lender;
-        bool status;
+        LoanStatus status;
     }
 
     /**

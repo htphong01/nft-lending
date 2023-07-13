@@ -25,7 +25,7 @@ require("@nomiclabs/hardhat-etherscan");
 require("@openzeppelin/hardhat-upgrades");
 
 // Report gas
-require("hardhat-gas-reporter");
+// require("hardhat-gas-reporter");
 
 // This plugin adds ways to ignore Solidity warnings
 require("hardhat-ignore-warnings");

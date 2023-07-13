@@ -83,16 +83,13 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * @param _signature - The components of the lender's signature.
      */
     function acceptOffer(
+        bytes32 _loanId,
         Offer memory _offer,
         Signature memory _signature
     ) external whenNotPaused nonReentrant {
         _loanSanityChecks(_offer);
         _loanSanityChecksOffer(_offer);
-        _acceptOffer(
-            _setupLoanTerms(_offer, _signature.signer),
-            _offer,
-            _signature
-        );
+        _acceptOffer(_loanId, _setupLoanTerms(_offer, _signature.signer), _offer, _signature);
     }
 
     /* ******************* */
@@ -108,7 +105,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * @return The amount of the specified ERC20 currency required to pay back this loan, measured in the smallest unit
      * of the specified ERC20 currency.
      */
-    function getPayoffAmount(uint256 _loanId) external view override returns (uint256) {
+    function getPayoffAmount(bytes32 _loanId) external view override returns (uint256) {
         LoanTerms storage loan = loanIdToLoan[_loanId];
         return loan.maximumRepaymentAmount;
     }
@@ -125,6 +122,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * @param _signature - The components of the lender's signature.
      */
     function _acceptOffer(
+        bytes32 _loanId,
         LoanTerms memory _loanTerms,
         Offer memory _offer,
         Signature memory _signature
@@ -141,10 +139,10 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
 
         require(NFTfiSigningUtils.isValidLenderSignature(_offer, _signature), "Lender signature is invalid");
 
-        uint256 loanId = _createLoan(_loanTerms, msg.sender, _signature.signer);
+        _createLoan(_loanId, _loanTerms, msg.sender, _signature.signer);
 
         // Emit an event with all relevant details from this transaction.
-        emit LoanStarted(loanId, msg.sender, _signature.signer, _loanTerms);
+        emit LoanStarted(_loanId, msg.sender, _signature.signer, _loanTerms);
     }
 
     /**
@@ -164,7 +162,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
                 adminFeeInBasisPoints: _offer.adminFeeInBasisPoints,
                 borrower: msg.sender,
                 lender: _lender,
-                status: true
+                status: LoanStatus.ACTIVE
             });
     }
 
@@ -178,10 +176,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
     ) internal pure override returns (uint256 adminFee, uint256 payoffAmount) {
         // Calculate amounts to send to lender and admins
         uint256 interestDue = _loanTerms.maximumRepaymentAmount - _loanTerms.principalAmount;
-        adminFee = LoanChecksAndCalculations.computeAdminFee(
-            interestDue,
-            uint256(_loanTerms.adminFeeInBasisPoints)
-        );
+        adminFee = LoanChecksAndCalculations.computeAdminFee(interestDue, uint256(_loanTerms.adminFeeInBasisPoints));
         payoffAmount = _loanTerms.maximumRepaymentAmount - adminFee;
     }
 
