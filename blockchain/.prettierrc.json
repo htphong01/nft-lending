@@ -9,7 +9,9 @@
     },
     {
       "files": "*.js",
-      "options": {}
+      "options": {
+        "printWidth": 200
+      }
     },
     {
       "files": ["*.html", "legacy/**/*.js"],
