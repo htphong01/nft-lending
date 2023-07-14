@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./libraries/Formula.sol";
 import "./interfaces/ILendingPool.sol";
 import "./utils/Permission.sol";
-import "./WXCRS.sol";
+import "./Point.sol";
 import "./WXCR.sol";
 
 /**
@@ -18,18 +18,32 @@ import "./WXCR.sol";
  */
 contract LendingPool is ILendingPool, Permission {
     using SafeMath for uint256;
+
+    uint256 public constant DAILY_REWARD_POINT = 100000e18;
+
     /**
      *  @notice Other dependent contracts.
      */
     WXCR public immutable token;
-    WXCRS public immutable sToken;
+    Point public immutable point;
 
     /**
      *  @notice Total amount of token stake has been staked.
      */
+    uint256 public totalFetchStake;
+
     uint256 public totalStake;
 
-    mapping(address => uint256) public totalStakedPerUsers;
+    uint256 public totalReward;
+
+    // Staking user for a pool
+    struct PoolStaker {
+        uint256 amount; // The tokens quantity the user has staked.
+        uint256 rewardPaid; // The reward tokens quantity the user harvested
+    }
+
+    // Mapping staker address => PoolStaker
+    mapping(address => PoolStaker) public poolStakers;
 
     /**
      *  @notice Accumulated compound interest rate of everyday since the beginning.
@@ -39,11 +53,13 @@ contract LendingPool is ILendingPool, Permission {
     event Stake(address indexed account, uint256 indexed amount);
     event Unstake(address indexed account, uint256 indexed amount);
     event Inflation(uint256 indexed reward);
+    event AddedReward(uint256 indexed reward);
+    event HarvestRewards(address indexed account, uint256 indexed amount);
 
-    constructor(WXCR _token, WXCRS _sToken) {
+    constructor(WXCR _token, Point _point) {
         token = _token;
-        sToken = _sToken;
-        sToken.registerLendingPool();
+        point = _point;
+        point.registerLendingPool();
     }
 
     /**
@@ -69,27 +85,33 @@ contract LendingPool is ILendingPool, Permission {
     }
 
     /**
-     *  @notice Check if there is less than one token in the Lending Pool. If it is the case, no Lending reward will be
-     *          issued, the charged fee is also cleared.
+     *  @notice Fetch reward for the stakeholders before proceeding to the next day.
+     *
+     *  @dev    Only admin can call this function.
      */
-    function isLendingTooSmall() public view returns (bool) {
-        // TOKEN_SCALE displays 1 token
-        return (sToken.totalSupply() < Formula.ONE);
+    function fetchReward() external onlyAdmin {
+        // The balance of token stake of each stakeholder will increase as the accumulated interest rate increases.
+        productOfInterestRate = Formula.newProductOfInterestRate(
+            productOfInterestRate,
+            DAILY_REWARD_POINT,
+            totalFetchStake
+        );
+        totalFetchStake += DAILY_REWARD_POINT;
+        emit Inflation(DAILY_REWARD_POINT);
     }
 
     /**
-     *  @notice Fetch reward for the stakeholders before proceeding to the next day.
+     *  @notice Add reward for the stakeholders.
      *
      *  @dev    Only admin can call this function.
      *
      *          Name    Meaning
      *  @param  _reward Amount of reward to fetch
      */
-    function fetchReward(uint256 _reward) external onlyAdmin {
-        // The balance of token stake of each stakeholder will increase as the accumulated interest rate increases.
-        productOfInterestRate = Formula.newProductOfInterestRate(productOfInterestRate, _reward, totalStake);
-        totalStake += _reward;
-        emit Inflation(_reward);
+    function addReward(uint256 _reward) external onlyAdmin {
+        totalReward += _reward;
+        token.transferFrom(msg.sender, address(this), _reward);
+        emit AddedReward(_reward);
     }
 
     /**
@@ -100,14 +122,18 @@ contract LendingPool is ILendingPool, Permission {
      */
     function stake(uint256 _amount) external {
         require(_amount > 0, "LendingPool: Invalid amount");
+
+        PoolStaker storage staker = poolStakers[msg.sender];
+
         // Calculate and mint discount factor for the stakeholder.
         uint256 discountFactor = tokenToDiscountFactor(_amount);
-        sToken.mintDiscountFactor(msg.sender, discountFactor);
+        point.mintDiscountFactor(msg.sender, discountFactor);
 
-        totalStakedPerUsers[msg.sender] += _amount;
+        staker.amount += _amount;
 
         // Increase total amount of stake.
         totalStake += _amount;
+        totalFetchStake += _amount;
 
         // Transfer token from address of the stakeholder to address of this contract.
         token.transferFrom(msg.sender, address(this), _amount);
@@ -116,28 +142,55 @@ contract LendingPool is ILendingPool, Permission {
     }
 
     /**
-     *  @notice Unstake token stake from the Lending Pool.
-     *
-     *          Name    Meaning
-     *  @param  _amount Token amount to unstake
+     * @dev Harvest user rewards
      */
-    function unstake(uint256 _amount) external returns (uint256) {
-        require(_amount <= sToken.balanceOf(msg.sender), "LendingPool: Unstake amount exceeds the stake.");
+    function harvestRewards(uint256 _amount) public {
+        PoolStaker storage staker = poolStakers[msg.sender];
+        require(
+            point.balanceOf(msg.sender) - staker.amount > _amount,
+            "LendingPool: Harvest amount exceeds the harvest."
+        );
 
-        // Update total stake.
-        totalStake -= _amount;
-        totalStakedPerUsers[msg.sender] -= _amount;
+        uint256 rewardsToHarvest = (totalReward * _amount) / point.totalSupply();
+        totalReward -= rewardsToHarvest;
+        staker.rewardPaid += rewardsToHarvest;
 
         // Calculate and burn discount factor for the stakeholder.
         uint256 discountFactor = tokenToDiscountFactor(_amount);
-        sToken.burnDiscountFactor(msg.sender, discountFactor);
+        point.burnDiscountFactor(msg.sender, discountFactor);
+
+        token.transfer(msg.sender, rewardsToHarvest);
+
+        emit HarvestRewards(msg.sender, rewardsToHarvest);
+    }
+
+    /**
+     *  @notice Unstake token stake from the Lending Pool.
+     *
+     */
+    function unstake() external {
+        PoolStaker storage staker = poolStakers[msg.sender];
+        uint256 _rewardPoints = point.balanceOf(msg.sender);
+        require(_rewardPoints > 0, "LendingPool: Unstake amount exceeds the stake.");
+
+        // Update total stake.
+        uint256 _amount = staker.amount;
+        totalStake -= _amount;
+        totalFetchStake -= _rewardPoints;
+        staker.amount = 0;
+
+        // Calculate reward
+        uint256 rewardsToHarvest = (totalReward * _rewardPoints) / point.totalSupply();
+        totalReward -= rewardsToHarvest;
+        staker.rewardPaid += rewardsToHarvest;
+
+        // Calculate and burn discount factor for the stakeholder.
+        uint256 discountFactor = tokenToDiscountFactor(_rewardPoints);
+        point.burnDiscountFactor(msg.sender, discountFactor);
 
         // Transfer token from address of this contract to address of the stakeholder.
-        token.transfer(msg.sender, _amount);
+        token.transfer(msg.sender, _amount + rewardsToHarvest);
 
-        emit Unstake(msg.sender, _amount);
-
-        // Return the token amount.
-        return _amount;
+        emit Unstake(msg.sender, _amount + rewardsToHarvest);
     }
 }
