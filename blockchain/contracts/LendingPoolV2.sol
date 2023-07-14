@@ -3,7 +3,6 @@ pragma solidity 0.8.18;
 
 import "./libraries/Formula.sol";
 import "./utils/Permission.sol";
-import "./PointV2.sol";
 import "./WXCR.sol";
 
 /**
@@ -15,7 +14,6 @@ import "./WXCR.sol";
  *  @dev    This contract implements interface `ILendingPool`.
  */
 contract LendingPoolV2 is Permission {
-    PointV2 public rewardToken; // Token to be payed as reward
 
     uint256 private rewardTokensPerBlock; // Number of reward tokens minted per block
     uint256 private constant REWARDS_PRECISION = 1e12; // A big number to perform mul and div operations
@@ -32,6 +30,7 @@ contract LendingPoolV2 is Permission {
     uint256 public totalRewardDebt;
     uint256 public lastRewardedBlock; // Last block number the user had their rewards calculated
     uint256 public accumulatedRewardsPerShare; // Accumulated rewards per share times REWARDS_PRECISION
+    uint256 public totalWXCRReward;
 
     // Mapping staker address => PoolStaker
     mapping(address => PoolStaker) public poolStakers;
@@ -39,13 +38,12 @@ contract LendingPoolV2 is Permission {
     // Events
     event Deposit(address indexed user, uint256 amount);
     event Withdraw(address indexed user, uint256 amount);
-    event HarvestRewards(address indexed user, uint256 amount);
+    event ClaimRewards(address indexed user, uint256 points, uint256 reward);
     event PoolCreated(uint256 poolId);
 
     // Constructor
-    constructor(WXCR _stakeToken, PointV2 _point, uint256 _rewardTokensPerBlock) {
+    constructor(WXCR _stakeToken, uint256 _rewardTokensPerBlock) {
         stakeToken = _stakeToken;
-        rewardToken = _point;
         rewardTokensPerBlock = _rewardTokensPerBlock;
     }
 
@@ -57,7 +55,7 @@ contract LendingPoolV2 is Permission {
         PoolStaker storage staker = poolStakers[msg.sender];
 
         // Update pool stakers
-        harvestRewards();
+        claimRewards();
 
         // Update current staker
         staker.amount = staker.amount + _amount;
@@ -80,7 +78,7 @@ contract LendingPoolV2 is Permission {
         require(amount > 0, "Withdraw amount can't be zero");
 
         // Pay rewards
-        harvestRewards();
+        claimRewards();
 
         // Update staker
         staker.amount = 0;
@@ -97,26 +95,28 @@ contract LendingPoolV2 is Permission {
     /**
      * @dev Harvest user rewards from a given pool id
      */
-    function harvestRewards() public {
+    function claimRewards() public {
         updatePoolRewards();
         PoolStaker storage staker = poolStakers[msg.sender];
 
-        uint256 rewardsToHarvest = ((staker.amount * accumulatedRewardsPerShare) / REWARDS_PRECISION) -
+        uint256 points = ((staker.amount * accumulatedRewardsPerShare) / REWARDS_PRECISION) -
             staker.rewardDebt;
         
         uint256 totalRewardsToHarvest = ((tokensStaked * accumulatedRewardsPerShare) / REWARDS_PRECISION) -
             totalRewardDebt;
 
-        if (rewardsToHarvest == 0) {
+        if (points == 0) {
             updateRewardDebt();
             return;
         }
         updateRewardDebt();
-        emit HarvestRewards(msg.sender, rewardsToHarvest);
 
         // Exchange point to xCR reward
-        // Cal total rewrd
-        // cal xcr reward = rewardsToHarvest * xrc.balacnceOf(addresthiss) / total rewrd
+        uint256 claimable = (points * totalWXCRReward) / totalRewardsToHarvest;
+        totalWXCRReward -= claimable;
+        stakeToken.transfer(address(this), claimable);
+
+        emit ClaimRewards(msg.sender, points, claimable);
     }
 
     /**
