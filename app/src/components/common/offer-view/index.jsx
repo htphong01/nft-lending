@@ -6,8 +6,7 @@ import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import ReactLoading from 'react-loading';
 import { Icon } from '@iconify/react';
-import { calculateRepayment } from '@src/utils/apr';
-import { sliceAddress, calculateRealPrice } from '@src/utils/misc';
+import { calculateRepayment, sliceAddress, calculateRealPrice } from '@src/utils';
 import { getOrderByHash } from '@src/api/order.api';
 import styles from './styles.module.scss';
 
@@ -56,18 +55,22 @@ export default function OfferView({ item, onClose, action }) {
                 <div className={styles.label}>Name:</div>
                 <div className={styles.value}>
                   <span>{data.order.metadata.name}</span>
-                  <Link to={`/assets/${data.order.hash}`} target="_blank">
-                    <Icon icon="uil:edit" />
-                  </Link>
+                  {!data.lender && (
+                    <Link to={`/assets/${data.order.hash}`} target="_blank">
+                      <Icon icon="uil:edit" />
+                    </Link>
+                  )}
                 </div>
               </div>
               <div className={styles.info}>
                 <div className={styles.label}>Lender: </div>
                 <div className={styles.value}>
-                  <span>{sliceAddress(data.creator)}</span>
-                  <Link to={`${CVC_SCAN}/address/${data.creator}`} target="_blank">
-                    <Icon icon="uil:edit" />
-                  </Link>
+                  <span>{data.lender ? 'Lending Pool' : sliceAddress(data.creator)}</span>
+                  {!data.lender && (
+                    <Link to={`${data.lender ? 'lending-pool' : CVC_SCAN}/address/${data.creator}`} target="_blank">
+                      <Icon icon="uil:edit" />
+                    </Link>
+                  )}
                 </div>
               </div>
               <div className={styles.info}>

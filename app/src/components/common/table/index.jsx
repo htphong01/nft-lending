@@ -1,11 +1,10 @@
 /* eslint-disable react/prop-types */
 import { useSelector } from 'react-redux';
-import { calculateRepayment } from '@src/utils/apr';
-import { sliceAddress, getOrderStatusText } from '@src/utils/misc';
+import { calculateRepayment, sliceAddress, getOrderStatusText, getOfferStatusText } from '@src/utils';
 import styles from './styles.module.scss';
 
-export default function Table({ title, data, action }) {
-  const currency = useSelector(state => state.account.currency);
+export default function Table({ title, data, action, type = '' }) {
+  const currency = useSelector((state) => state.account.currency);
 
   return (
     <div className={styles.table}>
@@ -28,14 +27,30 @@ export default function Table({ title, data, action }) {
           <div className={styles['table-list']} key={index}>
             <div className={styles['table-list-item']}>{item.metadata.collection}</div>
             <div className={styles['table-list-item']}>{item.metadata.name}</div>
-            <div className={styles['table-list-item']}>{item.lender === 'user' ? sliceAddress(item.creator) : 'Lending Pool'}</div>
-            <div className={styles['table-list-item']}>{sliceAddress(item.creator)}</div>
-            <div className={styles['table-list-item']}>{item.offer} {currency}</div>
+            <div className={styles['table-list-item']}>
+              {type === 'HISTORY'
+                ? item.lender
+                  ? 'Lending pool'
+                  : sliceAddress(item.creator)
+                : item.lender === 'user'
+                ? sliceAddress(item.creator)
+                : 'Lending Pool'}
+            </div>
+            <div className={styles['table-list-item']}>
+              {item.lender ? sliceAddress(item.creator) : sliceAddress(item.borrower)}
+            </div>
+            <div className={styles['table-list-item']}>
+              {item.offer} {currency}
+            </div>
             <div className={styles['table-list-item']}>{item.duration} days</div>
-            <div className={styles['table-list-item']}>{calculateRepayment(item.offer, item.rate, item.duration)} {currency}</div>
+            <div className={styles['table-list-item']}>
+              {calculateRepayment(item.offer, item.rate, item.duration)} {currency}
+            </div>
             <div className={styles['table-list-item']}>{item.rate}%</div>
             <div className={styles['table-list-item']}>{new Date(item.createdAt).toLocaleDateString()}</div>
-            <div className={styles['table-list-item']}>{getOrderStatusText(item.status)}</div>
+            <div className={styles['table-list-item']}>
+              {item.lender ? getOrderStatusText(item.status) : getOfferStatusText(item.status)}
+            </div>
             <div className={styles['table-list-item']}>
               {action ? <button onClick={() => action.handle(item)}>{action.text}</button> : '#'}
             </div>
