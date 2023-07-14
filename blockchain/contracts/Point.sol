@@ -13,7 +13,7 @@ import "./utils/Permission.sol";
  *
  *  @dev    This contract derives from the implementation of ERC-20 of OpenZeppelin.
  */
-contract WXCRS is ERC20, Permission {
+contract Point is ERC20, Permission {
     ILendingPool public lendingPool;
 
     /**
@@ -37,10 +37,10 @@ contract WXCRS is ERC20, Permission {
 
     /**
      *  @dev    Apply the constructor of the superclass contract `ERC20`.
-     *          Name:     "Stake"
-     *          Symbol:   "SSS"
+     *          Name:     "Reward Point"
+     *          Symbol:   "RP"
      */
-    constructor() ERC20("Stake", "SSS") {}
+    constructor() ERC20("Reward Point", "RP") {}
 
     /**
      *  @notice Register a lendingPool for some restricted function.

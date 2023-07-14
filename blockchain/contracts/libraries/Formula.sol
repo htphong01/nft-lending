@@ -27,7 +27,7 @@ library Formula {
         uint256 _reward,
         uint256 _totalCapital
     ) internal pure returns (uint256 res) {
-        uint256 interestRate = ONE.add(_reward.div(_totalCapital));
-        res = _productOfInterestRate.mul(interestRate);
+        uint256 interestRate = ONE.add(_reward.mul(ONE).div(_totalCapital));
+        res = _productOfInterestRate.mul(interestRate).div(ONE);
     }
 }
