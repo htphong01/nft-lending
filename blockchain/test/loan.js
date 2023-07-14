@@ -63,7 +63,7 @@ describe.only("Loan", () => {
             maximumRepaymentAmount: TOKEN_1.mul(18),
             nftCollateralId: 1,
             nftCollateralContract: chonkSociety.address,
-            duration: ONE_DAY * 30,
+            duration: 10,
             adminFeeInBasisPoints: 25,
             erc20Denomination: wXCR.address,
         };
@@ -72,7 +72,7 @@ describe.only("Loan", () => {
 
         const signature = {
             nonce: getRandomInt(),
-            expiry: 1689267600,
+            expiry: 1689786000,
             signer: lender.address,
         };
 

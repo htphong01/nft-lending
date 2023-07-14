@@ -36,6 +36,7 @@ export const generateOfferSignature = async (
     adminFeeInBasisPoints = 25,
     erc20Denomination = WXCR_ADDRESS,
   } = offerData;
+  console.log(duration);
   const encodedOffer = ethers.utils.solidityPack(
     ['address', 'uint256', 'uint256', 'address', 'uint256', 'uint32', 'uint16'],
     [erc20Denomination, offer, repayment, nftAddress, nftTokenId, duration, adminFeeInBasisPoints]

@@ -24,7 +24,7 @@ export default function MakeOffer({ item }) {
 
   const fetchOffers = async () => {
     try {
-      const { data } = await getOffersByOrder(hash);
+      const { data } = await getOffersByOrder(hash, { status: 0 });
       setOfferList(data);
       setIsLoading(false);
     } catch (error) {

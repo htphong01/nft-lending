@@ -11,6 +11,7 @@ import {
   calculateRepayment,
   checkAllowance,
   approveERC20,
+  parseMetamaskError,
 } from '@src/utils';
 import { createOffer } from '@src/api/offer.api';
 import styles from '../styles.module.scss';
@@ -67,6 +68,7 @@ export default function Form({ order, fetchOffers }) {
       offer.nftAddress = order.nftAddress;
       offer.nftTokenId = order.nftTokenId;
 
+      
       const { offerData, signatureData } = convertOfferDataToSign(offer);
       const signature = await generateOfferSignature(offerData, signatureData);
       signatureData.signature = signature;
@@ -89,13 +91,15 @@ export default function Form({ order, fetchOffers }) {
         duration: 0,
         repayment: 0,
         apr: 0,
+        expiration: 0
       });
       fetchOffers();
       setIsLoading(false);
     } catch (error) {
+      const txError = parseMetamaskError(error);
       setIsLoading(false);
       console.log('error', error);
-      toast.error('An error has been occurred!');
+      toast.error(txError.context || 'An error has been occurred!');
     }
   };
 

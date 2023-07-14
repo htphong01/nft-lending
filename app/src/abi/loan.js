@@ -57,9 +57,9 @@ export const LOAN_ABI = [
     inputs: [
       {
         indexed: true,
-        internalType: 'uint256',
+        internalType: 'bytes32',
         name: 'loanId',
-        type: 'uint256',
+        type: 'bytes32',
       },
       {
         indexed: true,
@@ -112,9 +112,9 @@ export const LOAN_ABI = [
     inputs: [
       {
         indexed: true,
-        internalType: 'uint256',
+        internalType: 'bytes32',
         name: 'loanId',
-        type: 'uint256',
+        type: 'bytes32',
       },
       {
         indexed: true,
@@ -161,9 +161,9 @@ export const LOAN_ABI = [
     inputs: [
       {
         indexed: true,
-        internalType: 'uint256',
+        internalType: 'bytes32',
         name: 'loanId',
-        type: 'uint256',
+        type: 'bytes32',
       },
       {
         indexed: true,
@@ -222,9 +222,9 @@ export const LOAN_ABI = [
     inputs: [
       {
         indexed: true,
-        internalType: 'uint256',
+        internalType: 'bytes32',
         name: 'loanId',
-        type: 'uint256',
+        type: 'bytes32',
       },
       {
         indexed: true,
@@ -291,9 +291,9 @@ export const LOAN_ABI = [
             type: 'address',
           },
           {
-            internalType: 'bool',
+            internalType: 'enum LoanData.LoanStatus',
             name: 'status',
-            type: 'bool',
+            type: 'uint8',
           },
         ],
         indexed: false,
@@ -378,6 +378,11 @@ export const LOAN_ABI = [
   },
   {
     inputs: [
+      {
+        internalType: 'bytes32',
+        name: '_loanId',
+        type: 'bytes32',
+      },
       {
         components: [
           {
@@ -542,9 +547,9 @@ export const LOAN_ABI = [
   {
     inputs: [
       {
-        internalType: 'uint256',
+        internalType: 'bytes32',
         name: '_loanId',
-        type: 'uint256',
+        type: 'bytes32',
       },
     ],
     name: 'getPayoffAmount',
@@ -585,9 +590,9 @@ export const LOAN_ABI = [
   {
     inputs: [
       {
-        internalType: 'uint256',
+        internalType: 'bytes32',
         name: '_loanId',
-        type: 'uint256',
+        type: 'bytes32',
       },
     ],
     name: 'isValidLoanId',
@@ -604,9 +609,9 @@ export const LOAN_ABI = [
   {
     inputs: [
       {
-        internalType: 'uint32',
+        internalType: 'bytes32',
         name: '_loanId',
-        type: 'uint32',
+        type: 'bytes32',
       },
     ],
     name: 'liquidateOverdueLoan',
@@ -615,24 +620,11 @@ export const LOAN_ABI = [
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'loanId',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
     inputs: [
       {
-        internalType: 'uint256',
+        internalType: 'bytes32',
         name: '',
-        type: 'uint256',
+        type: 'bytes32',
       },
     ],
     name: 'loanIdToLoan',
@@ -688,9 +680,9 @@ export const LOAN_ABI = [
         type: 'address',
       },
       {
-        internalType: 'bool',
+        internalType: 'enum LoanData.LoanStatus',
         name: 'status',
-        type: 'bool',
+        type: 'uint8',
       },
     ],
     stateMutability: 'view',
@@ -699,9 +691,9 @@ export const LOAN_ABI = [
   {
     inputs: [
       {
-        internalType: 'uint256',
+        internalType: 'bytes32',
         name: '',
-        type: 'uint256',
+        type: 'bytes32',
       },
     ],
     name: 'loanRepaidOrLiquidated',
@@ -798,9 +790,9 @@ export const LOAN_ABI = [
   {
     inputs: [
       {
-        internalType: 'uint32',
+        internalType: 'bytes32',
         name: '_loanId',
-        type: 'uint32',
+        type: 'bytes32',
       },
     ],
     name: 'payBackLoan',
@@ -824,9 +816,9 @@ export const LOAN_ABI = [
   {
     inputs: [
       {
-        internalType: 'uint256',
+        internalType: 'bytes32',
         name: '_loanId',
-        type: 'uint256',
+        type: 'bytes32',
       },
       {
         internalType: 'uint32',

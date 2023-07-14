@@ -7,12 +7,13 @@ import {
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
+import { verifySignature, generateOfferMessage } from '../utils/signature';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { OfferStatus } from './dto/offer.enum';
-import { verifySignature, generateOfferMessage } from '../utils/signature';
+import { OrderStatus } from '../orders/dto/order.enum';
 import { Offer } from './reposities/offer.reposity';
+import { Order } from '../orders/reposities/order.reposity';
 import { DacsService } from '../dacs/dacs.service';
-import { Nft } from './../nfts/reposities/nft.reposity';
 import * as FACTORY_ABI from './abi/LOAN.json';
 
 @Injectable()
@@ -22,7 +23,7 @@ export class OffersService implements OnModuleInit {
 
   constructor(
     private readonly offer: Offer,
-    private readonly nft: Nft,
+    private readonly order: Order,
     private readonly dacs: DacsService,
   ) {}
 
@@ -92,36 +93,48 @@ export class OffersService implements OnModuleInit {
       );
 
       // Fetch events data
-      const events = await loanContract.queryFilter('*', 0, to);
-      const iface = new ethers.Interface(FACTORY_ABI);
+      const events = await loanContract.queryFilter('*', from, to);
 
       for (let i = 0; i < events.length; i++) {
         const event: any = events[i];
         if (!event) continue;
         if (Object.keys(event).length === 0) continue;
 
-        console.log(i, iface.parseLog(event));
-
-        // switch (event.fragment.name) {
-        //   case 'LoanStarted': {
-        //     const loanId = event.args.loanId;
-        //     await this.offer.update(loanId, { status: OfferStatus.FILLED });
-        //     break;
-        //   }
-        //   case 'LoanRepaid': {
-        //     const loanId = event.args.loanId;
-        //     await this.offer.update(loanId, { status: OfferStatus.REPAID });
-        //     break;
-        //   }
-        //   case 'LoanLiquidated': {
-        //     const loanId = event.args.loanId;
-        //     await this.offer.update(loanId, { status: OfferStatus.LIQUIDATED });
-        //     break;
-        //   }
-        //   default: {
-        //     break;
-        //   }
-        // }
+        switch (event.fragment.name) {
+          case 'LoanStarted': {
+            const loanId = event.args.loanId;
+            const offer = await this.findById(loanId);
+            await Promise.all([
+              this.offer.update(loanId, { status: OfferStatus.FILLED }),
+              this.offer.deleteAllAccept(loanId),
+              this.order.update(offer.order, { status: OrderStatus.FILLED }),
+            ]);
+            break;
+          }
+          case 'LoanRepaid': {
+            const loanId = event.args.loanId;
+            const offer = await this.findById(loanId);
+            await Promise.all([
+              this.offer.update(loanId, { status: OfferStatus.REPAID }),
+              this.order.update(offer.order, { status: OrderStatus.REPAID }),
+            ]);
+            break;
+          }
+          case 'LoanLiquidated': {
+            const loanId = event.args.loanId;
+            const offer = await this.findById(loanId);
+            await Promise.all([
+              this.offer.update(loanId, { status: OfferStatus.LIQUIDATED }),
+              this.order.update(offer.order, {
+                status: OrderStatus.LIQUIDATED,
+              }),
+            ]);
+            break;
+          }
+          default: {
+            break;
+          }
+        }
       }
     } catch (error) {
       console.log(error);

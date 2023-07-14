@@ -1,8 +1,7 @@
 import { OfferStatus, OrderStatus } from '@src/constants/enum';
 import { WXCR_ADDRESS } from '@src/constants';
 import { ethers } from 'ethers';
-
-const ONE_DAY = 24 * 60 * 60;
+import { ONE_DAY } from '@src/constants';
 
 export const sliceAddress = (address) => {
   return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
@@ -44,7 +43,7 @@ export const convertOfferDataToSign = (offer) => {
   const signatureData = {
     signer: offer.creator,
     nonce: getRandomInt(),
-    expiry: Math.floor(new Date().getTime() / 1000) + ONE_DAY * offer.expiration,
+    expiry: Math.floor(new Date().getTime() / 1000) + 24 * 60 * 60 * offer.expiration,
   };
 
   return { offerData, signatureData };

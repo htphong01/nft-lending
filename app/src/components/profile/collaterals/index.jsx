@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import ReactLoading from 'react-loading';
 import { useSelector } from 'react-redux';
-import { getOrderByCreator } from '@src/api/order.api';
+import { getOrders } from '@src/api/order.api';
 import Card from '@src/components/common/card';
 import ListCollateralForm from '@src/components/common/list-collateral-form';
-import { COLLATERAL_FORM_TYPE } from '@src/constants';
+import { COLLATERAL_FORM_TYPE, OrderStatus } from '@src/constants';
 import styles from './styles.module.scss';
 
 export default function Collateral() {
@@ -16,7 +16,7 @@ export default function Collateral() {
 
   const fetchOrderList = async () => {
     try {
-      const { data } = await getOrderByCreator(account.address);
+      const { data } = await getOrders({ creator: account.address, status: OrderStatus.OPENING });
       setOrderList(data);
       setIsLoading(false);
     } catch (error) {

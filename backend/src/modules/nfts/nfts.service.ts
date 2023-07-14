@@ -39,7 +39,7 @@ export class NftsService {
 
         const { data } = await axios.get(await nftContract.tokenURI(tokenId));
 
-        let nftData = {
+        const nftData = {
           owner: event.args.to.toLowerCase(),
           tokenId: tokenId,
           tokenURI: await nftContract.tokenURI(tokenId),
@@ -50,18 +50,18 @@ export class NftsService {
           isAvailable: true,
         };
 
-        const existedNft = await this.findAll({
-          tokenId: tokenId.toString(),
-          collectionAddress: event.address.toLowerCase(),
-        });
+        // const existedNft = await this.findAll({
+        //   tokenId: tokenId.toString(),
+        //   collectionAddress: event.address.toLowerCase(),
+        // });
 
-        if (existedNft.length > 0) {
-          nftData = {
-            ...existedNft[0],
-            isAvailable: true,
-            owner: event.args.to.toLowerCase(),
-          };
-        }
+        // if (existedNft.length > 0) {
+        //   nftData = {
+        //     ...existedNft[0],
+        //     isAvailable: true,
+        //     owner: event.args.to.toLowerCase(),
+        //   };
+        // }
 
         await this.syncNft(nftData);
       }

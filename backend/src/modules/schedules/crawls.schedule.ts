@@ -20,7 +20,7 @@ export class CrawlsSchedule implements OnModuleInit {
     this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async handleEvents() {
     const onChainLatestBlock = await this.rpcProvider.getBlockNumber();
     if (!onChainLatestBlock) {

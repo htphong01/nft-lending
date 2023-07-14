@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@enzoferey/ethers-error-parser": "^0.2.3",
     "@iconify/react": "^4.0.0",
     "@metamask/jazzicon": "^2.0.0",
     "@reduxjs/toolkit": "^1.8.6",

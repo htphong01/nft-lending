@@ -6,11 +6,14 @@ import { getOffers } from '@src/api/offer.api';
 import { OfferStatus, FormType } from '@src/constants/enum';
 import OfferView from '@src/components/common/offer-view';
 import Table from '@src/components/common/offer-table';
+import { liquidateLoan, parseMetamaskError } from '@src/utils';
+import toast, { Toaster } from 'react-hot-toast';
 import styles from './styles.module.scss';
 
 export default function Loans() {
   const account = useSelector((state) => state.account);
 
+  const [commitLoading, setCommitLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [offerList, setOfferList] = useState({
     current: [],
@@ -19,8 +22,19 @@ export default function Loans() {
   const [selectedOffer, setSelectedOffer] = useState();
   const [offerViewType, setOfferViewType] = useState(FormType.VIEW);
 
-  const handleRepayOffer = (offer) => {
-    console.log('accept', offer);
+  const handleLiquidate = async (offer) => {
+    try {
+      setCommitLoading(true);
+      const tx = await liquidateLoan(offer.hash);
+      await tx.wait();
+      setCommitLoading(false);
+      toast.success('Liquidate loan successfully');
+    } catch (error) {
+      const txError = parseMetamaskError(error);
+      setCommitLoading(false);
+      toast.error(txError.context || 'An error has been occurred!');
+      console.log('error', error.data.message);
+    }
   };
 
   const handleViewOffer = (offer, type) => {
@@ -54,6 +68,12 @@ export default function Loans() {
 
   return (
     <div className={styles.container}>
+      <Toaster position="top-center" reverseOrder={false} />
+      {commitLoading && (
+        <div className="screen-loading-overlay">
+          <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
+        </div>
+      )}
       {selectedOffer &&
         (offerViewType === FormType.VIEW ? (
           <OfferView item={selectedOffer} onClose={setSelectedOffer} />
@@ -61,7 +81,7 @@ export default function Loans() {
           <OfferView
             item={selectedOffer}
             onClose={setSelectedOffer}
-            action={{ text: 'Repay', handle: handleRepayOffer }}
+            action={{ text: 'Liquidate', handle: handleLiquidate }}
           />
         ))}
       {isLoading ? (
