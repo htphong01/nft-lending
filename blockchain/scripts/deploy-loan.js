@@ -1,6 +1,6 @@
 const { ethers } = require("hardhat");
 const { deployProxyAndLogger, contractFactoriesLoader } = require("../utils/deploy.utils");
-const { blockTimestamp } = require('../utils/test.utils');
+const { blockTimestamp } = require("../utils/test.utils");
 const fs = require("fs");
 require("dotenv").config();
 const env = process.env;
@@ -19,8 +19,8 @@ async function main() {
 
     //* Loading contract factory */
     const PermittedNFTs = await ethers.getContractFactory("PermittedNFTs");
-    const LoanChecksAndCalculations = await hre.ethers.getContractFactory('LoanChecksAndCalculations');
-    const NFTfiSigningUtils = await hre.ethers.getContractFactory('NFTfiSigningUtils');
+    const LoanChecksAndCalculations = await hre.ethers.getContractFactory("LoanChecksAndCalculations");
+    const NFTfiSigningUtils = await hre.ethers.getContractFactory("NFTfiSigningUtils");
 
     //* Deploy contracts */
     console.log("==========================================================================");
@@ -28,17 +28,17 @@ async function main() {
     console.log("==========================================================================");
 
     let loanChecksAndCalculations = await LoanChecksAndCalculations.deploy();
-    await loanChecksAndCalculations.deployed()
+    await loanChecksAndCalculations.deployed();
     console.log("Library LoanChecksAndCalculations deployed to:", loanChecksAndCalculations.address);
 
     let nftfiSigningUtils = await NFTfiSigningUtils.deploy();
-    await nftfiSigningUtils.deployed()
+    await nftfiSigningUtils.deployed();
     console.log("Library NFTfiSigningUtils deployed to:", nftfiSigningUtils.address);
 
     const DirectLoanFixedOffer = await ethers.getContractFactory("DirectLoanFixedOffer", {
         libraries: {
             LoanChecksAndCalculations: loanChecksAndCalculations.address,
-            NFTfiSigningUtils: nftfiSigningUtils.address
+            NFTfiSigningUtils: nftfiSigningUtils.address,
         },
     });
 
@@ -50,6 +50,8 @@ async function main() {
     await directLoanFixedOffer.deployed();
     console.log("DirectLoanFixedOffer                        deployed to:>>", directLoanFixedOffer.address);
 
+    await permittedNFTs.connect(accounts[0]).setNFTPermit("0xf31a2e258bec65a46fb54cd808294ce215070150", true);
+    await loan.connect(accounts[0]).setERC20Permit("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108", true);
     console.log("==========================================================================");
     console.log("VERIFY CONTRACTS");
     console.log("==========================================================================");

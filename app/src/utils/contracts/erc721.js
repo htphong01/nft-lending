@@ -19,8 +19,6 @@ export const getNFTs = async (address, contractAddress = NFT_CONTRACT_ADDRESS) =
 
 export const checkApproved = async (tokenId, operator = LOAN_ADDRESS, contractAddress = NFT_CONTRACT_ADDRESS) => {
   const contract = ERC721Contract(contractAddress);
-  console.log(contract.address);
-  console.log(contract.functions);
   const isApproved = await contract.getApproved(tokenId);
   return isApproved.toLowerCase() == operator.toLowerCase();
 };

@@ -60,7 +60,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
     setIsLoading(true);
     try {
       if (type === COLLATERAL_FORM_TYPE.VIEW) {
-        console.log('item', item);
+        console.log('Unlist', item);
       } else {
         if (Object.values(data).includes(0)) {
           toast.error('Please fill required information!');

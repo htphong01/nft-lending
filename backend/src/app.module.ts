@@ -6,6 +6,7 @@ import { NftsModule } from './modules/nfts/nfts.module';
 import { VotesModule } from './modules/votes/votes.module';
 import { DacsModule } from './modules/dacs/dacs.module';
 import { LendingPoolModule } from './modules/lending-pool/lending-pool.module';
+import { SchedulesModule } from './modules/schedules/schedules.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { LendingPoolModule } from './modules/lending-pool/lending-pool.module';
     VotesModule,
     DacsModule,
     LendingPoolModule,
+    SchedulesModule,
   ],
   providers: [ConnectionsModule],
 })

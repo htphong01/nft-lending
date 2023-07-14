@@ -13,7 +13,6 @@ interface LoanData {
 
     enum LoanStatus {
         ACTIVE,
-        CANCELLED,
         REPAID,
         LIQUIDATED
     }

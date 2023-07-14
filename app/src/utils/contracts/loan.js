@@ -9,7 +9,17 @@ export const loanContract = (signerOrProvider) => {
   return new ethers.Contract(LOAN_ADDRESS, LOAN_ABI, signerOrProvider);
 };
 
-export const acceptOffer = (offer, signature) => {
+export const acceptOffer = (loanId, offer, signature) => {
   const contract = loanContract(signer);
-  return contract.acceptOffer(offer, signature);
+  return contract.acceptOffer(loanId, offer, signature);
+};
+
+export const payBackLoan = async (loanId) => {
+  const contract = loanContract(signer);
+  return contract.payBackLoan(loanId);
+};
+
+export const liquidateLoan = async (loanId) => {
+  const contract = loanContract(signer);
+  return contract.liquidateOverdueLoan(loanId);
 };

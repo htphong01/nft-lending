@@ -1,5 +1,7 @@
 import { ethers } from 'ethers';
 
+const ONE_DAY = 24 * 60 * 60;
+
 const getSignerAddress = (msg: string, signature: string) => {
   try {
     const signerAddress = ethers.verifyMessage(msg, signature);
@@ -24,6 +26,7 @@ export const generateOfferMessage = (
   loanContract,
   chainId,
 ) => {
+
   const {
     offer,
     rate,
@@ -33,16 +36,16 @@ export const generateOfferMessage = (
     adminFeeInBasisPoints,
     erc20Denomination,
   } = offerData;
-  const repayment = offer + (offer * rate) / 100;
+  const repayment = Number(offer) + (offer * rate) / 100;
   const encodedOffer = ethers.solidityPacked(
     ['address', 'uint256', 'uint256', 'address', 'uint256', 'uint32', 'uint16'],
     [
       erc20Denomination,
       ethers.parseUnits(offer, 18),
-      ethers.parseUnits(repayment, 18),
+      ethers.parseUnits(`${repayment}`, 18),
       nftAddress,
       nftTokenId,
-      duration * 24 * 60 * 60,
+      duration * ONE_DAY,
       adminFeeInBasisPoints,
     ],
   );
