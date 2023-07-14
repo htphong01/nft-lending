@@ -4,19 +4,23 @@ import { ethers } from 'ethers';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
 
+export const ERC20Contract = (address, signerOrProvider = provider) => {
+  return new ethers.Contract(address, ERC20_ABI, signerOrProvider);
+};
+
 export const getBalance = async (account, contractAddress = WXCR_ADDRESS) => {
-  const contract = new ethers.Contract(contractAddress, ERC20_ABI, provider);
+  const contract = ERC20Contract(contractAddress, provider);
   const balance = await contract.balanceOf(account);
   return Number(ethers.utils.formatEther(balance)).toFixed(2);
 };
 
 export const getContractSymbol = async (contractAddress = WXCR_ADDRESS) => {
-  const contract = new ethers.Contract(contractAddress, ERC20_ABI, provider);
+  const contract = ERC20Contract(contractAddress, provider);
   return contract.symbol();
 };
 
 export const checkAllowance = async (owner, amount, spender = LOAN_ADDRESS, contractAddress = WXCR_ADDRESS) => {
-  const contract = new ethers.Contract(contractAddress, ERC20_ABI, provider);
+  const contract = ERC20Contract(contractAddress, provider);
   const allowance = await contract.allowance(owner, spender);
   return allowance.gte(amount);
 };
@@ -27,6 +31,6 @@ export const approveERC20 = async (
   contractAddress = WXCR_ADDRESS
 ) => {
   const signer = provider.getSigner();
-  const contract = new ethers.Contract(contractAddress, ERC20_ABI, signer);
+  const contract = ERC20Contract(contractAddress, signer);
   return contract.approve(spender, amount);
 };
