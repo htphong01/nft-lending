@@ -1,17 +1,6 @@
-export const LENDING_POOL_ABI = [
+export const POINT_ABI = [
   {
-    inputs: [
-      {
-        internalType: 'contract WXCR',
-        name: '_token',
-        type: 'address',
-      },
-      {
-        internalType: 'contract Point',
-        name: '_point',
-        type: 'address',
-      },
-    ],
+    inputs: [],
     stateMutability: 'nonpayable',
     type: 'constructor',
   },
@@ -20,12 +9,24 @@ export const LENDING_POOL_ABI = [
     inputs: [
       {
         indexed: true,
+        internalType: 'address',
+        name: 'owner',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'spender',
+        type: 'address',
+      },
+      {
+        indexed: false,
         internalType: 'uint256',
-        name: 'reward',
+        name: 'value',
         type: 'uint256',
       },
     ],
-    name: 'AddedReward',
+    name: 'Approval',
     type: 'event',
   },
   {
@@ -38,13 +39,13 @@ export const LENDING_POOL_ABI = [
         type: 'address',
       },
       {
-        indexed: true,
+        indexed: false,
         internalType: 'uint256',
-        name: 'amount',
+        name: 'value',
         type: 'uint256',
       },
     ],
-    name: 'HarvestRewards',
+    name: 'DiscountFactorBurn',
     type: 'event',
   },
   {
@@ -52,12 +53,75 @@ export const LENDING_POOL_ABI = [
     inputs: [
       {
         indexed: true,
+        internalType: 'address',
+        name: 'account',
+        type: 'address',
+      },
+      {
+        indexed: false,
         internalType: 'uint256',
-        name: 'reward',
+        name: 'value',
         type: 'uint256',
       },
     ],
-    name: 'Inflation',
+    name: 'DiscountFactorMint',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'from',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'to',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'value',
+        type: 'uint256',
+      },
+    ],
+    name: 'DiscountFactorTransfer',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'account',
+        type: 'address',
+      },
+    ],
+    name: 'LendingPoolRegistration',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'oldAddress',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'newAddress',
+        type: 'address',
+      },
+    ],
+    name: 'LendingPoolUpgrade',
     type: 'event',
   },
   {
@@ -104,63 +168,24 @@ export const LENDING_POOL_ABI = [
       {
         indexed: true,
         internalType: 'address',
-        name: 'account',
+        name: 'from',
         type: 'address',
       },
-      {
-        indexed: true,
-        internalType: 'uint256',
-        name: 'amount',
-        type: 'uint256',
-      },
-    ],
-    name: 'Stake',
-    type: 'event',
-  },
-  {
-    anonymous: false,
-    inputs: [
       {
         indexed: true,
         internalType: 'address',
-        name: 'account',
+        name: 'to',
         type: 'address',
       },
       {
-        indexed: true,
+        indexed: false,
         internalType: 'uint256',
-        name: 'amount',
+        name: 'value',
         type: 'uint256',
       },
     ],
-    name: 'Unstake',
+    name: 'Transfer',
     type: 'event',
-  },
-  {
-    inputs: [],
-    name: 'DAILY_REWARD_POINT',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: '_reward',
-        type: 'uint256',
-      },
-    ],
-    name: 'addReward',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
   },
   {
     inputs: [
@@ -184,12 +209,17 @@ export const LENDING_POOL_ABI = [
   {
     inputs: [
       {
-        internalType: 'uint256',
-        name: '_discountFactor',
-        type: 'uint256',
+        internalType: 'address',
+        name: 'owner',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'spender',
+        type: 'address',
       },
     ],
-    name: 'discountFactorToToken',
+    name: 'allowance',
     outputs: [
       {
         internalType: 'uint256',
@@ -201,22 +231,143 @@ export const LENDING_POOL_ABI = [
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'fetchReward',
-    outputs: [],
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'spender',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'approve',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
     stateMutability: 'nonpayable',
     type: 'function',
   },
   {
     inputs: [
       {
+        internalType: 'address',
+        name: '_account',
+        type: 'address',
+      },
+    ],
+    name: 'balanceOf',
+    outputs: [
+      {
         internalType: 'uint256',
-        name: '_amount',
+        name: '',
         type: 'uint256',
       },
     ],
-    name: 'harvestRewards',
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_account',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_discountFactor',
+        type: 'uint256',
+      },
+    ],
+    name: 'burnDiscountFactor',
     outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'decimals',
+    outputs: [
+      {
+        internalType: 'uint8',
+        name: '',
+        type: 'uint8',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'spender',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'subtractedValue',
+        type: 'uint256',
+      },
+    ],
+    name: 'decreaseAllowance',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    name: 'discountFactors',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'spender',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'addedValue',
+        type: 'uint256',
+      },
+    ],
+    name: 'increaseAllowance',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
     stateMutability: 'nonpayable',
     type: 'function',
   },
@@ -241,6 +392,50 @@ export const LENDING_POOL_ABI = [
   },
   {
     inputs: [],
+    name: 'lendingPool',
+    outputs: [
+      {
+        internalType: 'contract ILendingPool',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_account',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_discountFactor',
+        type: 'uint256',
+      },
+    ],
+    name: 'mintDiscountFactor',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'name',
+    outputs: [
+      {
+        internalType: 'string',
+        name: '',
+        type: 'string',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
     name: 'owner',
     outputs: [
       {
@@ -254,52 +449,9 @@ export const LENDING_POOL_ABI = [
   },
   {
     inputs: [],
-    name: 'point',
-    outputs: [
-      {
-        internalType: 'contract Point',
-        name: '',
-        type: 'address',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: '',
-        type: 'address',
-      },
-    ],
-    name: 'poolStakers',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: 'amount',
-        type: 'uint256',
-      },
-      {
-        internalType: 'uint256',
-        name: 'rewardPaid',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'productOfInterestRate',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
+    name: 'registerLendingPool',
+    outputs: [],
+    stateMutability: 'nonpayable',
     type: 'function',
   },
   {
@@ -346,40 +498,21 @@ export const LENDING_POOL_ABI = [
     type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: '_amount',
-        type: 'uint256',
-      },
-    ],
-    name: 'stake',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
     inputs: [],
-    name: 'token',
+    name: 'symbol',
     outputs: [
       {
-        internalType: 'contract WXCR',
+        internalType: 'string',
         name: '',
-        type: 'address',
+        type: 'string',
       },
     ],
     stateMutability: 'view',
     type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: '_token',
-        type: 'uint256',
-      },
-    ],
-    name: 'tokenToDiscountFactor',
+    inputs: [],
+    name: 'totalDiscountFactor',
     outputs: [
       {
         internalType: 'uint256',
@@ -392,33 +525,7 @@ export const LENDING_POOL_ABI = [
   },
   {
     inputs: [],
-    name: 'totalFetchStake',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'totalReward',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'totalStake',
+    name: 'totalSupply',
     outputs: [
       {
         internalType: 'uint256',
@@ -433,18 +540,64 @@ export const LENDING_POOL_ABI = [
     inputs: [
       {
         internalType: 'address',
+        name: '_recipient',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'transfer',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_sender',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: '_recipient',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'transferFrom',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
         name: 'newOwner',
         type: 'address',
       },
     ],
     name: 'transferOwnership',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'unstake',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',

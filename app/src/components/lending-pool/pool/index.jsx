@@ -4,7 +4,14 @@ import { ethers } from 'ethers';
 import toast, { Toaster } from 'react-hot-toast';
 import ReactLoading from 'react-loading';
 import { setAccount } from '@src/redux/features/accountSlice';
-import { stake, unstake, getTotalBalanceOfUser, getStakedPerUser, getPoolBalance } from '@src/utils/contracts/lending-pool';
+import {
+  stake,
+  unstake,
+  getTotalBalanceOfUser,
+  getStakedPerUser,
+  getPoolBalance,
+  getPoolPoints,
+} from '@src/utils/contracts/lending-pool';
 import { checkAllowance, approveERC20, getBalance } from '@src/utils/contracts/erc20';
 import { LENDING_POOL_ADDRESS } from '@src/constants';
 import Stake from './stake';
@@ -20,6 +27,11 @@ export default function Pool() {
 
   const account = useSelector((state) => state.account);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [poolPoints, setPoolPoints] = useState({
+    account: 0,
+    total: 0,
+  });
 
   const [balance, setBalance] = useState({
     pool: 0,
@@ -46,6 +58,10 @@ export default function Pool() {
         total: totalBalance,
         bonus: totalBalance - totalStaked,
       });
+
+      const currentPoolPoints = await getPoolPoints(account.address);
+      setPoolPoints(currentPoolPoints);
+
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -53,17 +69,17 @@ export default function Pool() {
     }
   };
 
-  const handleUnstake = async (amount) => {
+  const handleUnstake = async () => {
     try {
       setIsLoading(true);
-      const amountBN = ethers.utils.parseUnits('6', 18);
-      const tx = await unstake(amountBN);
+      // const amountBN = ethers.utils.parseUnits('', 18);
+      const tx = await unstake();
       await tx.wait();
-      if (amount == balance.bonus) {
-        toast.success(`Claim bonus successfully`);
-      } else {
-        toast.success(`Withdraw successfully`);
-      }
+      // if (amount == balance.bonus) {
+      //   toast.success(`Claim bonus successfully`);
+      // } else {
+      //   toast.success(`Withdraw successfully`);
+      // }
       fetchBalanceInfo();
     } catch (error) {
       setIsLoading(false);
@@ -76,8 +92,8 @@ export default function Pool() {
     try {
       setIsLoading(true);
       const amountBN = ethers.utils.parseUnits(amount, 18);
-      if (!(await checkAllowance(LENDING_POOL_ADDRESS, account.address, amountBN))) {
-        const tx = await approveERC20(LENDING_POOL_ADDRESS, amountBN);
+      if (!(await checkAllowance(account.address, amountBN, LENDING_POOL_ADDRESS))) {
+        const tx = await approveERC20(amountBN, LENDING_POOL_ADDRESS);
         await tx.wait();
       }
 
@@ -115,7 +131,7 @@ export default function Pool() {
         <div className={styles.body}>
           <div className={styles.row}>
             <div className={styles['section-item']}>
-              <Information title="Total stakers" value="30+ Holders" icon={stakerIcon} />
+              <Information title={`Your points: ${poolPoints.account}`} value={`Total points: ${poolPoints.total}`} icon={stakerIcon} />
             </div>
             <div className={styles['section-item']}>
               <Information title="Pool balance" value={`${balance.pool} ${account.currency}`} icon={aprIcon} />
