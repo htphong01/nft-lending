@@ -70,7 +70,7 @@ contract LendingPool is ILendingPool, Permission {
      */
     function tokenToDiscountFactor(uint256 _token) public view returns (uint256) {
         // discountFactor = token / productOfInterestRate
-        return _token.div(productOfInterestRate);
+        return _token.mul(Formula.ONE).div(productOfInterestRate);
     }
 
     /**
@@ -81,7 +81,7 @@ contract LendingPool is ILendingPool, Permission {
      */
     function discountFactorToToken(uint256 _discountFactor) external view returns (uint256) {
         // token = truncate(discountFactor * productOfInterestRate)
-        return _discountFactor.mul(productOfInterestRate);
+        return _discountFactor.mul(productOfInterestRate).div(Formula.ONE);
     }
 
     /**
@@ -150,6 +150,8 @@ contract LendingPool is ILendingPool, Permission {
             point.balanceOf(msg.sender) - staker.amount > _amount,
             "LendingPool: Harvest amount exceeds the harvest."
         );
+
+        require(totalReward > 0, "LendingPool: No reward token in pool.");
 
         uint256 rewardsToHarvest = (totalReward * _amount) / point.totalSupply();
         totalReward -= rewardsToHarvest;

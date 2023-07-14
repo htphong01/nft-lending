@@ -20,22 +20,24 @@ async function main() {
     //* Loading contract factory */
     const LendingPool = await ethers.getContractFactory("LendingPool");
     const WXCR = await ethers.getContractFactory("WXCR");
-    const WXCRS = await ethers.getContractFactory("WXCRS");
+    const Point = await ethers.getContractFactory("Point");
 
     //* Deploy contracts */
     console.log("==========================================================================");
     console.log("DEPLOYING CONTRACTS");
     console.log("==========================================================================");
 
-    const wXCR = await WXCR.deploy();
-    await wXCR.deployed();
-    console.log("WXCR                        deployed to:>>", wXCR.address);
+    // const wXCR = await WXCR.deploy();
+    // await wXCR.deployed();
+    // console.log("WXCR                        deployed to:>>", wXCR.address);
 
-    const wXCRS = await WXCRS.deploy();
-    await wXCRS.deployed();
-    console.log("WXCRS                        deployed to:>>", wXCRS.address);
+    const wXCR = await WXCR.attach("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108");
 
-    const lendingPool = await LendingPool.deploy(wXCR.address, wXCRS.address);
+    const point = await Point.deploy();
+    await point.deployed();
+    console.log("Point                        deployed to:>>", point.address);
+
+    const lendingPool = await LendingPool.deploy(wXCR.address, point.address);
     await lendingPool.deployed();
     console.log("LendingPool                     deployed to:>>", lendingPool.address);
 
@@ -51,7 +53,7 @@ async function main() {
 
     // await hre
     //     .run("verify:verify", {
-    //         address: wXCRS.address
+    //         address: point.address
     //     })
     //     .catch(console.log);
 
@@ -59,7 +61,7 @@ async function main() {
     //     .run("verify:verify", {
     //         address: lendingPool.address,
     //         constructorArguments: [wXCR.address,
-    //         wXCRS.address
+    //         point.address
     //         ]
     //     })
     //     .catch(console.log);
