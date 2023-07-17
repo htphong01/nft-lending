@@ -1,3 +1,7 @@
+const { ethers } = require("hardhat");
+
+const { AddressZero: ZERO_ADDRESS, MaxUint256: MAX_UINT256 } = ethers.constants;
+
 async function signatureData(taskId, users, rewards, nonce, privateKey) {
     const { chainId } = await ethers.provider.getNetwork();
     // 66 byte string, which represents 32 bytes of data
@@ -35,12 +39,22 @@ function getEncodedSignature(signature) {
 function getMessage(encodedOffer, encodedSignature, loanContract, chainId) {
     const payload = ethers.utils.solidityPack(["bytes", "bytes", "address", "uint256"], [encodedOffer, encodedSignature, loanContract, chainId]);
     // return new TextEncoder("utf-8").encode(ethers.utils.keccak256(payload));
-    return ethers.utils.arrayify(ethers.utils.keccak256(payload))
+    return ethers.utils.arrayify(ethers.utils.keccak256(payload));
 }
 
 const getRandomInt = () => {
     return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 };
+
+async function getTimestamp() {
+    const latestBlock = await ethers.provider.getBlock("latest");
+    return latestBlock.timestamp;
+}
+
+async function skipTime(seconds) {
+    await ethers.provider.send("evm_increaseTime", [seconds]);
+    await ethers.provider.send("evm_mine", []);
+}
 
 module.exports = {
     getRandomInt,
@@ -48,4 +62,8 @@ module.exports = {
     getEncodeOffer,
     getEncodedSignature,
     getMessage,
+    getTimestamp,
+    skipTime,
+    ZERO_ADDRESS,
+    MAX_UINT256,
 };
