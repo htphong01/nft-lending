@@ -78,7 +78,8 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
 
     /**
      * @notice This function is called by the borrower when accepting a lender's offer to begin a loan.
-     *
+     * 
+     * @param _loanId - offchain id of loan
      * @param _offer - The offer made by the lender.
      * @param _signature - The components of the lender's signature.
      */

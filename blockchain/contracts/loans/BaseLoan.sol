@@ -25,29 +25,25 @@ abstract contract BaseLoan is Ownable, Pausable, ReentrancyGuard {
         // solhint-disable-previous-line no-empty-blocks
     }
 
-    /* ********* */
-    /* FUNCTIONS */
-    /* ********* */
+    /* ****************** */
+    /* EXTERNAL FUNCTIONS */
+    /* ****************** */
 
     /**
-     * @dev Triggers stopped state.
+     * @notice Triggers stopped state.
      *
-     * Requirements:
-     *
-     * - Only the owner can call this method.
-     * - The contract must not be paused.
+     * @dev Only the owner can call this method.
+     *      The contract must not be paused.
      */
     function pause() external onlyOwner {
         _pause();
     }
 
     /**
-     * @dev Returns to normal state.
+     * @notice Returns to normal state.
      *
-     * Requirements:
-     *
-     * - Only the owner can call this method.
-     * - The contract must be paused.
+     * @dev Only the owner can call this method.
+     *      The contract must be paused.
      */
     function unpause() external onlyOwner {
         _unpause();

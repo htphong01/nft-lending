@@ -90,7 +90,7 @@ export default function Pool() {
     }
   };
 
-  const handleSubmitStake = async (e, amount) => {
+  const handleStake = async (e, amount) => {
     e.preventDefault();
     try {
       setIsLoading(true);
@@ -146,7 +146,7 @@ export default function Pool() {
           </div>
           <div className={styles.row}>
             <div className={styles['section-item']}>
-              <Stake currency={account.currency} handleSubmitStake={handleSubmitStake} />
+              <Stake currency={account.currency} handleStake={handleStake} />
             </div>
             <div className={styles['section-item']}>
               <Account currency={account.currency} balance={balance} handleUnstake={handleUnstake} />
