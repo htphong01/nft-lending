@@ -13,11 +13,18 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
  * @notice Helper library for LoanBase
  */
 library LoanChecksAndCalculations {
+    /* ******* */
+    /* STORAGE */
+    /* ******* */
     uint16 private constant HUNDRED_PERCENT = 10000;
 
+    /* ********* */
+    /* FUNCTIONS */
+    /* ********* */
+
     /**
-     * @dev Function that performs some validation checks before trying to repay a loan
-     *
+     * @notice Function that performs some validation checks before trying to repay a loan
+     * @dev Everyone can call
      * @param _loanId - The id of the loan being repaid
      */
     function payBackChecks(bytes32 _loanId) external view {
@@ -36,6 +43,11 @@ library LoanChecksAndCalculations {
         require(block.timestamp <= (uint256(loanStartTime) + uint256(duration)), "Loan is expired");
     }
 
+    /**
+     * @notice check loan's id is valid or not
+     * @dev Everyone can call
+     * @param _loanId Id of loan
+     */
     function checkLoanIdValidity(bytes32 _loanId) public view {
         require(IDirectLoanBase(address(this)).isValidLoanId(_loanId), "invalid loanId");
     }

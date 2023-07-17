@@ -8,8 +8,16 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
  *  @notice Each function of this library is the implementation of a featured mathematical formula used in the system.
  */
 library Formula {
+    /* ******* */
+    /* STORAGE */
+    /* ******* */
+
     using SafeMath for uint256;
     uint256 public constant ONE = 1e18;
+
+    /* ****************** */
+    /* INTERNAL FUNCTIONS */
+    /* ****************** */
 
     /**
      *  @notice Calculate the accumulated interest rate in the staking pool when an amount of staking reward is emitted.

@@ -8,8 +8,10 @@ export const convertArrayToObject = (array, key = '_id') => {
 
 export const parseMetamaskError = (error) => {
   const txError = getParsedEthersError(error);
-  if (!txError.context || txError.errorCode === 'REJECTED_TRANSACTION') {
+  if (!txError.context) {
     txError.context = 'An error has occurred!';
+  } else if (txError.errorCode === 'REJECTED_TRANSACTION') {
+    txError.context = 'User rejected to sign transaction!';
   }
   return txError;
 };

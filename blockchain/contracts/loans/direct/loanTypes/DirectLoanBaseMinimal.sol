@@ -140,7 +140,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @notice This event is fired whenever the admins change the percent of interest rates earned that they charge as a
      * fee. Note that newAdminFee can never exceed 10,000, since the fee is measured in basis points.
      *
-     * @param  newAdminFee - The new admin fee measured in basis points. This is a percent of the interest paid upon a
+     * @param newAdminFee - The new admin fee measured in basis points. This is a percent of the interest paid upon a
      * loan's completion that go to the contract admins.
      */
     event AdminFeeUpdated(uint16 newAdminFee);
@@ -149,7 +149,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @notice This event is fired whenever the admins change the maximum duration of any loan started for this loan
      * type.
      *
-     * @param  newMaximumLoanDuration - The new maximum duration.
+     * @param newMaximumLoanDuration - The new maximum duration.
      */
     event MaximumLoanDurationUpdated(uint256 newMaximumLoanDuration);
 
@@ -158,9 +158,9 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * after both the lender and borrower have approved their ERC721 and ERC20 contracts to use Loan, and when they
      * both have signed off-chain messages that agree on the terms of the loan.
      *
-     * @param  loanId - A unique identifier for this particular loan, sourced from the Loan Coordinator.
-     * @param  borrower - The address of the borrower.
-     * @param  lender - The address of the lender. The lender can change their address by transferring the Loan ERC721
+     * @param loanId - A unique identifier for this particular loan, sourced from the Loan Coordinator.
+     * @param borrower - The address of the borrower.
+     * @param lender - The address of the lender. The lender can change their address by transferring the Loan ERC721
      * token that they received when the loan began.
      */
     event LoanStarted(bytes32 indexed loanId, address indexed borrower, address indexed lender, LoanTerms loanTerms);
@@ -170,21 +170,21 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * principal-plus-interest-minus-fee to the lender in erc20Denomination, paying fee to owner in
      * erc20Denomination, and receiving their NFT collateral back.
      *
-     * @param  loanId - A unique identifier for this particular loan, sourced from the Loan Coordinator.
-     * @param  borrower - The address of the borrower.
-     * @param  lender - The address of the lender. The lender can change their address by transferring the Loan ERC721
+     * @param loanId - A unique identifier for this particular loan, sourced from the Loan Coordinator.
+     * @param borrower - The address of the borrower.
+     * @param lender - The address of the lender. The lender can change their address by transferring the Loan ERC721
      * token that they received when the loan began.
-     * @param  principalAmount - The original sum of money transferred from lender to borrower at the beginning of
+     * @param principalAmount - The original sum of money transferred from lender to borrower at the beginning of
      * the loan, measured in erc20Denomination's smallest units.
-     * @param  nftCollateralId - The ID within the NFTCollateralContract for the NFT being used as collateral for this
+     * @param nftCollateralId - The ID within the NFTCollateralContract for the NFT being used as collateral for this
      * loan. The NFT is stored within this contract during the duration of the loan.
-     * @param  amountPaidToLender The amount of ERC20 that the borrower paid to the lender, measured in the smalled
+     * @param amountPaidToLender The amount of ERC20 that the borrower paid to the lender, measured in the smalled
      * units of erc20Denomination.
-     * @param  adminFee The amount of interest paid to the contract admins, measured in the smalled units of
+     * @param adminFee The amount of interest paid to the contract admins, measured in the smalled units of
      * erc20Denomination and determined by adminFeeInBasisPoints. This amount never exceeds the amount of interest
      * earned.
-     * @param  nftCollateralContract - The ERC721 contract of the NFT collateral
-     * @param  erc20Denomination - The ERC20 contract of the currency being used as principal/interest for this
+     * @param nftCollateralContract - The ERC721 contract of the NFT collateral
+     * @param erc20Denomination - The ERC20 contract of the currency being used as principal/interest for this
      * loan.
      */
     event LoanRepaid(
@@ -204,18 +204,18 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * exceeded its duration. The lender receives the underlying NFT collateral, and the borrower no longer needs to
      * repay the loan principal-plus-interest.
      *
-     * @param  loanId - A unique identifier for this particular loan, sourced from the Loan Coordinator.
-     * @param  borrower - The address of the borrower.
-     * @param  lender - The address of the lender. The lender can change their address by transferring the Loan ERC721
+     * @param loanId - A unique identifier for this particular loan, sourced from the Loan Coordinator.
+     * @param borrower - The address of the borrower.
+     * @param lender - The address of the lender. The lender can change their address by transferring the Loan ERC721
      * token that they received when the loan began.
-     * @param  principalAmount - The original sum of money transferred from lender to borrower at the beginning of
+     * @param principalAmount - The original sum of money transferred from lender to borrower at the beginning of
      * the loan, measured in erc20Denomination's smallest units.
-     * @param  nftCollateralId - The ID within the NFTCollateralContract for the NFT being used as collateral for this
+     * @param nftCollateralId - The ID within the NFTCollateralContract for the NFT being used as collateral for this
      * loan. The NFT is stored within this contract during the duration of the loan.
-     * @param  loanMaturityDate - The unix time (measured in seconds) that the loan became due and was eligible for
+     * @param loanMaturityDate - The unix time (measured in seconds) that the loan became due and was eligible for
      * liquidation.
-     * @param  loanLiquidationDate - The unix time (measured in seconds) that liquidation occurred.
-     * @param  nftCollateralContract - The ERC721 contract of the NFT collateral
+     * @param loanLiquidationDate - The unix time (measured in seconds) that liquidation occurred.
+     * @param nftCollateralContract - The ERC721 contract of the NFT collateral
      */
     event LoanLiquidated(
         bytes32 indexed loanId,
@@ -269,8 +269,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @dev Sets `permittedNFTs`
      *
      * @param _admin - Initial admin of this contract.
-     * @param  _permittedNFT - PermittedNFT address
-     * @param  _permittedErc20s -
+     * @param _permittedNFT - PermittedNFT address
+     * @param _permittedErc20s -
      */
     constructor(address _admin, address _permittedNFT, address[] memory _permittedErc20s) BaseLoan(_admin) {
         permittedNFTs = IPermittedNFTs(_permittedNFT);
@@ -289,6 +289,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * loan struct.
      *
      * @param _newMaximumLoanDuration - The new maximum loan duration, measured in seconds.
+     * 
+     * emit {MaximumLoanDurationUpdated} event
      */
     function updateMaximumLoanDuration(uint256 _newMaximumLoanDuration) external onlyOwner {
         require(_newMaximumLoanDuration <= uint256(type(uint32).max), "Loan duration overflow");
@@ -302,6 +304,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      *
      * @param _newAdminFeeInBasisPoints - The new admin fee measured in basis points. This is a percent of the interest
      * paid upon a loan's completion that go to the contract admins.
+     * 
+     * emit {AdminFeeUpdated} event
      */
     function updateAdminFee(uint16 _newAdminFeeInBasisPoints) external onlyOwner {
         require(_newAdminFeeInBasisPoints <= HUNDRED_PERCENT, "basis points > 10000");
@@ -452,6 +456,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * admin funds.
      *
      * @param _loanId  A unique identifier for this particular loan, sourced from the Loan Coordinator.
+     * 
+     * emit {LoanLiquidated} event
      */
     function liquidateOverdueLoan(bytes32 _loanId) external nonReentrant {
         LoanChecksAndCalculations.checkLoanIdValidity(_loanId);
@@ -501,7 +507,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * Loan.cancelLoanCommitmentBeforeLoanHasBegun(), which marks the nonce as used and prevents any future loan from
      * using the user's off-chain order that contains that nonce.
      *
-     * @param  _nonce - User nonce
+     * @param _nonce - User nonce
      */
     function cancelLoanCommitmentBeforeLoanHasBegun(uint256 _nonce) external {
         require(!_nonceHasBeenUsedForUser[msg.sender][_nonce], "Invalid nonce");
@@ -528,7 +534,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * either from a successful loan or a cancelled off-chain order.
      *
      * @param _user - The address of the user. This function works for both lenders and borrowers alike.
-     * @param  _nonce - The nonce referred to here is not the same as an Ethereum account's nonce. We are referring
+     * @param _nonce - The nonce referred to here is not the same as an Ethereum account's nonce. We are referring
      * instead to nonces that are used by both the lender and the borrower when they are first signing off-chain
      * Loan orders. These nonces can be any uint256 value that the user has not previously used to sign an off-chain
      * order. Each nonce can be used at most once per user within Loan, regardless of whether they are the lender or
@@ -594,6 +600,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * - _expiry
      * - address of this contract
      * - chainId
+     * 
+     * emit {LoanRenegotiated} event
      */
     function _renegotiateLoan(
         bytes32 _loanId,
@@ -724,6 +732,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * contract and hold hostage the NFT's that are still within it.
      *
      * @param _loanId  A unique identifier for this particular loan, sourced from the Loan Coordinator.
+     * 
+     * emit {LoanRepaid} event
      */
     function _payBackLoan(bytes32 _loanId, address _borrower, address _lender, LoanTerms memory _loan) internal {
         (uint256 adminFee, uint256 payoffAmount) = _payoffAndFee(_loan);
@@ -785,6 +795,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      *
      * @param _erc20 - The address of the ERC20 currency whose permit list status changed.
      * @param _permit - The new status of whether the currency is permitted or not.
+     * 
+     * emit {ERC20Permit} event
      */
     function _setERC20Permit(address _erc20, bool _permit) internal {
         require(_erc20 != address(0), "erc20 is zero address");

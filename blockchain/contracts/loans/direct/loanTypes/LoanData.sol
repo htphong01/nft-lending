@@ -37,7 +37,7 @@ interface LoanData {
      * taken as a fee by the contract admins when the loan is repaid. The fee is stored in the loan struct to prevent an
      * attack where the contract admins could adjust the fee right before a loan is repaid, and take all of the interest
      * earned.
-     * @param borrower
+     * @param borrower Address of borrower
      */
     struct LoanTerms {
         uint256 principalAmount;

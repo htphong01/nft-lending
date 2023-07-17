@@ -20,9 +20,22 @@ import "@openzeppelin/contracts/utils/Context.sol";
  * initialize the owner using a parameter in the constructor
  */
 abstract contract Ownable is Context {
+    /* ******* */
+    /* STORAGE */
+    /* ******* */
+    /**
+     * Owner's address of contract
+     */
     address private _owner;
 
+    /* ***** */
+    /* EVENT */
+    /* ***** */
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    /* ******** */
+    /* MODIFIER */
+    /* ******** */
 
     /**
      * @dev Throws if called by any account other than the owner.
@@ -32,6 +45,10 @@ abstract contract Ownable is Context {
         _;
     }
 
+    /* *********** */
+    /* CONSTRUCTOR */
+    /* *********** */
+
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
      */
@@ -39,14 +56,23 @@ abstract contract Ownable is Context {
         _setOwner(_initialOwner);
     }
 
+    /* **************** */
+    /* PUBLIC FUNCTIONS */
+    /* **************** */
+
     /**
      * @dev Transfers ownership of the contract to a new account (`newOwner`).
      * Can only be called by the current owner.
+     * @param _newOwner address of new owner
      */
     function transferOwnership(address _newOwner) public virtual onlyOwner {
         require(_newOwner != address(0), "Ownable: new owner is the zero address");
         _setOwner(_newOwner);
     }
+
+    /* ************** */
+    /* VIEW FUNCTIONS */
+    /* ************** */
 
     /**
      * @dev Returns the address of the current owner.
@@ -54,9 +80,15 @@ abstract contract Ownable is Context {
     function owner() public view virtual returns (address) {
         return _owner;
     }
+    
+    /* ***************** */
+    /* PRIVATE FUNCTIONS */
+    /* ***************** */
 
     /**
      * @dev Sets the owner.
+     * @param _newOwner addres of new owner
+     * emit {OwnershipTransferred} event
      */
     function _setOwner(address _newOwner) private {
         address oldOwner = _owner;
