@@ -8,6 +8,11 @@ export const ERC20Contract = (address, signerOrProvider = provider) => {
   return new ethers.Contract(address, ERC20_ABI, signerOrProvider);
 };
 
+export const getRawBalance = async (account, contractAddress = WXCR_ADDRESS) => {
+  const contract = ERC20Contract(contractAddress, provider);
+  return contract.balanceOf(account);
+};
+
 export const getBalance = async (account, contractAddress = WXCR_ADDRESS) => {
   const contract = ERC20Contract(contractAddress, provider);
   const balance = await contract.balanceOf(account);

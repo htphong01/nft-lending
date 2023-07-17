@@ -5,16 +5,17 @@ import toast, { Toaster } from 'react-hot-toast';
 import ReactLoading from 'react-loading';
 import { setAccount } from '@src/redux/features/accountSlice';
 import {
-  stake,
-  unstake,
-  getTotalBalanceOfUser,
-  getStakedPerUser,
-  getPoolBalance,
-  getPoolPoints,
+  deposit,
+  withdraw,
+  claimReward,
   checkAllowance,
   approveERC20,
   getBalance,
   parseMetamaskError,
+  getTotalStakers,
+  getPoolBalance,
+  getStakedByUser,
+  getBonus,
 } from '@src/utils';
 import { LENDING_POOL_ADDRESS } from '@src/constants';
 import Stake from './stake';
@@ -31,40 +32,35 @@ export default function Pool() {
   const account = useSelector((state) => state.account);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [poolPoints, setPoolPoints] = useState({
-    account: 0,
-    total: 0,
-  });
+  const [poolStakers, setPoolStakers] = useState(0);
 
   const [balance, setBalance] = useState({
     pool: 0,
-    stake: 0,
-    total: 0,
+    staked: 0,
+    balance: 0,
     bonus: 0,
   });
 
   const fetchBalanceInfo = async () => {
     try {
       setIsLoading(true);
+      const [stakedByUser, poolBalance, bonus, totalPoolStakers] = await Promise.all([
+        getStakedByUser(account.address),
+        getPoolBalance(),
+        getBonus(account.address),
+        getTotalStakers(),
+      ]);
+      setBalance({
+        ...balance,
+        staked: stakedByUser,
+        bonus: bonus,
+        balance: Number(stakedByUser) + Number(bonus),
+        pool: poolBalance,
+      });
       const currentBalance = await getBalance(account.address);
       dispatch(setAccount({ balance: currentBalance }));
 
-      const [totalBalance, totalStaked, poolBalance] = await Promise.all([
-        getTotalBalanceOfUser(account.address),
-        getStakedPerUser(account.address),
-        getPoolBalance(),
-      ]);
-
-      setBalance({
-        pool: poolBalance,
-        stake: totalStaked,
-        total: totalBalance,
-        bonus: totalBalance - totalStaked,
-      });
-
-      const currentPoolPoints = await getPoolPoints(account.address);
-      setPoolPoints(currentPoolPoints);
-
+      setPoolStakers(totalPoolStakers);
       setIsLoading(false);
     } catch (error) {
       console.log('error', error);
@@ -72,17 +68,13 @@ export default function Pool() {
     }
   };
 
-  const handleUnstake = async () => {
+  const handleWithdraw = async (amount) => {
     try {
       setIsLoading(true);
-      // const amountBN = ethers.utils.parseUnits('', 18);
-      const tx = await unstake();
+      const amountBN = ethers.utils.parseUnits(amount, 18);
+      const tx = await withdraw(amountBN);
       await tx.wait();
-      // if (amount == balance.bonus) {
-      //   toast.success(`Claim bonus successfully`);
-      // } else {
-      //   toast.success(`Withdraw successfully`);
-      // }
+
       fetchBalanceInfo();
     } catch (error) {
       setIsLoading(false);
@@ -90,8 +82,20 @@ export default function Pool() {
     }
   };
 
-  const handleStake = async (e, amount) => {
-    e.preventDefault();
+  const handleClaimReward = async () => {
+    try {
+      setIsLoading(true);
+      const tx = await claimReward();
+      await tx.wait();
+      toast.success(`Claim wXCR successfully`);
+      fetchBalanceInfo();
+    } catch (error) {
+      setIsLoading(false);
+      console.log('error', error);
+    }
+  };
+
+  const handleStake = async (amount) => {
     try {
       setIsLoading(true);
       const amountBN = ethers.utils.parseUnits(amount, 18);
@@ -100,7 +104,7 @@ export default function Pool() {
         await tx.wait();
       }
 
-      const tx = await stake(amountBN);
+      const tx = await deposit(amountBN);
       await tx.wait();
       toast.success(`Stake ${amount} wXCR successfully`);
       fetchBalanceInfo();
@@ -135,8 +139,8 @@ export default function Pool() {
           <div className={styles.row}>
             <div className={styles['section-item']}>
               <Information
-                title={`Your points: ${poolPoints.account}`}
-                value={`Total points: ${poolPoints.total}`}
+                title={`Stakers`}
+                value={`${poolStakers} ${poolStakers === 1 ? 'staker' : 'stakers'}`}
                 icon={stakerIcon}
               />
             </div>
@@ -149,7 +153,12 @@ export default function Pool() {
               <Stake currency={account.currency} handleStake={handleStake} />
             </div>
             <div className={styles['section-item']}>
-              <Account currency={account.currency} balance={balance} handleUnstake={handleUnstake} />
+              <Account
+                currency={account.currency}
+                balance={balance}
+                handleClaimReward={handleClaimReward}
+                handleWithdraw={handleWithdraw}
+              />
             </div>
           </div>
         </div>

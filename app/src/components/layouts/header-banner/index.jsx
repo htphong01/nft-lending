@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useSelector } from 'react-redux';
 import toast, { Toaster } from 'react-hot-toast';
-import { getStakedPerUser } from '@src/utils/contracts/lending-pool';
+import { getStakedByUser } from '@src/utils/contracts/lending-pool';
 import styles from './styles.module.scss';
 import cvcScanIcon from '@src/assets/cvcscan-icon.png';
 
@@ -15,7 +15,7 @@ export default function HeaderBanner({ title = '', description = '', tabs = [], 
   const handleNavigate = async (url) => {
     try {
       if (url === '/lending-pool/requests') {
-        const balance = await getStakedPerUser(account.address);
+        const balance = await getStakedByUser(account.address);
         if (balance == 0) {
           toast.error('You must stake to Lending Pool to use this feature!', {
             duration: 3000,

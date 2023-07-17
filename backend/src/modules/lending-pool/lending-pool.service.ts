@@ -24,18 +24,15 @@ export class LendingPoolService implements OnModuleInit {
     account: string,
     options: Record<string, any>,
   ): Promise<number> {
-    const balance = await this.lendingPoolContract.totalStakedPerUsers(
-      account,
-      {
-        ...options,
-      },
-    );
-    return Number(ethers.formatEther(balance));
+    const userInfo = await this.lendingPoolContract.userInfo(account, {
+      ...options,
+    });
+    return Number(ethers.formatEther(userInfo.amount));
   }
 
   async getTotalStaked(options: Record<string, any>) {
-    const balance = await this.lendingPoolContract.totalStake({ ...options });
-    return ethers.formatUnits(balance, 18);
+    const poolInfo = await this.lendingPoolContract.poolInfo({ ...options });
+    return ethers.formatUnits(poolInfo.stakedSupply, 18);
   }
 
   async getBlockNumber() {
