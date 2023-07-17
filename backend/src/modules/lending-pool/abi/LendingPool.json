@@ -2,14 +2,24 @@
   {
     "inputs": [
       {
-        "internalType": "contract WXCR",
-        "name": "_token",
+        "internalType": "contract IERC20",
+        "name": "_wXCR",
         "type": "address"
       },
       {
-        "internalType": "contract Point",
-        "name": "_point",
+        "internalType": "address",
+        "name": "_treasury",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_rewardPerBlock",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_startBlock",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
@@ -20,12 +30,18 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
-        "name": "reward",
+        "name": "amount",
         "type": "uint256"
       }
     ],
-    "name": "AddedReward",
+    "name": "ClaimReward",
     "type": "event"
   },
   {
@@ -34,17 +50,17 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "account",
+        "name": "user",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
       }
     ],
-    "name": "HarvestRewards",
+    "name": "Deposit",
     "type": "event"
   },
   {
@@ -52,12 +68,18 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
-        "name": "reward",
+        "name": "amount",
         "type": "uint256"
       }
     ],
-    "name": "Inflation",
+    "name": "EmergencyWithdraw",
     "type": "event"
   },
   {
@@ -104,17 +126,17 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "account",
+        "name": "oldValue",
         "type": "address"
       },
       {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "newValue",
+        "type": "address"
       }
     ],
-    "name": "Stake",
+    "name": "SetTreasury",
     "type": "event"
   },
   {
@@ -123,22 +145,22 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "account",
+        "name": "user",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
       }
     ],
-    "name": "Unstake",
+    "name": "Withdraw",
     "type": "event"
   },
   {
     "inputs": [],
-    "name": "DAILY_REWARD_POINT",
+    "name": "addressLength",
     "outputs": [
       {
         "internalType": "uint256",
@@ -153,13 +175,19 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_reward",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "addReward",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "addressList",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -182,27 +210,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_discountFactor",
-        "type": "uint256"
-      }
-    ],
-    "name": "discountFactorToToken",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
-    "name": "fetchReward",
+    "name": "claimReward",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -215,7 +224,14 @@
         "type": "uint256"
       }
     ],
-    "name": "harvestRewards",
+    "name": "deposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "emergencyWithdraw",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -253,49 +269,46 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "point",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "pendingReward",
     "outputs": [
       {
-        "internalType": "contract Point",
+        "internalType": "uint256",
         "name": "",
-        "type": "address"
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "poolStakers",
+    "inputs": [],
+    "name": "poolInfo",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "amount",
+        "name": "lastRewardBlock",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "rewardPaid",
+        "name": "accRewardPerShare",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "productOfInterestRate",
-    "outputs": [
+      },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "stakedSupply",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalPendingReward",
         "type": "uint256"
       }
     ],
@@ -307,6 +320,32 @@
     "name": "renounceOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "rewardPerBlock",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "rewardSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -348,77 +387,19 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_treasury",
+        "type": "address"
       }
     ],
-    "name": "stake",
+    "name": "setTreasury",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "token",
-    "outputs": [
-      {
-        "internalType": "contract WXCR",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_token",
-        "type": "uint256"
-      }
-    ],
-    "name": "tokenToDiscountFactor",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalFetchStake",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalReward",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalStake",
+    "name": "startBlock",
     "outputs": [
       {
         "internalType": "uint256",
@@ -444,7 +425,75 @@
   },
   {
     "inputs": [],
-    "name": "unstake",
+    "name": "treasury",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "updatePool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "userInfo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "rewardDebt",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "rewardPending",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wXCR",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdraw",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

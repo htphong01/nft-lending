@@ -87,11 +87,9 @@ export default function ListCollateralForm({ item, onClose, type }) {
           await tx.wait();
         }
 
-        toast.promise(createOrder(order), {
-          loading: 'Listing...',
-          success: <b style={{ color: '#000' }}>List collateral successfully!</b>,
-          error: <b style={{ color: '#000' }}>An error has been occurred!</b>,
-        });
+        await createOrder(order);
+
+        toast.success('List collateral successfully!');
         setTimeout(() => {
           onClose(true);
         }, 1000);

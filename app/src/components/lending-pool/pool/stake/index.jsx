@@ -9,9 +9,15 @@ export default function Stake({ currency, handleStake }) {
 
   const [amount, setAmount] = useState(0);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await handleStake(amount);
+    setAmount(0);
+  };
+
   return (
     <div className={styles.item}>
-      <form className={styles.content} onSubmit={(e) => handleStake(e, amount)}>
+      <form className={styles.content} onSubmit={handleSubmit}>
         <div className={styles.header}>
           <span>Amount</span>
           <div className={styles.amount}>
@@ -34,7 +40,9 @@ export default function Stake({ currency, handleStake }) {
           />
           <span>{currency}</span>
         </div>
-        <button type="submit">Stake</button>
+        <button type="submit" disabled={amount == 0}>
+          Stake
+        </button>
       </form>
     </div>
   );

@@ -22,9 +22,10 @@ async function main() {
     // const tx = await loan.connect(accounts[0]).setERC20Permit("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108", true);
     // console.log(tx);
 
-    // const WXCR = await ethers.getContractFactory("WXCR");
-    // const wXCR = WXCR.attach('0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108');
-    // await wXCR.connect(accounts[0]).mint('0xc8429C05315Ae47FFc0789A201E5F53E93D591D4', ethers.utils.parseUnits('200', 18));
+    const WXCR = await ethers.getContractFactory("WXCR");
+    const wXCR = WXCR.attach("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108");
+    await wXCR.connect(accounts[0]).mint("0x4F9EF07A6DDF73494D2fF51A8f7B78e9c5815eb2", ethers.utils.parseUnits("10", 18));
+    await wXCR.connect(accounts[0]).approve("0x9EAef20D024f7C2Ad9461CB6543B845C286B5Cb7", ethers.constants.MaxUint256);
 
     // const Chonk = await ethers.getContractFactory('ChonkSociety');
     // const chonk = Chonk.attach('0xf31a2e258bec65a46fb54cd808294ce215070150');

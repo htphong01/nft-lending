@@ -1,24 +1,27 @@
 /* eslint-disable react/prop-types */
+import { XCR_PRICE } from '@src/constants';
 import styles from './styles.module.scss';
 
-export default function Account({ currency, balance, handleUnstake }) {
+export default function Account({ currency, balance, handleWithdraw, handleClaimReward }) {
   return (
     <div className={styles.account}>
       <div className={styles['balance-block']}>
-        <div className={styles.title}>Staked</div>
+        <div className={styles.title}>Your balance:</div>
         <div className={styles.balance}>
-          {balance.stake} {currency}
+          {balance.balance} {currency}
         </div>
-        <div className={styles.money}>${balance.stake * 0.11}</div>
+        <div className={styles.money}>${(balance.balance * XCR_PRICE).toFixed(2)}</div>
       </div>
 
       <div className={styles.block}>
         <div className={styles.content}>
-          <div className={styles.label}>Withdraw value</div>
+          <div className={styles.label}>Withdraw staked</div>
           <div className={styles.value}>
-            {balance.total} {currency}
+            {balance.staked} {currency}
           </div>
-          <button disabled={balance.total == 0} onClick={() => handleUnstake(balance.total)}>Withdraw</button>
+          <button disabled={balance.staked == 0} onClick={() => handleWithdraw(balance.staked)}>
+            Withdraw
+          </button>
         </div>
       </div>
       <div className={styles.block}>
@@ -27,7 +30,9 @@ export default function Account({ currency, balance, handleUnstake }) {
           <div className={styles.value}>
             {balance.bonus} {currency}
           </div>
-          <button disabled={balance.bonus == 0} onClick={() => handleUnstake(balance.bonus)}>Claim</button>
+          <button disabled={balance.bonus == 0} onClick={handleClaimReward}>
+            Claim
+          </button>
         </div>
       </div>
     </div>

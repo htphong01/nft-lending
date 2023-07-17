@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import ReactLoading from 'react-loading';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { getStakedPerUser } from '@src/utils/contracts/lending-pool';
+import { getStakedByUser } from '@src/utils/contracts/lending-pool';
 import { getOrders } from '@src/api/order.api';
 import { OrderStatus } from '@src/constants/enum';
 import Table from '@src/components/common/table';
@@ -48,7 +48,7 @@ export default function LoanRequests() {
 
   useEffect(() => {
     if (account.address) {
-      getStakedPerUser(account.address).then((balance) => {
+      getStakedByUser(account.address).then((balance) => {
         if (balance == 0) navigate('/lending-pool');
       });
     }
