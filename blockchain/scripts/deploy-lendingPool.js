@@ -18,7 +18,7 @@ async function main() {
     }
 
     //* Loading contract factory */
-    const LendingPool = await ethers.getContractFactory("LendingPool");
+    const LendingPool = await ethers.getContractFactory("LendingPoolV3");
     const WXCR = await ethers.getContractFactory("WXCR");
     const Point = await ethers.getContractFactory("Point");
 
@@ -33,11 +33,7 @@ async function main() {
 
     const wXCR = await WXCR.attach("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108");
 
-    const point = await Point.deploy();
-    await point.deployed();
-    console.log("Point                        deployed to:>>", point.address);
-
-    const lendingPool = await LendingPool.deploy(wXCR.address, point.address);
+    const lendingPool = await LendingPool.deploy(wXCR.address, "0x4F9EF07A6DDF73494D2fF51A8f7B78e9c5815eb2", "10000000000000000000", 0);
     await lendingPool.deployed();
     console.log("LendingPool                     deployed to:>>", lendingPool.address);
 

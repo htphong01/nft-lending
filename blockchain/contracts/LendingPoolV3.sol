@@ -41,6 +41,7 @@ contract LendingPoolV3 is Permission {
 
     // The wXCR TOKEN!
     IERC20 public wXCR;
+    address public treasury;
     // rewards created per block.
     uint256 public rewardPerBlock;
 
@@ -54,22 +55,18 @@ contract LendingPoolV3 is Permission {
 
     // The block number when mining starts.
     uint256 public startBlock;
-    // The block number when mining ends.
-    uint256 public bonusEndBlock;
-
-    uint256 public totalWXCRReward;
 
     event Deposit(address indexed user, uint256 amount);
     event Withdraw(address indexed user, uint256 amount);
     event ClaimReward(address indexed user, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 amount);
-    event AddedReward(uint256 indexed reward);
+    event SetTreasury(address indexed oldValue, address indexed newValue);
 
-    constructor(IERC20 _wXCR, uint256 _rewardPerBlock, uint256 _startBlock, uint256 _endBlock) {
+    constructor(IERC20 _wXCR, address _treasury, uint256 _rewardPerBlock, uint256 _startBlock) {
         wXCR = _wXCR;
+        treasury = _treasury;
         rewardPerBlock = _rewardPerBlock;
         startBlock = _startBlock;
-        bonusEndBlock = _endBlock;
 
         // staking pool
         poolInfo = PoolInfo({
@@ -80,18 +77,11 @@ contract LendingPoolV3 is Permission {
         });
     }
 
-    /**
-     *  @notice Add reward for the stakeholders.
-     *
-     *  @dev    Only admin can call this function.
-     *
-     *          Name    Meaning
-     *  @param  _reward Amount of reward to fetch
-     */
-    function addReward(uint256 _reward) external onlyAdmin {
-        totalWXCRReward += _reward;
-        wXCR.safeTransferFrom(msg.sender, address(this), _reward);
-        emit AddedReward(_reward);
+    function setTreasury(address _treasury) external notZeroAddress(_treasury) onlyOwner {
+        address _oldValue = treasury;
+        treasury = _treasury;
+
+        emit SetTreasury(_oldValue, treasury);
     }
 
     function addressLength() external view returns (uint256) {
@@ -119,7 +109,7 @@ contract LendingPoolV3 is Permission {
     }
 
     function rewardSupply() external view returns (uint256) {
-        PoolInfo memory pool = poolInfo;
+        PoolInfo storage pool = poolInfo;
 
         uint256 tokenReward = 0;
         if (block.number > pool.lastRewardBlock && poolInfo.stakedSupply != 0) {
@@ -211,15 +201,14 @@ contract LendingPoolV3 is Permission {
         poolInfo.totalPendingReward = _totalPendingReward.sub(_amount);
 
         // Exchange point to xCR reward
-        uint256 claimable = (_amount * totalWXCRReward) / _totalPendingReward;
-        totalWXCRReward -= claimable;
-        wXCR.safeTransfer(msg.sender, _amount);
+        uint256 _claimable = (_amount * wXCR.balanceOf(treasury)) / _totalPendingReward;
+        wXCR.safeTransferFrom(treasury, msg.sender, _claimable);
 
         emit ClaimReward(msg.sender, _amount);
     }
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
-    function emergencyWithdraw() external onlyOwner {
+    function emergencyWithdraw() external {
         UserInfo storage user = userInfo[msg.sender];
         wXCR.safeTransfer(address(msg.sender), user.amount);
         emit EmergencyWithdraw(msg.sender, user.amount);
