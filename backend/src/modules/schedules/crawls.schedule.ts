@@ -57,6 +57,8 @@ export class CrawlsSchedule implements OnModuleInit {
       toBlock,
     );
 
+    // await this.offersService.handleExpiredOffer();
+
     await this.crawl.setCrawlLatestBlock(toBlock);
   }
 }

@@ -137,7 +137,18 @@ export class OffersService implements OnModuleInit {
         }
       }
     } catch (error) {
-      console.log(error);
+      if (error.response?.data) {
+        throw new HttpException(error.response.data, error.response.status);
+      } else {
+        throw new HttpException(error.body, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    }
+  }
+
+  async handleExpiredOffer() {
+    try {
+      this.offer.updateExpiredOffer();
+    } catch (error) {
       if (error.response?.data) {
         throw new HttpException(error.response.data, error.response.status);
       } else {

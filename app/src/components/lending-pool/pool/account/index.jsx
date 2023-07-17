@@ -5,7 +5,7 @@ export default function Account({ currency, balance, handleUnstake }) {
   return (
     <div className={styles.account}>
       <div className={styles['balance-block']}>
-        <div className={styles.title}>My Balance</div>
+        <div className={styles.title}>Staked</div>
         <div className={styles.balance}>
           {balance.stake} {currency}
         </div>

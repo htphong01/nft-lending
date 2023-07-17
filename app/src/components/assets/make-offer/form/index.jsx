@@ -98,8 +98,7 @@ export default function Form({ order, fetchOffers }) {
     } catch (error) {
       const txError = parseMetamaskError(error);
       setIsLoading(false);
-      console.log('error', error);
-      toast.error(txError.context || 'An error has been occurred!');
+      toast.error(txError.context);
     }
   };
 

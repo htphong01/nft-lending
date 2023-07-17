@@ -42,8 +42,7 @@ export default function History() {
     } catch (error) {
       const txError = parseMetamaskError(error);
       setIsLoading(false);
-      toast.error(txError.context || 'An error has been occurred!');
-      console.log('error', error);
+      toast.error(txError.context);
     }
   };
 

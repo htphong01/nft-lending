@@ -38,8 +38,7 @@ export default function Table({ title, data, creator }) {
       toast.success('Accept offer successfully');
     } catch (error) {
       const txError = parseMetamaskError(error);
-      console.log('error', error);
-      toast.error(txError.context || 'An error has been occurred!');
+      toast.error(txError.context);
       setIsLoading(false);
     }
   };
