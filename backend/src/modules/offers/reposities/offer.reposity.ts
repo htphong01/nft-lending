@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OrderRedisService } from 'src/connections/redis/order.redis.provider';
-const sha256 = require('simple-sha256');
+import { OfferStatus } from '../dto/offer.enum';
 
 const DATABASE_NAME = 'Offers';
 
@@ -84,6 +84,25 @@ export class Offer {
       for (let i = 0; i < listOffers.length; i++) {
         if (listOffers[i].hash != id)
           this.redisService.hdel(DATABASE_NAME, listOffers[i].hash);
+      }
+      return true;
+    } catch (error) {
+      this.logger.error(error);
+      return false;
+    }
+  }
+
+  async updateExpiredOffer(): Promise<boolean> {
+    try {
+      const listOffers = await this.find({ status: OfferStatus.OPENING });
+      for (let i = 0; i < listOffers.length; i++) {
+        if (listOffers[i].signature.expiry * 1000 < new Date().getTime())
+          this.redisService.hdel(DATABASE_NAME, listOffers[i].hash);
+        await this.redisService.hset(
+          DATABASE_NAME,
+          listOffers[i].hash,
+          JSON.stringify({ ...listOffers[i], status: OfferStatus.EXPIRED }),
+        );
       }
       return true;
     } catch (error) {

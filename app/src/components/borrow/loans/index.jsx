@@ -38,8 +38,7 @@ export default function Loans() {
     } catch (error) {
       const txError = parseMetamaskError(error);
       setCommitLoading(false);
-      toast.error(txError.context || 'An error has been occurred!');
-      console.log('error', error);
+      toast.error(txError.context);
     }
   };
 

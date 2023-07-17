@@ -49,18 +49,18 @@ export default function HeaderBanner({ title = '', description = '', tabs = [], 
               <div className={styles.social}>
                 <Link
                   className={styles['social-item']}
-                  href={`https://testnet.cvcscan.com/address/${account.address}`}
+                  to={`https://testnet.cvcscan.com/address/${account.address}`}
                   rel="noreferrer"
                   target="_blank"
                 >
                   <img src={cvcScanIcon} alt="CVCScan" />
                   <span>CVCScan</span>
                 </Link>
-                <Link className={styles['social-item']} href={`#`} rel="noreferrer" target="_blank">
+                <Link className={styles['social-item']} to={`#`} rel="noreferrer" target="_blank">
                   <Icon icon="logos:twitter" fontSize={18} />
                   <span>Twitter</span>
                 </Link>
-                <Link className={styles['social-item']} href={`#`} rel="noreferrer" target="_blank">
+                <Link className={styles['social-item']} to={`#`} rel="noreferrer" target="_blank">
                   <Icon icon="logos:facebook" fontSize={18} />
                   <span>Facebook</span>
                 </Link>

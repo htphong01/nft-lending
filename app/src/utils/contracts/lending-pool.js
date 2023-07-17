@@ -22,7 +22,6 @@ export const getTotalBalanceOfUser = async (address, options = {}) => {
 export const getStakedPerUser = async (address, options = {}) => {
   const contract = lendingPoolContract(provider);
   const balance = (await contract.poolStakers(address, { ...options })).amount;
-  console.log('hehe', await contract.tokenToDiscountFactor('4900000000000000000'));
   return Number(ethers.utils.formatEther(balance)).toFixed(2);
 };
 

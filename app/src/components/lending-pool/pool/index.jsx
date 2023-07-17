@@ -11,8 +11,11 @@ import {
   getStakedPerUser,
   getPoolBalance,
   getPoolPoints,
-} from '@src/utils/contracts/lending-pool';
-import { checkAllowance, approveERC20, getBalance } from '@src/utils/contracts/erc20';
+  checkAllowance,
+  approveERC20,
+  getBalance,
+  parseMetamaskError,
+} from '@src/utils';
 import { LENDING_POOL_ADDRESS } from '@src/constants';
 import Stake from './stake';
 import Information from './information';
@@ -64,8 +67,8 @@ export default function Pool() {
 
       setIsLoading(false);
     } catch (error) {
-      setIsLoading(false);
       console.log('error', error);
+      setIsLoading(false);
     }
   };
 
@@ -102,9 +105,9 @@ export default function Pool() {
       toast.success(`Stake ${amount} wXCR successfully`);
       fetchBalanceInfo();
     } catch (error) {
+      const txError = parseMetamaskError(error);
+      toast.error(txError.context);
       setIsLoading(false);
-      toast.error('An error has been occurred!');
-      console.log('stake error', error);
     }
   };
 
@@ -131,7 +134,11 @@ export default function Pool() {
         <div className={styles.body}>
           <div className={styles.row}>
             <div className={styles['section-item']}>
-              <Information title={`Your points: ${poolPoints.account}`} value={`Total points: ${poolPoints.total}`} icon={stakerIcon} />
+              <Information
+                title={`Your points: ${poolPoints.account}`}
+                value={`Total points: ${poolPoints.total}`}
+                icon={stakerIcon}
+              />
             </div>
             <div className={styles['section-item']}>
               <Information title="Pool balance" value={`${balance.pool} ${account.currency}`} icon={aprIcon} />
