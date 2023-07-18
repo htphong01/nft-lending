@@ -33,7 +33,6 @@ export default function Loans() {
       const txError = parseMetamaskError(error);
       setCommitLoading(false);
       toast.error(txError.context);
-      console.log('error', error.data.message);
     }
   };
 

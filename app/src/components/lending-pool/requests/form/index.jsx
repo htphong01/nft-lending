@@ -14,21 +14,23 @@ import {
   calculateRealPrice,
   convertOfferDataToSign,
   generateOfferSignature,
-  liquidateLoan
+  liquidateLoan,
+  parseMetamaskError,
 } from '@src/utils';
-import { ONE_DAY } from '@src/constants';
+import { ONE_DAY, OrderStatus, FormType } from '@src/constants';
 import { submitVote, getVote } from '@src/api/vote.api';
 import styles from '../styles.module.scss';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
-export default function Form({ item, onClose }) {
+export default function Form({ item, onClose, type }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
   const account = useSelector((state) => state.account);
 
-  const [isAccepted, setIsAccepted] = useState();
+  const [commitLoading, setCommitLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAccepted, setIsAccepted] = useState();
   const [isAuthorized, setIsAuthorized] = useState(true);
 
   const calculatePercentVote = (input, total) => {
@@ -63,6 +65,20 @@ export default function Form({ item, onClose }) {
     }
   };
 
+  const handleLiquidate = async () => {
+    try {
+      setCommitLoading(true);
+      const tx = await liquidateLoan(item.hash);
+      await tx.wait();
+      toast.success('Liquidate loan successfully');
+      setCommitLoading(false);
+    } catch (error) {
+      setCommitLoading(false);
+      const txError = parseMetamaskError(error);
+      toast.error(txError.context);
+    }
+  };
+
   const fetchInitData = async () => {
     try {
       setIsLoading(true);
@@ -89,6 +105,11 @@ export default function Form({ item, onClose }) {
   return (
     <div className={styles['form-container']}>
       <Toaster position="top-center" reverseOrder={false} />
+      {commitLoading && (
+        <div className="screen-loading-overlay">
+          <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
+        </div>
+      )}
       <div className={styles.form} ref={ref}>
         <Icon icon="material-symbols:close" className={styles['close-btn']} onClick={() => onClose()} />
         {isLoading ? (
@@ -183,32 +204,48 @@ export default function Form({ item, onClose }) {
                 </div>
               </div>
               <div className={`${styles.section} ${styles['section-btn']} `}>
-                <button onClick={() => liquidateLoan(item.hash)}>Liquidate</button>
-                {isAuthorized ? (
+                {type === FormType.EDIT ? (
                   <>
-                    <button
-                      className={styles['accept-btn']}
-                      disabled={isAccepted === false}
-                      onClick={() => handleSubmitVote(true)}
-                    >
-                      <span>
-                        {isAccepted === true ? 'You ' : ''} Accept{isAccepted === true ? 'ed' : ''}
-                      </span>
-                      {isAccepted === true && <Icon icon="material-symbols:check" />}
-                    </button>
-                    <button
-                      className={styles['reject-btn']}
-                      disabled={isAccepted === true}
-                      onClick={() => handleSubmitVote(false)}
-                    >
-                      <span>
-                        {isAccepted === false ? 'You ' : ''} Reject{isAccepted === false ? 'ed' : ''}
-                      </span>
-                      {isAccepted === false && <Icon icon="gridicons:cross" />}
-                    </button>
+                    {item.status === OrderStatus.FILLED ? (
+                      <button className={styles['accept-btn']} onClick={handleLiquidate}>
+                        Liquidate
+                      </button>
+                    ) : isAuthorized ? (
+                      <>
+                        <button
+                          className={styles['accept-btn']}
+                          disabled={isAccepted === false}
+                          onClick={() => handleSubmitVote(true)}
+                        >
+                          <span>
+                            {isAccepted === true ? 'You ' : ''} Accept{isAccepted === true ? 'ed' : ''}
+                          </span>
+                          {isAccepted === true && <Icon icon="material-symbols:check" />}
+                        </button>
+                        <button
+                          className={styles['reject-btn']}
+                          disabled={isAccepted === true}
+                          onClick={() => handleSubmitVote(false)}
+                        >
+                          <span>
+                            {isAccepted === false ? 'You ' : ''} Reject{isAccepted === false ? 'ed' : ''}
+                          </span>
+                          {isAccepted === false && <Icon icon="gridicons:cross" />}
+                        </button>
+                      </>
+                    ) : (
+                      <div>You are unauthorized to vote this order. </div>
+                    )}
                   </>
                 ) : (
-                  <div>You are unauthorized to vote this order. </div>
+                  <>
+                    <button className={styles['accept-btn']} disabled={true}>
+                      <span>Accept</span>
+                    </button>
+                    <button className={styles['reject-btn']} disabled={true}>
+                      <span>Reject</span>
+                    </button>
+                  </>
                 )}
               </div>
             </div>

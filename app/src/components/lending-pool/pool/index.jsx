@@ -62,10 +62,11 @@ export default function Pool() {
           getTotalBonusInPool(),
         ]);
 
+
       setStakerBalance({
         staked: stakedByUser,
         bonus: stakerBonus,
-        balance: Number(stakedByUser) + Number(stakerBonus),
+        balance: (Number(stakedByUser) + Number(stakerBonus)).toFixed(2),
       });
 
       setPoolBalance({

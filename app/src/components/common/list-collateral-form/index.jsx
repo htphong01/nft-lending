@@ -78,7 +78,6 @@ export default function ListCollateralForm({ item, onClose, type }) {
       const tx = await acceptOfferLendingPool(item.hash, offer, signatures);
       await tx.wait();
     } catch (error) {
-      console.error(error);
       const txError = parseMetamaskError(error);
       setIsLoading(false);
       toast.error(txError.context);

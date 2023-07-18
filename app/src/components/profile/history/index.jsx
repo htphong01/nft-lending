@@ -68,7 +68,7 @@ export default function History() {
         getOrders({
           creator: account.address,
           lender: 'pool',
-          status: `${OrderStatus.CANCELLED},${OrderStatus.REPAID},${OrderStatus.LIQUIDATE}`,
+          status: `${OrderStatus.CANCELLED},${OrderStatus.REPAID},${OrderStatus.LIQUIDATE},${OrderStatus.REJECTED}`,
         }),
         getOffers({ borrower: account.address, status: `${OfferStatus.REPAID},${OfferStatus.LIQUIDATED}` }),
         getOffers({ creator: account.address, status: OfferStatus.FILLED }),
