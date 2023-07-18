@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
 import "../utils/Permission.sol";
 import "./direct/loanTypes/IDirectLoanBase.sol";
@@ -16,7 +17,7 @@ import "./direct/loanTypes/IDirectLoanBase.sol";
  * @dev Implements base functionalities common to all Loan types.
  * Mostly related to governance and security.
  */
-contract LiquidateNFTPool is Permission, Pausable, ReentrancyGuard {
+contract LiquidateNFTPool is Permission, Pausable, ReentrancyGuard, IERC721Receiver {
     using SafeERC20 for IERC20;
     /* *********** */
     /* CONSTRUCTOR */
@@ -85,5 +86,10 @@ contract LiquidateNFTPool is Permission, Pausable, ReentrancyGuard {
      */
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    function onERC721Received(address, address from, uint256, bytes calldata) external pure override returns (bytes4) {
+        require(from == address(0x0), "Cannot send tokens to LiquidateNFTPool directly"); // solhint-disable-line reason-string
+        return IERC721Receiver.onERC721Received.selector;
     }
 }

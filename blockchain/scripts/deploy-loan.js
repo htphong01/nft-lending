@@ -46,8 +46,8 @@ async function main() {
     await liquidateNFTPool.deployed();
     console.log("LiquidateNFTPool                        deployed to:>>", liquidateNFTPool.address);
 
-    const loanChecksAndCalculations = await LoanChecksAndCalculations.attach("0x33C3e66cdf0CeDd329EE0cC12cF225D0cA97067c");
-    const nftfiSigningUtils = await NFTfiSigningUtils.attach("0xE92ACe166a6D50400300A6015F7a772B1Ea97De7");
+    const loanChecksAndCalculations = await LoanChecksAndCalculations.attach("0xF46E912d82e49104d332D69c2A9E1Aa0B7440892");
+    const nftfiSigningUtils = await NFTfiSigningUtils.attach("0x4A0c460a775404B87674E2fBff48CA6607b7fBB3");
     const permittedNFTs = await PermittedNFTs.attach("0x6b556f1A587ebEa1b3A42Ba9F6275966CA17BCd5");
     const wXCR = await WXCR.attach("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108");
 
@@ -58,13 +58,17 @@ async function main() {
         },
     });
 
-    const lendingPool = await LendingPool.deploy(wXCR.address, "0x4F9EF07A6DDF73494D2fF51A8f7B78e9c5815eb2", "10000000000000000000", 0);
-    await lendingPool.deployed();
-    console.log("LendingPool                     deployed to:>>", lendingPool.address);
+    // const lendingPool = await LendingPool.deploy(wXCR.address, "0x4F9EF07A6DDF73494D2fF51A8f7B78e9c5815eb2", "10000000000000000000", 0);
+    // await lendingPool.deployed();
+    // console.log("LendingPool                     deployed to:>>", lendingPool.address);
 
-    const directLoanFixedOffer = await DirectLoanFixedOffer.deploy(accounts[0].address, lendingPool.address, liquidateNFTPool.address, permittedNFTs.address, ["0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108"]);
+    const lendingPool = await LendingPool.attach("0x985F6aC9bA18C97Ce59c1334Df716074ef02A684");
+
+    const directLoanFixedOffer = await DirectLoanFixedOffer.deploy(accounts[0].address, lendingPool.address, liquidateNFTPool.address, permittedNFTs.address, [wXCR.address]);
     await directLoanFixedOffer.deployed();
     console.log("DirectLoanFixedOffer                        deployed to:>>", directLoanFixedOffer.address);
+
+    await lendingPool.approve(directLoanFixedOffer.address, ethers.constants.MaxUint256);
 
     console.log("==========================================================================");
     console.log("VERIFY CONTRACTS");

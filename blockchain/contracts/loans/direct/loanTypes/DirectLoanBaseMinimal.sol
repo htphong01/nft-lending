@@ -11,6 +11,7 @@ import "../../../utils/NFTfiSigningUtils.sol";
 import "../../../interfaces/IPermittedNFTs.sol";
 import "../../../interfaces/IPermittedERC20s.sol";
 import "../../../interfaces/ILiquidateNFTPool.sol";
+import "../../../interfaces/ILendingPool.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -196,10 +197,12 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         bytes32 indexed loanId,
         address indexed borrower,
         address indexed lender,
+        address treasury,
         uint256 principalAmount,
         uint256 nftCollateralId,
         uint256 amountPaidToLender,
         uint256 adminFee,
+        uint256 amountToTreasury,
         address nftCollateralContract,
         address erc20Denomination
     );
@@ -747,6 +750,20 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     function _payBackLoan(bytes32 _loanId, address _borrower, address _lender, LoanTerms memory _loan) internal {
         (uint256 adminFee, uint256 payoffAmount) = _payoffAndFee(_loan);
 
+        uint256 _amountTransferToTreasury = 0;
+        if (_lender == lendingPool) {
+            _amountTransferToTreasury = payoffAmount - _loan.principalAmount;
+            payoffAmount = _loan.principalAmount;
+
+            if (_amountTransferToTreasury > 0) {
+                IERC20(_loan.erc20Denomination).safeTransferFrom(
+                    msg.sender,
+                    ILendingPool(lendingPool).treasury(),
+                    _amountTransferToTreasury
+                );
+            }
+        }
+
         // Transfer principal-plus-interest-minus-fees from the caller to lender
         IERC20(_loan.erc20Denomination).safeTransferFrom(msg.sender, _lender, payoffAmount);
 
@@ -758,10 +775,12 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
             _loanId,
             _borrower,
             _lender,
+            ILendingPool(lendingPool).treasury(),
             _loan.principalAmount,
             _loan.nftCollateralId,
             payoffAmount,
             adminFee,
+            _amountTransferToTreasury,
             _loan.nftCollateralContract,
             _loan.erc20Denomination
         );
