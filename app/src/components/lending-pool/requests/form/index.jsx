@@ -7,11 +7,8 @@ import ReactLoading from 'react-loading';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
-import { calculateRepayment } from '@src/utils/apr';
-import { generateSignature } from '@src/utils/ethers';
-import { getStakedPerUser } from '@src/utils/contracts/lending-pool';
+import { getStakedByUser, calculateRepayment, generateSignature, sliceAddress, calculateRealPrice } from '@src/utils';
 import { submitVote, getVote } from '@src/api/vote.api';
-import { sliceAddress, calculateRealPrice } from '@src/utils/misc';
 import styles from '../styles.module.scss';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
@@ -55,13 +52,13 @@ export default function Form({ item, onClose }) {
     try {
       setIsLoading(true);
       const { data } = await getVote({ voter: account.address, orderHash: item.hash });
-      const balance = await getStakedPerUser(account.address, { blockTag: item.vote.blockNumber });
-      setIsAuthorized(balance != 0);
+      const balance = await getStakedByUser(account.address, { blockTag: item.vote.blockNumber });
       if (data.length > 0) {
         setIsAccepted(data[0].isAccepted);
       } else {
         setIsAccepted();
       }
+      setIsAuthorized(balance != 0);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);

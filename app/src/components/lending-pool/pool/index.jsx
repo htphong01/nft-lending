@@ -13,9 +13,10 @@ import {
   getBalance,
   parseMetamaskError,
   getTotalStakers,
-  getPoolBalance,
   getStakedByUser,
   getBonus,
+  getTotalStakedInPool,
+  getTotalBonusInPool,
 } from '@src/utils';
 import { LENDING_POOL_ADDRESS } from '@src/constants';
 import Stake from './stake';
@@ -25,6 +26,8 @@ import styles from './styles.module.scss';
 import cvcScanIcon from '@src/assets/cvcscan-icon.png';
 import stakerIcon from '@src/assets/staker-icon.svg';
 import aprIcon from '@src/assets/apr-icon.svg';
+import walletIcon from '@src/assets/wallet-icon.png';
+import bonusIcon from '@src/assets/bonus-icon.webp';
 
 export default function Pool() {
   const dispatch = useDispatch();
@@ -34,29 +37,43 @@ export default function Pool() {
 
   const [poolStakers, setPoolStakers] = useState(0);
 
-  const [balance, setBalance] = useState({
-    pool: 0,
+  const [stakerBalance, setStakerBalance] = useState({
     staked: 0,
     balance: 0,
+    bonus: 0,
+  });
+
+  const [poolBalance, setPoolBalance] = useState({
+    balance: 0,
+    staked: 0,
     bonus: 0,
   });
 
   const fetchBalanceInfo = async () => {
     try {
       setIsLoading(true);
-      const [stakedByUser, poolBalance, bonus, totalPoolStakers] = await Promise.all([
-        getStakedByUser(account.address),
-        getPoolBalance(),
-        getBonus(account.address),
-        getTotalStakers(),
-      ]);
-      setBalance({
-        ...balance,
+      const [totalPoolStakers, stakedByUser, stakerBonus, currentPoolBalance, stakedInPool, bonusInPool] =
+        await Promise.all([
+          getTotalStakers(),
+          getStakedByUser(account.address),
+          getBonus(account.address),
+          getBalance(LENDING_POOL_ADDRESS),
+          getTotalStakedInPool(),
+          getTotalBonusInPool(),
+        ]);
+
+      setStakerBalance({
         staked: stakedByUser,
-        bonus: bonus,
-        balance: Number(stakedByUser) + Number(bonus),
-        pool: poolBalance,
+        bonus: stakerBonus,
+        balance: Number(stakedByUser) + Number(stakerBonus),
       });
+
+      setPoolBalance({
+        balance: currentPoolBalance,
+        staked: stakedInPool,
+        bonus: bonusInPool,
+      });
+
       const currentBalance = await getBalance(account.address);
       dispatch(setAccount({ balance: currentBalance }));
 
@@ -145,17 +162,39 @@ export default function Pool() {
               />
             </div>
             <div className={styles['section-item']}>
-              <Information title="Pool balance" value={`${balance.pool} ${account.currency}`} icon={aprIcon} />
+              <Information title="Pool balance" value={`${poolBalance.balance} ${account.currency}`} icon={aprIcon} />
+            </div>
+            <div className={styles['section-item']}>
+              <Information
+                title={`Total staked ${account.currency}`}
+                value={`${poolBalance.staked} ${account.currency}`}
+                icon={walletIcon}
+              />
+            </div>
+            <div className={styles['section-item']}>
+              <Information title="Total bonus" value={`${poolBalance.bonus} ${account.currency}`} icon={bonusIcon} />
             </div>
           </div>
-          <div className={styles.row}>
+          {/* <div className={styles.row}>
+            <div className={styles['section-item']}>
+              <Information
+                title={`Total staked ${account.currency}`}
+                value={`${poolBalance.staked} ${account.currency}`}
+                icon={walletIcon}
+              />
+            </div>
+            <div className={styles['section-item']}>
+              <Information title="Total bonus" value={`${poolBalance.bonus} ${account.currency}`} icon={bonusIcon} />
+            </div>
+          </div> */}
+          <div className={`${styles.row} ${styles['row-2']}`}>
             <div className={styles['section-item']}>
               <Stake currency={account.currency} handleStake={handleStake} />
             </div>
             <div className={styles['section-item']}>
               <Account
                 currency={account.currency}
-                balance={balance}
+                balance={stakerBalance}
                 handleClaimReward={handleClaimReward}
                 handleWithdraw={handleWithdraw}
               />
