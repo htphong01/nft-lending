@@ -22,14 +22,18 @@ contract LiquidateNFTPool is Permission, Pausable, ReentrancyGuard, IERC721Recei
     /* *********** */
     /* CONSTRUCTOR */
     /* *********** */
-
-    // The wXCR TOKEN!
-    IERC20 public wXCR;
-
     address public loan;
 
     event LoanPoolRegistration(address indexed account);
-    event LiquidateNFT(bytes32 loanId, uint256 amount, uint256 nftId, uint256 timestamp, address nftContract);
+    event SetLoanPool(address indexed oldValue, address indexed newValue);
+    event LiquidateNFT(
+        bytes32 loanId,
+        address indexed _erc20Token,
+        uint256 amount,
+        uint256 indexed nftId,
+        uint256 timestamp,
+        address indexed nftContract
+    );
 
     /**
      * @notice Sets the admin of the contract.
@@ -46,6 +50,12 @@ contract LiquidateNFTPool is Permission, Pausable, ReentrancyGuard, IERC721Recei
         emit LoanPoolRegistration(loan);
     }
 
+    function setLoanPool(address _loan) external notZeroAddress(_loan) onlyOwner {
+        address _oldValue = loan;
+        loan = _loan;
+        emit SetLoanPool(_oldValue, loan);
+    }
+
     /* ********* */
     /* FUNCTIONS */
     /* ********* */
@@ -54,14 +64,15 @@ contract LiquidateNFTPool is Permission, Pausable, ReentrancyGuard, IERC721Recei
         bytes32 _loanId,
         address _nftContract,
         uint256 _nftId,
+        address _erc20Token,
         uint256 _amount
     ) external nonReentrant whenNotPaused {
         require(msg.sender == loan, "Only Loan can liquidate");
         IERC721(_nftContract).safeTransferFrom(loan, address(this), _nftId, "");
-        wXCR.safeTransfer(IDirectLoanBase(loan).lendingPool(), _amount);
+        IERC20(_erc20Token).safeTransfer(IDirectLoanBase(loan).lendingPool(), _amount);
 
         // Emit an event with all relevant details from this transaction.
-        emit LiquidateNFT(_loanId, _amount, _nftId, block.timestamp, _nftContract);
+        emit LiquidateNFT(_loanId, _erc20Token, _amount, _nftId, block.timestamp, _nftContract);
     }
 
     /**
@@ -88,8 +99,7 @@ contract LiquidateNFTPool is Permission, Pausable, ReentrancyGuard, IERC721Recei
         _unpause();
     }
 
-    function onERC721Received(address, address from, uint256, bytes calldata) external pure override returns (bytes4) {
-        require(from == address(0x0), "Cannot send tokens to LiquidateNFTPool directly"); // solhint-disable-line reason-string
+    function onERC721Received(address, address, uint256, bytes calldata) external pure override returns (bytes4) {
         return IERC721Receiver.onERC721Received.selector;
     }
 }

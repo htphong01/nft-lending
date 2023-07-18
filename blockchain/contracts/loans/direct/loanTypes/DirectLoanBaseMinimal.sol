@@ -269,6 +269,10 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      */
     event ERC20Permit(address indexed erc20Contract, bool isPermitted);
 
+    event SetLiquidatePool(address indexed oldValue, address indexed newValue);
+
+    event SetLendingPool(address indexed oldValue, address indexed newValue);
+
     /* *********** */
     /* CONSTRUCTOR */
     /* *********** */
@@ -301,6 +305,20 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     /* *************** */
     /* ADMIN FUNCTIONS */
     /* *************** */
+
+    function setLiquidatePool(address _liquidatePool) external onlyOwner {
+        require(_liquidatePool != address(0), "Invalid address");
+        address _oldValue = liquidatePool;
+        liquidatePool = _liquidatePool;
+        emit SetLiquidatePool(_oldValue, liquidatePool);
+    }
+
+    function setLendingPool(address _lendingPool) external onlyOwner {
+        require(_lendingPool != address(0), "Invalid address");
+        address _oldValue = lendingPool;
+        lendingPool = _lendingPool;
+        emit SetLendingPool(_oldValue, lendingPool);
+    }
 
     /**
      * @notice This function can be called by admins to change the maximumLoanDuration. Note that they can never change
@@ -809,6 +827,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
             _loanId,
             _loanTerms.nftCollateralContract,
             _loanTerms.nftCollateralId,
+            _loanTerms.erc20Denomination,
             _loanTerms.principalAmount
         );
     }

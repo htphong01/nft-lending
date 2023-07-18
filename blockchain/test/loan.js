@@ -1,5 +1,5 @@
 const { ethers } = require("hardhat");
-const { getRandomInt, getEncodeOffer, getEncodedSignature, getMessage } = require("./utils");
+const { getRandomInt, getEncodeOffer, getEncodedSignature, getMessage, skipTime, getCurrentTimestamp } = require("./utils");
 
 let directLoanFixedOffer;
 let chonkSociety;
@@ -63,6 +63,7 @@ describe.only("Loan", () => {
         await wXCR.connect(borrower).mint(borrower.address, TOKEN_1.mul(100));
 
         await wXCR.connect(borrower).mint(lendingPool.address, TOKEN_1.mul(100));
+        await wXCR.mint(liquidateNFTPool.address, TOKEN_1.mul(1000));
         await lendingPool.approve(directLoanFixedOffer.address, ethers.constants.MaxUint256);
     });
 
@@ -106,7 +107,7 @@ describe.only("Loan", () => {
         console.log(await chonkSociety.ownerOf(1), borrower.address);
     });
 
-    it.only("test pay back", async () => {
+    it("test pay back", async () => {
         await chonkSociety.connect(borrower).approve(directLoanFixedOffer.address, 1);
         await wXCR.connect(lender).approve(directLoanFixedOffer.address, TOKEN_1.mul(100));
 
@@ -145,5 +146,48 @@ describe.only("Loan", () => {
 
         await directLoanFixedOffer.connect(borrower).payBackLoan(loanId);
         console.log(await chonkSociety.ownerOf(1), borrower.address);
+    });
+
+    it.only("test liquidateNFT", async () => {
+        await chonkSociety.connect(borrower).approve(directLoanFixedOffer.address, 1);
+        await wXCR.connect(lender).approve(directLoanFixedOffer.address, TOKEN_1.mul(100));
+
+        const offer = {
+            principalAmount: TOKEN_1.mul(15),
+            maximumRepaymentAmount: TOKEN_1.mul(18),
+            nftCollateralId: 1,
+            nftCollateralContract: chonkSociety.address,
+            duration: 60,
+            adminFeeInBasisPoints: 25,
+            erc20Denomination: wXCR.address,
+        };
+
+        const encodeOffer = getEncodeOffer(offer);
+
+        const signature = {
+            nonce: getRandomInt(),
+            expiry: Number(await getCurrentTimestamp()) + 60,
+            signer: lender.address,
+        };
+
+        const encodeSignature = getEncodedSignature(signature);
+
+        const message = getMessage(encodeOffer, encodeSignature, directLoanFixedOffer.address, 31337);
+        const provider = ethers.provider;
+        const signer = provider.getSigner(lender.address);
+        // console.log("test message", ethers.utils.hashMessage(message));
+        signature.signature = await signer.signMessage(message);
+
+        // const signerAddress = ethers.utils.verifyMessage(ethers.utils.hashMessage(message), signature.signature);
+        const loanId = "0xebe4fe30af161bb8b26d55867c264d98c256cbfe364c00ea2cb779d1233d67c9";
+        await directLoanFixedOffer.connect(borrower).acceptOfferLendingPool(loanId, offer, [signature, signature, signature]);
+
+        await wXCR.connect(borrower).approve(directLoanFixedOffer.address, TOKEN_1.mul(100));
+        await wXCR.connect(borrower).mint(borrower.address, TOKEN_1.mul(3));
+
+        await skipTime(60);
+
+        await directLoanFixedOffer.connect(borrower).liquidateOverdueLoan(loanId);
+        console.log(await chonkSociety.ownerOf(1), liquidateNFTPool.address);
     });
 });

@@ -53,6 +53,16 @@ const skipBlock = async (blockNumber) => {
     }
 };
 
+const skipTime = async (seconds) => {
+    await network.provider.send("evm_increaseTime", [seconds]);
+    await network.provider.send("evm_mine");
+};
+
+const getCurrentTimestamp = async () => {
+    const latestBlock = await hre.ethers.provider.getBlock("latest");
+    return latestBlock.timestamp;
+};
+
 module.exports = {
     getRandomInt,
     encodeData,
@@ -60,5 +70,7 @@ module.exports = {
     getEncodedSignature,
     getMessage,
     getCurrentBlock,
-    skipBlock
+    skipBlock,
+    skipTime,
+    getCurrentTimestamp
 };
