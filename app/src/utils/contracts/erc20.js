@@ -39,3 +39,13 @@ export const approveERC20 = async (
   const contract = ERC20Contract(contractAddress, signer);
   return contract.approve(spender, amount);
 };
+
+export const mintERC20 = async (
+  address,
+  amount = ethers.utils.parseUnits('20', 18),
+  contractAddress = WXCR_ADDRESS
+) => {
+  const signer = provider.getSigner();
+  const contract = ERC20Contract(contractAddress, signer);
+  return contract.mint(address, amount);
+};
