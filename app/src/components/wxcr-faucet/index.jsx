@@ -30,7 +30,7 @@ export default function WXCRFaucet() {
             onChange={(e) => setAddress(e.target.value)}
           />
           <button disabled={address === ''} onClick={handleMintERC20}>
-            Send me wXCR
+            Send wXCR
           </button>
         </div>
       </div>

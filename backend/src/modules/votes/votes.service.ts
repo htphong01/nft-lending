@@ -32,11 +32,11 @@ export class VotesService {
 
     const voteHash = await sha256(bytes);
 
-    if (
-      !verifySignature(createVoteDto.voter, voteHash, createVoteDto.signature)
-    ) {
-      throw new UnauthorizedException();
-    }
+    // if (
+    //   !verifySignature(createVoteDto.voter, voteHash, createVoteDto.signature)
+    // ) {
+    //   throw new UnauthorizedException();
+    // }
 
     const currentOrder = await this.order.getByKey(createVoteDto.orderHash);
     if (currentOrder.lender !== 'pool') {

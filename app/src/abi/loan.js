@@ -8,6 +8,16 @@ export const LOAN_ABI = [
       },
       {
         internalType: 'address',
+        name: '_lendingPool',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: '_liquidatePool',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
         name: '_permittedNFT',
         type: 'address',
       },
@@ -459,6 +469,88 @@ export const LOAN_ABI = [
     type: 'function',
   },
   {
+    inputs: [
+      {
+        internalType: 'bytes32',
+        name: '_loanId',
+        type: 'bytes32',
+      },
+      {
+        components: [
+          {
+            internalType: 'uint256',
+            name: 'principalAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'maximumRepaymentAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'nftCollateralId',
+            type: 'uint256',
+          },
+          {
+            internalType: 'address',
+            name: 'nftCollateralContract',
+            type: 'address',
+          },
+          {
+            internalType: 'uint32',
+            name: 'duration',
+            type: 'uint32',
+          },
+          {
+            internalType: 'uint16',
+            name: 'adminFeeInBasisPoints',
+            type: 'uint16',
+          },
+          {
+            internalType: 'address',
+            name: 'erc20Denomination',
+            type: 'address',
+          },
+        ],
+        internalType: 'struct LoanData.Offer',
+        name: '_offer',
+        type: 'tuple',
+      },
+      {
+        components: [
+          {
+            internalType: 'uint256',
+            name: 'nonce',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'expiry',
+            type: 'uint256',
+          },
+          {
+            internalType: 'address',
+            name: 'signer',
+            type: 'address',
+          },
+          {
+            internalType: 'bytes',
+            name: 'signature',
+            type: 'bytes',
+          },
+        ],
+        internalType: 'struct LoanData.Signature[]',
+        name: '_signatures',
+        type: 'tuple[]',
+      },
+    ],
+    name: 'acceptOfferLendingPool',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 'adminFeeInBasisPoints',
     outputs: [
@@ -607,6 +699,19 @@ export const LOAN_ABI = [
     type: 'function',
   },
   {
+    inputs: [],
+    name: 'lendingPool',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [
       {
         internalType: 'bytes32',
@@ -617,6 +722,19 @@ export const LOAN_ABI = [
     name: 'liquidateOverdueLoan',
     outputs: [],
     stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'liquidatePool',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
     type: 'function',
   },
   {

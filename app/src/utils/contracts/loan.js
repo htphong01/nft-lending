@@ -23,3 +23,10 @@ export const liquidateLoan = async (loanId) => {
   const contract = loanContract(signer);
   return contract.liquidateOverdueLoan(loanId);
 };
+
+// LOAN IN LENDING POOL
+export const acceptOfferLendingPool = (loanId, offer, signatures) => {
+  console.log(loanId, offer, signatures);
+  const contract = loanContract(signer);
+  return contract.acceptOfferLendingPool(loanId, offer, signatures);
+};

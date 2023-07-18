@@ -7,7 +7,16 @@ import ReactLoading from 'react-loading';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
-import { getStakedByUser, calculateRepayment, generateSignature, sliceAddress, calculateRealPrice } from '@src/utils';
+import {
+  getStakedByUser,
+  calculateRepayment,
+  generateSignature,
+  sliceAddress,
+  calculateRealPrice,
+  convertOfferDataToSign,
+  generateOfferSignature,
+} from '@src/utils';
+import { ONE_DAY } from '@src/constants';
 import { submitVote, getVote } from '@src/api/vote.api';
 import styles from '../styles.module.scss';
 
@@ -35,11 +44,17 @@ export default function Form({ item, onClose }) {
         isAccepted: vote,
       };
 
-      const signature = await generateSignature(voteData);
-      voteData.signature = signature;
+      const { offerData, signatureData } = convertOfferDataToSign({
+        ...item,
+        creator: account.address,
+        expiration: ONE_DAY * 7,
+      });
+
+      const signature = await generateOfferSignature(offerData, signatureData);
+      signatureData.signature = signature;
+      voteData.signature = signatureData;
 
       const { data } = await submitVote(voteData);
-
       toast.success('Vote successfully!');
       setIsAccepted(vote);
       item.vote = data;

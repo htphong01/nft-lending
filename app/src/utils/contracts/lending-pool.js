@@ -59,6 +59,7 @@ export const getBonus = async (address) => {
   const contract = lendingPoolContract(provider);
 
   const rewardSupply = await contract.rewardSupply();
+  if (rewardSupply.eq(0)) return 0;
   const pendingReward = await contract.pendingReward(address);
   const treasury = await contract.treasury();
   const treasuryBalance = await getRawBalance(treasury);
