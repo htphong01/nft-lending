@@ -10,6 +10,7 @@ import "../../../utils/NftReceiver.sol";
 import "../../../utils/NFTfiSigningUtils.sol";
 import "../../../interfaces/IPermittedNFTs.sol";
 import "../../../interfaces/IPermittedERC20s.sol";
+import "../../../interfaces/ILiquidateNFTPool.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -75,6 +76,10 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     /* ******* */
     /* STORAGE */
     /* ******* */
+
+    address public lendingPool;
+
+    address public liquidatePool;
 
     uint16 public constant HUNDRED_PERCENT = 10000;
 
@@ -269,10 +274,21 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @dev Sets `permittedNFTs`
      *
      * @param _admin - Initial admin of this contract.
+     * @param  _lendingPool - Lending Pool address
+     * @param  _liquidatePool - Liquidate NFT Pool address
      * @param  _permittedNFT - PermittedNFT address
      * @param  _permittedErc20s -
      */
-    constructor(address _admin, address _permittedNFT, address[] memory _permittedErc20s) BaseLoan(_admin) {
+    constructor(
+        address _admin,
+        address _lendingPool,
+        address _liquidatePool,
+        address _permittedNFT,
+        address[] memory _permittedErc20s
+    ) BaseLoan(_admin) {
+        lendingPool = _lendingPool;
+        liquidatePool = _liquidatePool;
+        ILiquidateNFTPool(liquidatePool).registerLoanPool();
         permittedNFTs = IPermittedNFTs(_permittedNFT);
         for (uint256 i = 0; i < _permittedErc20s.length; i++) {
             _setERC20Permit(_permittedErc20s[i], true);
@@ -465,9 +481,12 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         uint256 loanMaturityDate = uint256(loan.loanStartTime) + uint256(loan.duration);
         require(block.timestamp > loanMaturityDate, "Loan is not overdue yet");
 
-        require(msg.sender == lender, "Only lender can liquidate");
-
-        _resolveLoan(_loanId, lender, loan);
+        if (lender == lendingPool) {
+            _resolveLoanForLendingPool(_loanId, loan);
+        } else {
+            require(msg.sender == lender, "Only lender can liquidate");
+            _resolveLoan(_loanId, lender, loan);
+        }
 
         // Emit an event with all relevant details from this transaction.
         emit LoanLiquidated(
@@ -762,6 +781,17 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         // loan
 
         _transferNFT(_loanTerms, address(this), _nftReceiver);
+    }
+
+    function _resolveLoanForLendingPool(bytes32 _loanId, LoanTerms memory _loanTerms) internal {
+        _resolveLoanNoNftTransfer(_loanId, _loanTerms);
+        IERC721(_loanTerms.nftCollateralContract).approve(liquidatePool, _loanTerms.nftCollateralId);
+        ILiquidateNFTPool(liquidatePool).liquidateNFT(
+            _loanId,
+            _loanTerms.nftCollateralContract,
+            _loanTerms.nftCollateralId,
+            _loanTerms.principalAmount
+        );
     }
 
     /**

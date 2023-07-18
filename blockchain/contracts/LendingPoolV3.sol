@@ -216,4 +216,8 @@ contract LendingPoolV3 is Permission {
         user.rewardDebt = 0;
         user.rewardPending = 0;
     }
+
+    function approve(address _spender, uint256 _amount) external onlyOwner {
+        wXCR.approve(_spender, _amount);
+    }
 }

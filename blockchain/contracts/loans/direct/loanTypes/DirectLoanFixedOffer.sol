@@ -61,14 +61,18 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * @dev Sets `hub` and permitted erc20-s
      *
      * @param _admin - Initial admin of this contract.
+     * @param  _lendingPool - Lending Pool address
+     * @param  _liquidatePool - Liquidate NFT Pool address
      * @param  _permittedNFT - PermittedNFT address
      * @param  _permittedErc20s - list of permitted ERC20 token contract addresses
      */
     constructor(
         address _admin,
+        address _lendingPool,
+        address _liquidatePool,
         address _permittedNFT,
         address[] memory _permittedErc20s
-    ) DirectLoanBaseMinimal(_admin, _permittedNFT, _permittedErc20s) {
+    ) DirectLoanBaseMinimal(_admin, _lendingPool, _liquidatePool, _permittedNFT, _permittedErc20s) {
         // solhint-disable-previous-line no-empty-blocks
     }
 
@@ -90,6 +94,22 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
         _loanSanityChecks(_offer);
         _loanSanityChecksOffer(_offer);
         _acceptOffer(_loanId, _setupLoanTerms(_offer, _signature.signer), _offer, _signature);
+    }
+
+    /**
+     * @notice This function is called by the borrower when accepting from leding pool to begin a loan.
+     *
+     * @param _offer - The offer made by the lender.
+     * @param _signatures - The components of the lender's signature.
+     */
+    function acceptOfferLendingPool(
+        bytes32 _loanId,
+        Offer memory _offer,
+        Signature[] memory _signatures
+    ) external whenNotPaused nonReentrant {
+        _loanSanityChecks(_offer);
+        _loanSanityChecksOffer(_offer);
+        _acceptOfferLendingPool(_loanId, _setupLoanTerms(_offer, lendingPool), _offer, _signatures);
     }
 
     /* ******************* */
@@ -143,6 +163,28 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
 
         // Emit an event with all relevant details from this transaction.
         emit LoanStarted(_loanId, msg.sender, _signature.signer, _loanTerms);
+    }
+
+    function _acceptOfferLendingPool(
+        bytes32 _loanId,
+        LoanTerms memory _loanTerms,
+        Offer memory _offer,
+        Signature[] memory _signatures
+    ) internal {
+        // Check loan nonces. These are different from Ethereum account nonces.
+        // Here, these are uint256 numbers that should uniquely identify
+        // each signature for each user (i.e. each user should only create one
+        // off-chain signature for each nonce, with a nonce being any arbitrary
+        // uint256 value that they have not used yet for an off-chain Loan
+        // signature).
+        for (uint256 i; i < _signatures.length; i++) {
+            require(NFTfiSigningUtils.isValidLenderSignature(_offer, _signatures[i]), "Signature is invalid");
+        }
+
+        _createLoan(_loanId, _loanTerms, msg.sender, lendingPool);
+
+        // Emit an event with all relevant details from this transaction.
+        emit LoanStarted(_loanId, msg.sender, lendingPool, _loanTerms);
     }
 
     /**
