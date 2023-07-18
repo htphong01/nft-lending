@@ -17,7 +17,7 @@ export default function Table({ title, data, creator }) {
     try {
       setIsLoading(true);
 
-      const repayment = Number(item.offer) + (item.offer * item.rate) / 100;
+      const repayment = calculateRepayment(item.offer, item.rate, item.duration);
 
       const offer = {
         principalAmount: ethers.utils.parseUnits(item.offer, 18),

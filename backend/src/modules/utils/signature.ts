@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { calculateRepayment } from './apr';
 
 const ONE_DAY = 24 * 60 * 60;
 
@@ -26,7 +27,6 @@ export const generateOfferMessage = (
   loanContract,
   chainId,
 ) => {
-
   const {
     offer,
     rate,
@@ -36,7 +36,8 @@ export const generateOfferMessage = (
     adminFeeInBasisPoints,
     erc20Denomination,
   } = offerData;
-  const repayment = Number(offer) + (offer * rate) / 100;
+  const repayment = calculateRepayment(offer, rate, duration);
+
   const encodedOffer = ethers.solidityPacked(
     ['address', 'uint256', 'uint256', 'address', 'uint256', 'uint32', 'uint16'],
     [

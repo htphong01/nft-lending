@@ -99,6 +99,7 @@ export class OffersService implements OnModuleInit {
         const event: any = events[i];
         if (!event) continue;
         if (Object.keys(event).length === 0) continue;
+        if (!event.fragment) continue;
 
         switch (event.fragment.name) {
           case 'LoanStarted': {
@@ -137,6 +138,7 @@ export class OffersService implements OnModuleInit {
         }
       }
     } catch (error) {
+      console.log('offer', error);
       if (error.response?.data) {
         throw new HttpException(error.response.data, error.response.status);
       } else {

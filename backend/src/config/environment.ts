@@ -27,6 +27,6 @@ export const Environment = {
     process.env.LENDING_POOL_ADDRESS ||
     '0x985F6aC9bA18C97Ce59c1334Df716074ef02A684',
   LOAN_ADDRESS:
-    process.env.LOAN_ADDRESS || '0xFec95a1Fc4b667695693ea58F415BD3dA4F70CEE',
+    process.env.LOAN_ADDRESS || '0x91EC7811dcDFaD912F635352D30234e0289aEdA4',
   CHAIN_ID: process.env.CHAIN_ID || '5555',
 };

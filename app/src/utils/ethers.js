@@ -63,6 +63,7 @@ export const generateOfferSignature = async (
     ['bytes', 'bytes', 'address', 'uint256'],
     [encodedOffer, encodedSignature, loanContract, chainId]
   );
+
   const message = ethers.utils.arrayify(ethers.utils.keccak256(payload));
 
   const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');

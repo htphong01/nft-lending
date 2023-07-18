@@ -61,7 +61,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
 
   const handleGetLoan = async () => {
     try {
-      const repayment = Number(item.offer) + (item.offer * item.rate) / 100;
+      const repayment = calculateRepayment(item.offer, item.rate, item.duration);
 
       const offer = {
         principalAmount: ethers.utils.parseUnits(item.offer, 18),

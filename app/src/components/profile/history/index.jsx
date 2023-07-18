@@ -8,7 +8,7 @@ import OfferView from '@src/components/common/offer-view';
 import { getOrders, getOrderByHash } from '@src/api/order.api';
 import { getOffers } from '@src/api/offer.api';
 import { OrderStatus, OfferStatus, FormType } from '@src/constants';
-import { payBackLoan, checkAllowance, approveERC20, parseMetamaskError } from '@src/utils';
+import { payBackLoan, checkAllowance, approveERC20, parseMetamaskError, calculateRepayment } from '@src/utils';
 import Table from '@src/components/common/table';
 import styles from './styles.module.scss';
 
@@ -39,8 +39,7 @@ export default function History() {
       //   toast.success('Pay back loan successfully');
       // }
 
-      console.log(loan.hash);
-      const repayment = Number(loan.offer) + (loan.offer * loan.rate) / 100;
+      const repayment = calculateRepayment(loan.offer, loan.rate, loan.duration);
       if (!(await checkAllowance(account.address, ethers.utils.parseUnits(`${repayment}`, 18)))) {
         const tx = await approveERC20(ethers.utils.parseUnits(`${repayment}`, 18));
         await tx.wait();

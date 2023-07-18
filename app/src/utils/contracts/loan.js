@@ -15,6 +15,7 @@ export const acceptOffer = (loanId, offer, signature) => {
 };
 
 export const payBackLoan = async (loanId) => {
+  console.log(loanId);
   const contract = loanContract(signer);
   return contract.payBackLoan(loanId);
 };

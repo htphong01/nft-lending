@@ -2,6 +2,7 @@ import { OfferStatus, OrderStatus } from '@src/constants/enum';
 import { WXCR_ADDRESS } from '@src/constants';
 import { ethers } from 'ethers';
 import { ONE_DAY } from '@src/constants';
+import { calculateRepayment } from './apr';
 
 export const sliceAddress = (address) => {
   return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
@@ -28,7 +29,7 @@ export const getOrderStatusText = (status) => {
 };
 
 export const convertOfferDataToSign = (offer) => {
-  const repayment = Number(offer.offer) + (offer.offer * offer.rate) / 100;
+  const repayment = calculateRepayment(offer.offer, offer.rate, offer.duration);
 
   const offerData = {
     offer: ethers.utils.parseUnits(offer.offer, 18),
