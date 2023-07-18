@@ -10,11 +10,11 @@ import toast, { Toaster } from 'react-hot-toast';
 import {
   getStakedByUser,
   calculateRepayment,
-  generateSignature,
   sliceAddress,
   calculateRealPrice,
   convertOfferDataToSign,
   generateOfferSignature,
+  liquidateLoan
 } from '@src/utils';
 import { ONE_DAY } from '@src/constants';
 import { submitVote, getVote } from '@src/api/vote.api';
@@ -183,6 +183,7 @@ export default function Form({ item, onClose }) {
                 </div>
               </div>
               <div className={`${styles.section} ${styles['section-btn']} `}>
+                <button onClick={() => liquidateLoan(item.hash)}>Liquidate</button>
                 {isAuthorized ? (
                   <>
                     <button

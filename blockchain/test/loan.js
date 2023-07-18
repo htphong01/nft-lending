@@ -365,5 +365,44 @@ describe.only("Loan", () => {
                 .to.emit(directLoanFixedOffer, "LoanLiquidated")
                 .to.changeTokenBalances(chonkSociety, [directLoanFixedOffer.address, lender.address], [-1, 1]);
         });
+
+        it("", async () => {
+            const loanId = "0xe2156a8c0df2c909cdb8363fe05203381d9b0c9e24dbfc15ee53f741268b0078";
+            const offer = {
+                principalAmount: {
+                    type: "BigNumber",
+                    hex: "0x8ac7230489e80000",
+                },
+                maximumRepaymentAmount: {
+                    type: "BigNumber",
+                    hex: "0x8ef0f36da2860000",
+                },
+                nftCollateralId: 4,
+                nftCollateralContract: "0xf31a2e258bec65a46fb54cd808294ce215070150",
+                duration: 2592000,
+                adminFeeInBasisPoints: 25,
+                erc20Denomination: "0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108",
+            };
+            const signature = [
+                {
+                    signer: "0xbf4e57ea10b8d19ad436293818469758145ee915",
+                    nonce: 8235433715756225,
+                    expiry: 53944393777,
+                    signature: "0x8fe2e9e2b051e2d01b2596d09c316f4c63caafc5408e9752a4fa58eac9338b25133e81b6265f200196d2c07466c15619a6edad4c12f0aa8deb42e0732a5876941b",
+                },
+                {
+                    signer: "0x601d06fd394b4e74037f51e13b0b6fc9e6a2c7df",
+                    nonce: 3098022932000833,
+                    expiry: 53944393792,
+                    signature: "0xe4c168f37fd389f4ceff3879f699c0a13707488d0a784cbbbe44826ee57a0f567b25b06732963ba094a8353a2d9bf7da2c6d253ff52df235a092dee2fad92e181c",
+                },
+                {
+                    signer: "0x475dadd02b62698b8a3ce58dfbf5b05168a7a1db",
+                    nonce: 119440082829873,
+                    expiry: 53944393785,
+                    signature: "0x5464184b4378c65ea1758cd422af03191072f6c438fa321b1246e6aa3714106f4021214825dd6a6a80fae9863d0df4618eb4a83d93ec17047167a8e68e98f9911c",
+                },
+            ];
+        });
     });
 });
