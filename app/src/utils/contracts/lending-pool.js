@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { LENDING_POOL_ABI } from '@src/abi';
 import { LENDING_POOL_ADDRESS } from '@src/constants';
-import { getRawBalance } from './erc20';
+import { getRawBalance, getBalance } from './erc20';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
 const signer = provider.getSigner();
@@ -43,13 +43,16 @@ export const getStakedByUser = async (address) => {
   return Number(ethers.utils.formatUnits(userInfo.amount)).toFixed(2);
 };
 
-export const getPoolBalance = async () => {
+export const getTotalStakedInPool = async () => {
   const contract = lendingPoolContract(provider);
   const poolInfo = await contract.poolInfo();
-  const treasury = await contract.treasury();
-  const treasuryBalance = await getRawBalance(treasury);
+  return Number(ethers.utils.formatUnits(poolInfo.stakedSupply)).toFixed(2);
+};
 
-  return Number(ethers.utils.formatUnits(treasuryBalance.add(poolInfo.stakedSupply))).toFixed(2);
+export const getTotalBonusInPool = async () => {
+  const contract = lendingPoolContract(provider);
+  const treasury = await contract.treasury();
+  return getBalance(treasury);
 };
 
 export const getBonus = async (address) => {
@@ -57,7 +60,6 @@ export const getBonus = async (address) => {
 
   const rewardSupply = await contract.rewardSupply();
   const pendingReward = await contract.pendingReward(address);
-  console.log('pendingReward', pendingReward);
   const treasury = await contract.treasury();
   const treasuryBalance = await getRawBalance(treasury);
 

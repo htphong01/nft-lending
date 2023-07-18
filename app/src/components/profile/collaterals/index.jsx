@@ -27,7 +27,7 @@ export default function Collateral() {
 
   useEffect(() => {
     fetchOrderList();
-  }, []);
+  }, [account.address]);
   
   return (
     <div className={styles.container}>
