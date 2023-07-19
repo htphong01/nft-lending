@@ -99,36 +99,54 @@ export class OffersService implements OnModuleInit {
         const event: any = events[i];
         if (!event) continue;
         if (Object.keys(event).length === 0) continue;
+        if (!event.fragment) continue;
+
+        console.log(event.fragment.name, event.args.loanId);
 
         switch (event.fragment.name) {
           case 'LoanStarted': {
             const loanId = event.args.loanId;
             const offer = await this.findById(loanId);
-            await Promise.all([
-              this.offer.update(loanId, { status: OfferStatus.FILLED }),
-              this.offer.deleteAllAccept(loanId),
-              this.order.update(offer.order, { status: OrderStatus.FILLED }),
-            ]);
+            if (offer) {
+              await Promise.all([
+                this.offer.update(loanId, { status: OfferStatus.FILLED }),
+                this.offer.deleteAllAccept(loanId),
+                this.order.update(offer.order, { status: OrderStatus.FILLED }),
+              ]);
+            } else {
+              await this.order.update(loanId, { status: OrderStatus.FILLED });
+            }
+
             break;
           }
           case 'LoanRepaid': {
             const loanId = event.args.loanId;
             const offer = await this.findById(loanId);
-            await Promise.all([
-              this.offer.update(loanId, { status: OfferStatus.REPAID }),
-              this.order.update(offer.order, { status: OrderStatus.REPAID }),
-            ]);
+            if (offer) {
+              await Promise.all([
+                this.offer.update(loanId, { status: OfferStatus.REPAID }),
+                this.order.update(offer.order, { status: OrderStatus.REPAID }),
+              ]);
+            } else {
+              await this.order.update(loanId, { status: OrderStatus.REPAID });
+            }
+
             break;
           }
           case 'LoanLiquidated': {
             const loanId = event.args.loanId;
             const offer = await this.findById(loanId);
-            await Promise.all([
-              this.offer.update(loanId, { status: OfferStatus.LIQUIDATED }),
-              this.order.update(offer.order, {
-                status: OrderStatus.LIQUIDATED,
-              }),
-            ]);
+            if (offer) {
+              await Promise.all([
+                this.offer.update(loanId, { status: OfferStatus.LIQUIDATED }),
+                this.order.update(offer.order, {
+                  status: OrderStatus.LIQUIDATED,
+                }),
+              ]);
+            } else {
+              await this.order.update(loanId, { status: OrderStatus.REPAID });
+            }
+
             break;
           }
           default: {
@@ -137,6 +155,7 @@ export class OffersService implements OnModuleInit {
         }
       }
     } catch (error) {
+      console.log('offer', error);
       if (error.response?.data) {
         throw new HttpException(error.response.data, error.response.status);
       } else {

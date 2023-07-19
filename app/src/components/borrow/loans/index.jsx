@@ -7,7 +7,7 @@ import { OfferStatus, FormType } from '@src/constants/enum';
 import OfferView from '@src/components/common/offer-view';
 import Table from '@src/components/common/offer-table';
 import styles from './styles.module.scss';
-import { payBackLoan, checkAllowance, approveERC20, parseMetamaskError } from '@src/utils';
+import { payBackLoan, checkAllowance, approveERC20, parseMetamaskError, calculateRepayment } from '@src/utils';
 import { ethers } from 'ethers';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -26,7 +26,7 @@ export default function Loans() {
   const handleRepayOffer = async (offer) => {
     try {
       setCommitLoading(true);
-      const repayment = Number(offer.offer) + (offer.offer * offer.rate) / 100;
+      const repayment = calculateRepayment(offer.offer, offer.rate, offer.duration);
       if (!(await checkAllowance(account.address, ethers.utils.parseUnits(`${repayment}`, 18)))) {
         const tx = await approveERC20(ethers.utils.parseUnits(`${repayment}`, 18));
         await tx.wait();

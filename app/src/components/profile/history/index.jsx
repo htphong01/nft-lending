@@ -8,7 +8,7 @@ import OfferView from '@src/components/common/offer-view';
 import { getOrders, getOrderByHash } from '@src/api/order.api';
 import { getOffers } from '@src/api/offer.api';
 import { OrderStatus, OfferStatus, FormType } from '@src/constants';
-import { payBackLoan, checkAllowance, approveERC20, parseMetamaskError } from '@src/utils';
+import { payBackLoan, checkAllowance, approveERC20, parseMetamaskError, calculateRepayment } from '@src/utils';
 import Table from '@src/components/common/table';
 import styles from './styles.module.scss';
 
@@ -26,19 +26,16 @@ export default function History() {
   const handleRepayOffer = async (loan) => {
     try {
       setIsLoading(true);
-      if (loan.lender) {
-        toast.success('Pay back loan Lending Pool');
-      } else {
-        const repayment = Number(loan.offer) + (loan.offer * loan.rate) / 100;
-        if (!(await checkAllowance(account.address, ethers.utils.parseUnits(`${repayment}`, 18)))) {
-          const tx = await approveERC20(ethers.utils.parseUnits(`${repayment}`, 18));
-          await tx.wait();
-        }
-        const tx = await payBackLoan(loan.hash);
+      const repayment = calculateRepayment(loan.offer, loan.rate, loan.duration);
+      if (!(await checkAllowance(account.address, ethers.utils.parseUnits(`${repayment}`, 18)))) {
+        const tx = await approveERC20(ethers.utils.parseUnits(`${repayment}`, 18));
         await tx.wait();
-        toast.success('Pay back loan successfully');
       }
+      const tx = await payBackLoan(loan.hash);
+      await tx.wait();
+      toast.success('Pay back loan successfully');
       setIsLoading(false);
+      setSelectedLoan();
     } catch (error) {
       const txError = parseMetamaskError(error);
       setIsLoading(false);
@@ -59,7 +56,7 @@ export default function History() {
         getOrders({
           creator: account.address,
           lender: 'pool',
-          status: `${OrderStatus.CANCELLED},${OrderStatus.REPAID},${OrderStatus.LIQUIDATE}`,
+          status: `${OrderStatus.CANCELLED},${OrderStatus.REPAID},${OrderStatus.LIQUIDATE},${OrderStatus.REJECTED}`,
         }),
         getOffers({ borrower: account.address, status: `${OfferStatus.REPAID},${OfferStatus.LIQUIDATED}` }),
         getOffers({ creator: account.address, status: OfferStatus.FILLED }),

@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getStakedByUser } from '@src/utils/contracts/lending-pool';
 import { getOrders } from '@src/api/order.api';
-import { OrderStatus } from '@src/constants/enum';
+import { OrderStatus, FormType } from '@src/constants';
 import Table from '@src/components/common/table';
 import Form from './form';
 import styles from './styles.module.scss';
@@ -16,30 +16,39 @@ export default function LoanRequests() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [orderList, setOrderList] = useState({
+    request: [],
     current: [],
     previous: [],
   });
   const [selectedLoan, setSelectedLoan] = useState(null);
+  const [loanFormType, setLoanFormType] = useState(FormType.EDIT);
 
   const fetchOrders = async () => {
     try {
-      const [orderList1, orderList2] = await Promise.all([
+      const [orderList1, orderList2, orderList3] = await Promise.all([
         getOrders({ lender: 'pool', status: OrderStatus.OPENING }),
+        getOrders({ lender: 'pool', status: OrderStatus.FILLED }),
         getOrders({
           lender: 'pool',
-          status: `${OrderStatus.CANCELLED},${OrderStatus.REPAID},${OrderStatus.LIQUIDATED}`,
+          status: `${OrderStatus.CANCELLED},${OrderStatus.REPAID},${OrderStatus.LIQUIDATED},${OrderStatus.REJECTED}`,
         }),
       ]);
 
       setOrderList({
-        current: orderList1.data,
-        previous: orderList2.data,
+        request: orderList1.data,
+        current: orderList2.data,
+        previous: orderList3.data,
       });
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
       console.error(error);
     }
+  };
+
+  const handleSelectLoan = (loan, type) => {
+    setSelectedLoan(loan);
+    setLoanFormType(type);
   };
 
   useEffect(() => {
@@ -56,7 +65,7 @@ export default function LoanRequests() {
 
   return (
     <div className={styles.container}>
-      {selectedLoan && <Form item={selectedLoan} onClose={setSelectedLoan} />}
+      {selectedLoan && <Form item={selectedLoan} onClose={setSelectedLoan} type={loanFormType} />}
       {isLoading ? (
         <div className="react-loading-item">
           <ReactLoading type="bars" color="#fff" height={100} width={120} />
@@ -64,11 +73,20 @@ export default function LoanRequests() {
       ) : (
         <>
           <Table
-            title="Current Loan Requests"
-            data={orderList.current}
-            action={{ text: 'View', handle: setSelectedLoan }}
+            title="Loan Requests"
+            data={orderList.request}
+            action={{ text: 'View', handle: (loan) => handleSelectLoan(loan, FormType.EDIT) }}
           />
-          <Table title="Previous Loan Requests" data={[]} />
+          <Table
+            title="Current loans"
+            data={orderList.current}
+            action={{ text: 'View', handle: (loan) => handleSelectLoan(loan, FormType.EDIT) }}
+          />
+          <Table
+            title="Previous loans"
+            data={orderList.previous}
+            action={{ text: 'View', handle: (loan) => handleSelectLoan(loan, FormType.VIEW) }}
+          />
         </>
       )}
     </div>

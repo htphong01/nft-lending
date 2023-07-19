@@ -66,6 +66,7 @@ export class NftsService {
         await this.syncNft(nftData);
       }
     } catch (error) {
+      console.log(error);
       if (error.response?.data) {
         throw new HttpException(error.response.data, error.response.status);
       } else {

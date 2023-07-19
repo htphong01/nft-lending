@@ -20,6 +20,21 @@ export const generateSignature = async (data) => {
   return signature;
 };
 
+export const generateOrderSignature = async (order) => {
+  const encodedOrder = ethers.utils.solidityPack(
+    ['address', 'address', 'uint256', 'string', 'string', 'string', 'string'],
+    [order.creator, order.nftAddress, order.nftTokenId, order.offer, order.duration, order.rate, order.lender]
+  );
+
+  const orderHash = ethers.utils.keccak256(encodedOrder);
+
+  const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+  const account = (await provider.listAccounts())[0];
+  const signer = provider.getSigner(account);
+  const signature = await signer.signMessage(orderHash);
+  return signature;
+};
+
 export const generateOfferSignature = async (
   offerData,
   signatureData,
@@ -35,7 +50,6 @@ export const generateOfferSignature = async (
     adminFeeInBasisPoints = 25,
     erc20Denomination = WXCR_ADDRESS,
   } = offerData;
-  console.log(duration);
   const encodedOffer = ethers.utils.solidityPack(
     ['address', 'uint256', 'uint256', 'address', 'uint256', 'uint32', 'uint16'],
     [erc20Denomination, offer, repayment, nftAddress, nftTokenId, duration, adminFeeInBasisPoints]
@@ -49,6 +63,7 @@ export const generateOfferSignature = async (
     ['bytes', 'bytes', 'address', 'uint256'],
     [encodedOffer, encodedSignature, loanContract, chainId]
   );
+
   const message = ethers.utils.arrayify(ethers.utils.keccak256(payload));
 
   const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');

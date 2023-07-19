@@ -15,6 +15,7 @@ export const acceptOffer = (loanId, offer, signature) => {
 };
 
 export const payBackLoan = async (loanId) => {
+  console.log(loanId);
   const contract = loanContract(signer);
   return contract.payBackLoan(loanId);
 };
@@ -22,4 +23,10 @@ export const payBackLoan = async (loanId) => {
 export const liquidateLoan = async (loanId) => {
   const contract = loanContract(signer);
   return contract.liquidateOverdueLoan(loanId);
+};
+
+// LOAN IN LENDING POOL
+export const acceptOfferLendingPool = (loanId, offer, signatures) => {
+  const contract = loanContract(signer);
+  return contract.acceptOfferLendingPool(loanId, offer, signatures);
 };

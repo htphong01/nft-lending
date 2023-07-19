@@ -22,11 +22,11 @@ export const Environment = {
     process.env.NETWORK_RPC_URL || 'https://rpc-kura.cross.technology/',
   COLLECTION_ADDRESS:
     process.env.COLLECTION_ADDRESS ||
-    '0xF31a2E258BeC65A46fb54cd808294Ce215070150',
+    '0xf31a2e258bec65a46fb54cd808294ce215070150',
   LENDING_POOL_ADDRESS:
     process.env.LENDING_POOL_ADDRESS ||
-    '0x9EAef20D024f7C2Ad9461CB6543B845C286B5Cb7',
+    '0x985f6ac9ba18c97ce59c1334df716074ef02a684',
   LOAN_ADDRESS:
-    process.env.LOAN_ADDRESS || '0xFec95a1Fc4b667695693ea58F415BD3dA4F70CEE',
+    process.env.LOAN_ADDRESS || '0x4000d29cfed854bf4192d52b5a7634dff8721213',
   CHAIN_ID: process.env.CHAIN_ID || '5555',
 };
