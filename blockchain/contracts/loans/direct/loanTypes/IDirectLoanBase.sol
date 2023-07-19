@@ -5,6 +5,8 @@ import "./LoanData.sol";
 pragma solidity 0.8.18;
 
 interface IDirectLoanBase {
+    function lendingPool() external view returns (address);
+
     function maximumLoanDuration() external view returns (uint256);
 
     function adminFeeInBasisPoints() external view returns (uint16);

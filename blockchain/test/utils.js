@@ -46,6 +46,17 @@ const getRandomInt = () => {
     return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 };
 
+const getCurrentBlock = async () => {
+    const latestBlock = await hre.ethers.provider.getBlock("latest");
+    return latestBlock.number;
+};
+
+const skipBlock = async (blockNumber) => {
+    for (let index = 0; index < blockNumber; index++) {
+        await hre.ethers.provider.send("evm_mine");
+    }
+};
+
 async function getTimestamp() {
     const latestBlock = await ethers.provider.getBlock("latest");
     return latestBlock.timestamp;
@@ -62,6 +73,8 @@ module.exports = {
     getEncodeOffer,
     getEncodedSignature,
     getMessage,
+    getCurrentBlock,
+    skipBlock,
     getTimestamp,
     skipTime,
     ZERO_ADDRESS,

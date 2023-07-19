@@ -19,21 +19,39 @@ async function main() {
 
     //* Loading contract factory */
     const PermittedNFTs = await ethers.getContractFactory("PermittedNFTs");
-    const LoanChecksAndCalculations = await hre.ethers.getContractFactory("LoanChecksAndCalculations");
-    const NFTfiSigningUtils = await hre.ethers.getContractFactory("NFTfiSigningUtils");
+    const LoanChecksAndCalculations = await hre.ethers.getContractFactory('LoanChecksAndCalculations');
+    const NFTfiSigningUtils = await hre.ethers.getContractFactory('NFTfiSigningUtils');
+    const LendingPool = await ethers.getContractFactory("LendingPoolV3");
+    const WXCR = await ethers.getContractFactory("WXCR");
+    const LiquidateNFTPool = await ethers.getContractFactory("LiquidateNFTPool");
 
     //* Deploy contracts */
     console.log("==========================================================================");
     console.log("DEPLOYING CONTRACTS");
     console.log("==========================================================================");
 
-    let loanChecksAndCalculations = await LoanChecksAndCalculations.deploy();
-    await loanChecksAndCalculations.deployed();
-    console.log("Library LoanChecksAndCalculations deployed to:", loanChecksAndCalculations.address);
+    const treasury = "0x4F9EF07A6DDF73494D2fF51A8f7B78e9c5815eb2";
 
-    let nftfiSigningUtils = await NFTfiSigningUtils.deploy();
-    await nftfiSigningUtils.deployed();
-    console.log("Library NFTfiSigningUtils deployed to:", nftfiSigningUtils.address);
+    // let loanChecksAndCalculations = await LoanChecksAndCalculations.deploy();
+    // await loanChecksAndCalculations.deployed()
+    // console.log("Library LoanChecksAndCalculations deployed to:", loanChecksAndCalculations.address);
+
+    // let nftfiSigningUtils = await NFTfiSigningUtils.deploy();
+    // await nftfiSigningUtils.deployed()
+    // console.log("Library NFTfiSigningUtils deployed to:", nftfiSigningUtils.address);
+
+    // const permittedNFTs = await PermittedNFTs.deploy(accounts[0].address);
+    // await permittedNFTs.deployed();
+    // console.log("PermittedNFTs                        deployed to:>>", permittedNFTs.address);
+
+    const liquidateNFTPool = await LiquidateNFTPool.deploy(accounts[0].address);
+    await liquidateNFTPool.deployed();
+    console.log("LiquidateNFTPool                        deployed to:>>", liquidateNFTPool.address);
+
+    const loanChecksAndCalculations = await LoanChecksAndCalculations.attach("0xF46E912d82e49104d332D69c2A9E1Aa0B7440892");
+    const nftfiSigningUtils = await NFTfiSigningUtils.attach("0x4A0c460a775404B87674E2fBff48CA6607b7fBB3");
+    const permittedNFTs = await PermittedNFTs.attach("0x6b556f1A587ebEa1b3A42Ba9F6275966CA17BCd5");
+    const wXCR = await WXCR.attach("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108");
 
     const DirectLoanFixedOffer = await ethers.getContractFactory("DirectLoanFixedOffer", {
         libraries: {
@@ -42,40 +60,17 @@ async function main() {
         },
     });
 
-    const permittedNFTs = await PermittedNFTs.deploy(accounts[0].address);
-    await permittedNFTs.deployed();
-    console.log("PermittedNFTs                        deployed to:>>", permittedNFTs.address);
+    const lendingPool = await LendingPool.deploy(wXCR.address, treasury, "10000000000000000000", 0);
+    await lendingPool.deployed();
+    console.log("LendingPool                     deployed to:>>", lendingPool.address);
 
-    const directLoanFixedOffer = await DirectLoanFixedOffer.deploy(accounts[0].address, permittedNFTs.address, ["0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108"]);
+    // const lendingPool = await LendingPool.attach("0x985F6aC9bA18C97Ce59c1334Df716074ef02A684");
+
+    const directLoanFixedOffer = await DirectLoanFixedOffer.deploy(accounts[0].address, lendingPool.address, liquidateNFTPool.address, permittedNFTs.address, [wXCR.address]);
     await directLoanFixedOffer.deployed();
     console.log("DirectLoanFixedOffer                        deployed to:>>", directLoanFixedOffer.address);
 
-    await permittedNFTs.connect(accounts[0]).setNFTPermit("0xf31a2e258bec65a46fb54cd808294ce215070150", true);
-    await loan.connect(accounts[0]).setERC20Permit("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108", true);
-    console.log("==========================================================================");
-    console.log("VERIFY CONTRACTS");
-    console.log("==========================================================================");
-
-    // await hre
-    //     .run("verify:verify", {
-    //         address: wXCR.address
-    //     })
-    //     .catch(console.log);
-
-    // await hre
-    //     .run("verify:verify", {
-    //         address: wXCRS.address
-    //     })
-    //     .catch(console.log);
-
-    // await hre
-    //     .run("verify:verify", {
-    //         address: lendingPool.address,
-    //         constructorArguments: [wXCR.address,
-    //         wXCRS.address
-    //         ]
-    //     })
-    //     .catch(console.log);
+    await lendingPool.approve(directLoanFixedOffer.address, ethers.constants.MaxUint256);
 
     console.log("==========================================================================");
     console.log("DONE");
