@@ -26,19 +26,6 @@ export default function History() {
   const handleRepayOffer = async (loan) => {
     try {
       setIsLoading(true);
-      // if (loan.lender) {
-      //   toast.success('Pay back loan Lending Pool');
-      // } else {
-      //   const repayment = Number(loan.offer) + (loan.offer * loan.rate) / 100;
-      //   if (!(await checkAllowance(account.address, ethers.utils.parseUnits(`${repayment}`, 18)))) {
-      //     const tx = await approveERC20(ethers.utils.parseUnits(`${repayment}`, 18));
-      //     await tx.wait();
-      //   }
-      //   const tx = await payBackLoan(loan.hash);
-      //   await tx.wait();
-      //   toast.success('Pay back loan successfully');
-      // }
-
       const repayment = calculateRepayment(loan.offer, loan.rate, loan.duration);
       if (!(await checkAllowance(account.address, ethers.utils.parseUnits(`${repayment}`, 18)))) {
         const tx = await approveERC20(ethers.utils.parseUnits(`${repayment}`, 18));
@@ -48,6 +35,7 @@ export default function History() {
       await tx.wait();
       toast.success('Pay back loan successfully');
       setIsLoading(false);
+      setSelectedLoan();
     } catch (error) {
       const txError = parseMetamaskError(error);
       setIsLoading(false);

@@ -72,6 +72,9 @@ export default function Form({ item, onClose, type }) {
       await tx.wait();
       toast.success('Liquidate loan successfully');
       setCommitLoading(false);
+      setTimeout(() => {
+        onClose();
+      }, 1000);
     } catch (error) {
       setCommitLoading(false);
       const txError = parseMetamaskError(error);

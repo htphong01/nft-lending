@@ -61,6 +61,8 @@ export default function ListCollateralForm({ item, onClose, type }) {
 
   const handleGetLoan = async () => {
     try {
+      setIsLoading(true);
+
       const repayment = calculateRepayment(item.offer, item.rate, item.duration);
 
       const offer = {
@@ -77,6 +79,11 @@ export default function ListCollateralForm({ item, onClose, type }) {
       const signatures = data.map((item) => item.signature);
       const tx = await acceptOfferLendingPool(item.hash, offer, signatures);
       await tx.wait();
+      toast.success('Get loan successfully!');
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+      setIsLoading(false);
     } catch (error) {
       const txError = parseMetamaskError(error);
       setIsLoading(false);

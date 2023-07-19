@@ -101,6 +101,8 @@ export class OffersService implements OnModuleInit {
         if (Object.keys(event).length === 0) continue;
         if (!event.fragment) continue;
 
+        console.log(event.fragment.name, event.args.loanId);
+
         switch (event.fragment.name) {
           case 'LoanStarted': {
             const loanId = event.args.loanId;
