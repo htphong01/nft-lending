@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useSelector } from 'react-redux';
 import toast, { Toaster } from 'react-hot-toast';
-import { getStakedPerUser } from '@src/utils/contracts/lending-pool';
+import { getStakedByUser } from '@src/utils/contracts/lending-pool';
 import styles from './styles.module.scss';
 import cvcScanIcon from '@src/assets/cvcscan-icon.png';
 
@@ -15,7 +15,7 @@ export default function HeaderBanner({ title = '', description = '', tabs = [], 
   const handleNavigate = async (url) => {
     try {
       if (url === '/lending-pool/requests') {
-        const balance = await getStakedPerUser(account.address);
+        const balance = await getStakedByUser(account.address);
         if (balance == 0) {
           toast.error('You must stake to Lending Pool to use this feature!', {
             duration: 3000,
@@ -49,18 +49,18 @@ export default function HeaderBanner({ title = '', description = '', tabs = [], 
               <div className={styles.social}>
                 <Link
                   className={styles['social-item']}
-                  href={`https://testnet.cvcscan.com/address/${account.address}`}
+                  to={`https://testnet.cvcscan.com/address/${account.address}`}
                   rel="noreferrer"
                   target="_blank"
                 >
                   <img src={cvcScanIcon} alt="CVCScan" />
                   <span>CVCScan</span>
                 </Link>
-                <Link className={styles['social-item']} href={`#`} rel="noreferrer" target="_blank">
+                <Link className={styles['social-item']} to={`#`} rel="noreferrer" target="_blank">
                   <Icon icon="logos:twitter" fontSize={18} />
                   <span>Twitter</span>
                 </Link>
-                <Link className={styles['social-item']} href={`#`} rel="noreferrer" target="_blank">
+                <Link className={styles['social-item']} to={`#`} rel="noreferrer" target="_blank">
                   <Icon icon="logos:facebook" fontSize={18} />
                   <span>Facebook</span>
                 </Link>

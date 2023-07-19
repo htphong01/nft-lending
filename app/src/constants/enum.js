@@ -3,6 +3,7 @@ export const OfferStatus = {
   FILLED: 1,
   REPAID: 2,
   LIQUIDATED: 3,
+  EXPIRED: 4,
 };
 
 export const OrderStatus = {
@@ -11,6 +12,7 @@ export const OrderStatus = {
   CANCELLED: 2,
   REPAID: 3,
   LIQUIDATED: 4,
+  REJECTED: 5,
 };
 
 export const FormType = {

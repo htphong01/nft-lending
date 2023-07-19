@@ -6,8 +6,11 @@ export const getOffers = (params = {}) => {
   });
 };
 
-export const getOffersByOrder = (order) => {
-  return axios.get(`/offers/order/${order}`);
+export const getOffersByOrder = (order, params = {}) => {
+  params.order = order;
+  return axios.get(`/offers`, {
+    params,
+  });
 };
 
 export const createOffer = (order) => {

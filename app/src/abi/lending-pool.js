@@ -1,178 +1,519 @@
 export const LENDING_POOL_ABI = [
   {
+    inputs: [
+      {
+        internalType: 'contract IERC20',
+        name: '_wXCR',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: '_treasury',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_rewardPerBlock',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: '_startBlock',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'nonpayable',
     type: 'constructor',
-    stateMutability: 'nonpayable',
-    inputs: [
-      { type: 'address', name: '_token', internalType: 'contract WXCR' },
-      { type: 'address', name: '_sToken', internalType: 'contract WXCRS' },
-    ],
   },
   {
-    type: 'event',
-    name: 'Inflation',
-    inputs: [{ type: 'uint256', name: 'reward', internalType: 'uint256', indexed: true }],
     anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'user',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'ClaimReward',
+    type: 'event',
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'user',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'Deposit',
     type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'user',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'EmergencyWithdraw',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'previousOwner',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'newOwner',
+        type: 'address',
+      },
+    ],
     name: 'OwnershipTransferred',
-    inputs: [
-      { type: 'address', name: 'previousOwner', internalType: 'address', indexed: true },
-      { type: 'address', name: 'newOwner', internalType: 'address', indexed: true },
-    ],
-    anonymous: false,
+    type: 'event',
   },
   {
-    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'user',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'bool',
+        name: 'allow',
+        type: 'bool',
+      },
+    ],
     name: 'SetAdmin',
-    inputs: [
-      { type: 'address', name: 'user', internalType: 'address', indexed: true },
-      { type: 'bool', name: 'allow', internalType: 'bool', indexed: false },
-    ],
-    anonymous: false,
-  },
-  {
     type: 'event',
-    name: 'Stake',
-    inputs: [
-      { type: 'address', name: 'account', internalType: 'address', indexed: true },
-      { type: 'uint256', name: 'amount', internalType: 'uint256', indexed: true },
-    ],
-    anonymous: false,
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'oldValue',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'newValue',
+        type: 'address',
+      },
+    ],
+    name: 'SetTreasury',
     type: 'event',
-    name: 'Unstake',
-    inputs: [
-      { type: 'address', name: 'account', internalType: 'address', indexed: true },
-      { type: 'uint256', name: 'amount', internalType: 'uint256', indexed: true },
-    ],
-    anonymous: false,
   },
   {
-    type: 'function',
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'user',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'Withdraw',
+    type: 'event',
+  },
+  {
+    inputs: [],
+    name: 'addressLength',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'view',
-    outputs: [{ type: 'bool', name: '', internalType: 'bool' }],
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    name: 'addressList',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
     name: 'admins',
-    inputs: [{ type: 'address', name: '', internalType: 'address' }],
-  },
-  {
-    type: 'function',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
     stateMutability: 'view',
-    outputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
-    name: 'discountFactorToToken',
-    inputs: [{ type: 'uint256', name: '_discountFactor', internalType: 'uint256' }],
+    type: 'function',
   },
   {
-    type: 'function',
-    stateMutability: 'nonpayable',
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_spender',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'approve',
     outputs: [],
-    name: 'fetchReward',
-    inputs: [{ type: 'uint256', name: '_reward', internalType: 'uint256' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
+    inputs: [],
+    name: 'claimReward',
+    outputs: [],
+    stateMutability: 'nonpayable',
     type: 'function',
-    stateMutability: 'view',
-    outputs: [{ type: 'bool', name: '', internalType: 'bool' }],
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'deposit',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'emergencyWithdraw',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_account',
+        type: 'address',
+      },
+    ],
     name: 'isAdmin',
-    inputs: [{ type: 'address', name: '_account', internalType: 'address' }],
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    type: 'function',
-    stateMutability: 'view',
-    outputs: [{ type: 'bool', name: '', internalType: 'bool' }],
-    name: 'isLendingTooSmall',
     inputs: [],
-  },
-  {
-    type: 'function',
-    stateMutability: 'view',
-    outputs: [{ type: 'address', name: '', internalType: 'address' }],
     name: 'owner',
-    inputs: [],
-  },
-  {
-    type: 'function',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
     stateMutability: 'view',
-    outputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
-    name: 'productOfInterestRate',
-    inputs: [],
-  },
-  { type: 'function', stateMutability: 'nonpayable', outputs: [], name: 'renounceOwnership', inputs: [] },
-  {
     type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_user',
+        type: 'address',
+      },
+    ],
+    name: 'pendingReward',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'view',
-    outputs: [{ type: 'address', name: '', internalType: 'contract WXCRS' }],
-    name: 'sToken',
-    inputs: [],
+    type: 'function',
   },
   {
+    inputs: [],
+    name: 'poolInfo',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: 'lastRewardBlock',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'accRewardPerShare',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'stakedSupply',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'totalPendingReward',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
     type: 'function',
-    stateMutability: 'nonpayable',
+  },
+  {
+    inputs: [],
+    name: 'renounceOwnership',
     outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'rewardPerBlock',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'rewardSupply',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_user',
+        type: 'address',
+      },
+      {
+        internalType: 'bool',
+        name: '_allow',
+        type: 'bool',
+      },
+    ],
     name: 'setAdmin',
-    inputs: [
-      { type: 'address', name: '_user', internalType: 'address' },
-      { type: 'bool', name: '_allow', internalType: 'bool' },
-    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    type: 'function',
-    stateMutability: 'nonpayable',
-    outputs: [],
+    inputs: [
+      {
+        internalType: 'address[]',
+        name: '_users',
+        type: 'address[]',
+      },
+      {
+        internalType: 'bool',
+        name: '_allow',
+        type: 'bool',
+      },
+    ],
     name: 'setAdmins',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
     inputs: [
-      { type: 'address[]', name: '_users', internalType: 'address[]' },
-      { type: 'bool', name: '_allow', internalType: 'bool' },
+      {
+        internalType: 'address',
+        name: '_treasury',
+        type: 'address',
+      },
     ],
-  },
-  {
-    type: 'function',
-    stateMutability: 'nonpayable',
+    name: 'setTreasury',
     outputs: [],
-    name: 'stake',
-    inputs: [{ type: 'uint256', name: '_amount', internalType: 'uint256' }],
-  },
-  {
-    type: 'function',
-    stateMutability: 'view',
-    outputs: [{ type: 'address', name: '', internalType: 'contract WXCR' }],
-    name: 'token',
-    inputs: [],
-  },
-  {
-    type: 'function',
-    stateMutability: 'view',
-    outputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
-    name: 'tokenToDiscountFactor',
-    inputs: [{ type: 'uint256', name: '_token', internalType: 'uint256' }],
-  },
-  {
-    type: 'function',
-    stateMutability: 'view',
-    outputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
-    name: 'totalStake',
-    inputs: [],
-  },
-  {
-    type: 'function',
-    stateMutability: 'view',
-    outputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
-    name: 'totalStakedPerUsers',
-    inputs: [{ type: 'address', name: '', internalType: 'address' }],
-  },
-  {
-    type: 'function',
     stateMutability: 'nonpayable',
-    outputs: [],
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'startBlock',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'newOwner',
+        type: 'address',
+      },
+    ],
     name: 'transferOwnership',
-    inputs: [{ type: 'address', name: 'newOwner', internalType: 'address' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
+    inputs: [],
+    name: 'treasury',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
     type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'updatePool',
+    outputs: [],
     stateMutability: 'nonpayable',
-    outputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
-    name: 'unstake',
-    inputs: [{ type: 'uint256', name: '_amount', internalType: 'uint256' }],
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    name: 'userInfo',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'rewardDebt',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'rewardPending',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'wXCR',
+    outputs: [
+      {
+        internalType: 'contract IERC20',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'withdraw',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
 ];

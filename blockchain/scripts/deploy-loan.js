@@ -1,6 +1,6 @@
 const { ethers } = require("hardhat");
 const { deployProxyAndLogger, contractFactoriesLoader } = require("../utils/deploy.utils");
-const { blockTimestamp } = require('../utils/test.utils');
+const { blockTimestamp } = require("../utils/test.utils");
 const fs = require("fs");
 require("dotenv").config();
 const env = process.env;
@@ -56,7 +56,7 @@ async function main() {
     const DirectLoanFixedOffer = await ethers.getContractFactory("DirectLoanFixedOffer", {
         libraries: {
             LoanChecksAndCalculations: loanChecksAndCalculations.address,
-            NFTfiSigningUtils: nftfiSigningUtils.address
+            NFTfiSigningUtils: nftfiSigningUtils.address,
         },
     });
 
@@ -71,31 +71,6 @@ async function main() {
     console.log("DirectLoanFixedOffer                        deployed to:>>", directLoanFixedOffer.address);
 
     await lendingPool.approve(directLoanFixedOffer.address, ethers.constants.MaxUint256);
-
-    console.log("==========================================================================");
-    console.log("VERIFY CONTRACTS");
-    console.log("==========================================================================");
-
-    // await hre
-    //     .run("verify:verify", {
-    //         address: wXCR.address
-    //     })
-    //     .catch(console.log);
-
-    // await hre
-    //     .run("verify:verify", {
-    //         address: wXCRS.address
-    //     })
-    //     .catch(console.log);
-
-    // await hre
-    //     .run("verify:verify", {
-    //         address: lendingPool.address,
-    //         constructorArguments: [wXCR.address,
-    //         wXCRS.address
-    //         ]
-    //     })
-    //     .catch(console.log);
 
     console.log("==========================================================================");
     console.log("DONE");

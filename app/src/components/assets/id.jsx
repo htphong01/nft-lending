@@ -3,6 +3,7 @@ import { getOrderByHash } from '@src/api/order.api';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactLoading from 'react-loading';
 import HeaderBanner from '@src/components/layouts/header-banner';
+import { OrderStatus } from '@src/constants';
 import MakeOffer from './make-offer';
 
 export default function Assets() {
@@ -16,7 +17,7 @@ export default function Assets() {
     if (hash) {
       getOrderByHash(hash)
         .then(({ data }) => {
-          if (!data || data.lender === 'pool') nagivate('/lend/assets');
+          if (!data || data.lender === 'pool' ||data.status !== OrderStatus.OPENING ) nagivate('/lend/assets');
           setOrder(data);
           setIsLoading(false);
         })

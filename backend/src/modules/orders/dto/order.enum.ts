@@ -4,4 +4,5 @@ export enum OrderStatus {
   CANCELLED = 2,
   REPAID = 3,
   LIQUIDATED = 4,
+  REJECTED = 5,
 }

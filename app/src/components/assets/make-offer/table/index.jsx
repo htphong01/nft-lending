@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import ReactLoading from 'react-loading';
 import toast, { Toaster } from 'react-hot-toast';
-import { sliceAddress, calculateRepayment, acceptOffer } from '@src/utils';
-import styles from './styles.module.scss';
 import { ethers } from 'ethers';
+import { sliceAddress, calculateRepayment, acceptOffer, parseMetamaskError } from '@src/utils';
+import { ONE_DAY } from '@src/constants';
+import styles from './styles.module.scss';
 
 export default function Table({ title, data, creator }) {
   const account = useSelector((state) => state.account);
@@ -15,30 +16,29 @@ export default function Table({ title, data, creator }) {
   const handleAccept = async (item) => {
     try {
       setIsLoading(true);
-      console.log('item', item);
 
-      const payment = item.offer + (item.offer * item.rate) / 100;
+      const repayment = calculateRepayment(item.offer, item.rate, item.duration);
 
       const offer = {
         principalAmount: ethers.utils.parseUnits(item.offer, 18),
-        maximumRepaymentAmount: ethers.utils.parseUnits(payment, 18),
+        maximumRepaymentAmount: ethers.utils.parseUnits(`${repayment}`, 18),
         nftCollateralId: item.nftTokenId,
         nftCollateralContract: item.nftAddress,
-        duration: item.duration * 24 * 60 * 60,
+        duration: item.duration * ONE_DAY,
         adminFeeInBasisPoints: item.adminFeeInBasisPoints,
         erc20Denomination: item.erc20Denomination,
       };
 
       const signature = item.signature;
 
-      const tx = await acceptOffer(offer, signature);
+      const tx = await acceptOffer(item.hash, offer, signature);
       await tx.wait();
 
       setIsLoading(false);
       toast.success('Accept offer successfully');
     } catch (error) {
-      console.log('error', error);
-      toast.error('An error has been occurred!');
+      const txError = parseMetamaskError(error);
+      toast.error(txError.context);
       setIsLoading(false);
     }
   };

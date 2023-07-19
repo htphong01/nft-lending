@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useSelector } from 'react-redux';
-import { calculateRepayment } from '@src/utils/apr';
-import { sliceAddress, getOfferStatusText } from '@src/utils/misc';
+import { calculateRepayment, sliceAddress, getOfferStatusText } from '@src/utils';
 import styles from './styles.module.scss';
 
 export default function Table({ title, data, action }) {

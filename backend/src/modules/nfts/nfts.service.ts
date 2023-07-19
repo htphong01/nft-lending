@@ -1,33 +1,14 @@
-import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  OnModuleInit,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Contract, JsonRpcProvider } from 'ethers';
 import axios from 'axios';
 import { Nft } from './reposities/nft.reposity';
-import { Crawl } from './reposities/crawl.reposity';
 import config from 'src/config';
 import * as FACTORY_ABI from './abi/ERC721.json';
 import { SyncNftDto } from './dto/sync-nft.dto';
 
 @Injectable()
-export class NftsService implements OnModuleInit {
-  private rpcProvider: JsonRpcProvider;
-  private nftContract: Contract;
-
-  constructor(private readonly nft: Nft, private readonly crawl: Crawl) {}
-
-  onModuleInit() {
-    this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
-    this.nftContract = new Contract(
-      config.ENV.COLLECTION_ADDRESS,
-      FACTORY_ABI,
-      this.rpcProvider,
-    );
-  }
+export class NftsService {
+  constructor(private readonly nft: Nft) {}
 
   async getNfts(address: string) {
     try {
@@ -37,41 +18,15 @@ export class NftsService implements OnModuleInit {
     }
   }
 
-  async handleNftEvent() {
+  async handleEvents(rpcProvider: JsonRpcProvider, from: number, to: number) {
     try {
-      // Calculate from block and to block
-      const onChainLatestBlock = await this.rpcProvider.getBlockNumber();
-      if (!onChainLatestBlock) {
-        return;
-      }
-
-      let crawlLatestBlock = await this.crawl.getCrawlLatestBlock();
-      if (!crawlLatestBlock || crawlLatestBlock === 0) {
-        crawlLatestBlock = onChainLatestBlock - 1;
-        await this.crawl.setCrawlLatestBlock(crawlLatestBlock);
-      }
-
-      let toBlock;
-      if (onChainLatestBlock - 1 <= crawlLatestBlock) {
-        toBlock = crawlLatestBlock;
-      } else {
-        toBlock = onChainLatestBlock - 1;
-      }
-
-      // Avoid error exceed maximum block range
-      if (toBlock - crawlLatestBlock > 5000) {
-        toBlock = crawlLatestBlock + 5000;
-      }
-
-      // Fetch events data
-      const events = await this.nftContract.queryFilter(
-        'Transfer',
-        crawlLatestBlock,
-        toBlock,
+      const nftContract = new Contract(
+        config.ENV.COLLECTION_ADDRESS,
+        FACTORY_ABI,
+        rpcProvider,
       );
-
-      // Update latest block
-      await this.crawl.setCrawlLatestBlock(toBlock);
+      // Fetch events data
+      const events = await nftContract.queryFilter('Transfer', from, to);
 
       // Retrieve all event informations
       if (!events || events.length === 0) return;
@@ -82,33 +37,36 @@ export class NftsService implements OnModuleInit {
 
         const tokenId = Number(BigInt(event.args.tokenId).toString());
 
-        const { data } = await axios.get(
-          await this.nftContract.tokenURI(tokenId),
-        );
+        const { data } = await axios.get(await nftContract.tokenURI(tokenId));
 
-        let nftData = {
+        const nftData = {
           owner: event.args.to.toLowerCase(),
           tokenId: tokenId,
-          tokenURI: await this.nftContract.tokenURI(tokenId),
-          collectionName: await this.nftContract.name(),
-          collectionSymbol: await this.nftContract.symbol(),
+          tokenURI: await nftContract.tokenURI(tokenId),
+          collectionName: await nftContract.name(),
+          collectionSymbol: await nftContract.symbol(),
           collectionAddress: event.address.toLowerCase(),
           metadata: data,
           isAvailable: true,
         };
 
-        const existedNft = await this.findAll({
-          tokenId: tokenId.toString(),
-          collectionAddress: event.address.toLowerCase(),
-        });
+        // const existedNft = await this.findAll({
+        //   tokenId: tokenId.toString(),
+        //   collectionAddress: event.address.toLowerCase(),
+        // });
 
-        if (existedNft.length > 0) {
-          nftData = { ...existedNft[0], owner: event.args.to.toLowerCase() };
-        }
+        // if (existedNft.length > 0) {
+        //   nftData = {
+        //     ...existedNft[0],
+        //     isAvailable: true,
+        //     owner: event.args.to.toLowerCase(),
+        //   };
+        // }
 
         await this.syncNft(nftData);
       }
     } catch (error) {
+      console.log(error);
       if (error.response?.data) {
         throw new HttpException(error.response.data, error.response.status);
       } else {

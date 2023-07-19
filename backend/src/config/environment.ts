@@ -18,9 +18,15 @@ export const Environment = {
   REDIS_ORDER_DB: Number(process.env.REDIS_ORDER_DB || 1),
 
   // Web3 host
-  NETWORK_RPC_URL: process.env.NETWORK_RPC_URL || 'https://rpc-kura.cross.technology/',
-  COLLECTION_ADDRESS: process.env.COLLECTION_ADDRESS || '0xF31a2E258BeC65A46fb54cd808294Ce215070150',
-  LENDING_POOL_ADDRESS: process.env.LENDING_POOL_ADDRESS || '0x9E489999948549E4ba2F88AF304d2FE75602E30B',
-  LOAN_ADDRESS: process.env.LOAN_ADDRESS || '0x996Be38468205284E75bE39896928dB3Df293C43',
+  NETWORK_RPC_URL:
+    process.env.NETWORK_RPC_URL || 'https://rpc-kura.cross.technology/',
+  COLLECTION_ADDRESS:
+    process.env.COLLECTION_ADDRESS ||
+    '0xf31a2e258bec65a46fb54cd808294ce215070150',
+  LENDING_POOL_ADDRESS:
+    process.env.LENDING_POOL_ADDRESS ||
+    '0x985f6ac9ba18c97ce59c1334df716074ef02a684',
+  LOAN_ADDRESS:
+    process.env.LOAN_ADDRESS || '0x4000d29cfed854bf4192d52b5a7634dff8721213',
   CHAIN_ID: process.env.CHAIN_ID || '5555',
 };

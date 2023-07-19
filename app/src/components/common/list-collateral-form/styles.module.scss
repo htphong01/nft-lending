@@ -152,10 +152,10 @@
       button[type='button'] {
         background-color: #5c113e;
         margin-right: 8px;
-        
       }
 
-      button[type='submit'] {
+      button[type='submit'],
+      button.get-loan-btn {
         background-color: #6d50cd;
         margin-left: 8px;
         font-weight: 600;

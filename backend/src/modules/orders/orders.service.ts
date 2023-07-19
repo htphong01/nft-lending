@@ -8,7 +8,7 @@ import { Nft } from './../nfts/reposities/nft.reposity';
 import { verifySignature } from '../utils/signature';
 import { DacsService } from '../dacs/dacs.service';
 import { LendingPoolService } from '../lending-pool/lending-pool.service';
-const sha256 = require('simple-sha256');
+import { ethers } from 'ethers';
 
 @Injectable()
 export class OrdersService {
@@ -20,18 +20,20 @@ export class OrdersService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto) {
-    const bytes = new TextEncoder().encode(
-      JSON.stringify({
-        creator: createOrderDto.creator,
-        nftAddress: createOrderDto.nftAddress,
-        nftTokenId: createOrderDto.nftTokenId,
-        offer: createOrderDto.offer,
-        duration: createOrderDto.duration,
-        rate: createOrderDto.rate,
-        lender: createOrderDto.lender,
-      }),
+    const encodedOrder = ethers.solidityPacked(
+      ['address', 'address', 'uint256', 'string', 'string', 'string', 'string'],
+      [
+        createOrderDto.creator,
+        createOrderDto.nftAddress,
+        createOrderDto.nftTokenId,
+        createOrderDto.offer,
+        createOrderDto.duration,
+        createOrderDto.rate,
+        createOrderDto.lender,
+      ],
     );
-    const orderHash = await sha256(bytes);
+
+    const orderHash = ethers.keccak256(encodedOrder);
 
     if (
       !verifySignature(

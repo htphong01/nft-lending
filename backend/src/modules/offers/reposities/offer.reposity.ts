@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OrderRedisService } from 'src/connections/redis/order.redis.provider';
-const sha256 = require('simple-sha256');
+import { OfferStatus } from '../dto/offer.enum';
 
 const DATABASE_NAME = 'Offers';
 
@@ -58,7 +58,52 @@ export class Offer {
 
   async update(id: string, data: any): Promise<boolean> {
     try {
-      await this.redisService.hset(DATABASE_NAME, id, JSON.stringify(data));
+      const queryData = await this.redisService.hget(DATABASE_NAME, id);
+      if (!queryData) return;
+
+      await this.redisService.hset(
+        DATABASE_NAME,
+        id,
+        JSON.stringify({ ...JSON.parse(queryData.toString()), ...data }),
+      );
+      return true;
+    } catch (error) {
+      this.logger.error(error);
+      return false;
+    }
+  }
+
+  async deleteAllAccept(id: string): Promise<boolean> {
+    try {
+      const queryData = await this.redisService.hget(DATABASE_NAME, id);
+      if (!queryData) return;
+
+      const offer = JSON.parse(queryData.toString());
+
+      const listOffers = await this.find({ order: offer.order });
+      for (let i = 0; i < listOffers.length; i++) {
+        if (listOffers[i].hash != id)
+          this.redisService.hdel(DATABASE_NAME, listOffers[i].hash);
+      }
+      return true;
+    } catch (error) {
+      this.logger.error(error);
+      return false;
+    }
+  }
+
+  async updateExpiredOffer(): Promise<boolean> {
+    try {
+      const listOffers = await this.find({ status: OfferStatus.OPENING });
+      for (let i = 0; i < listOffers.length; i++) {
+        if (listOffers[i].signature.expiry * 1000 < new Date().getTime())
+          this.redisService.hdel(DATABASE_NAME, listOffers[i].hash);
+        await this.redisService.hset(
+          DATABASE_NAME,
+          listOffers[i].hash,
+          JSON.stringify({ ...listOffers[i], status: OfferStatus.EXPIRED }),
+        );
+      }
       return true;
     } catch (error) {
       this.logger.error(error);

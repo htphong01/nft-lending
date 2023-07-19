@@ -4,14 +4,20 @@ import { InlineIcon } from '@iconify/react';
 import styles from '../styles.module.scss';
 import cvcScanIcon from '@src/assets/cvcscan-icon.png';
 
-export default function Stake({ currency, handleSubmitStake }) {
+export default function Stake({ currency, handleStake }) {
   const account = useSelector((state) => state.account);
 
   const [amount, setAmount] = useState(0);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await handleStake(amount);
+    setAmount(0);
+  };
+
   return (
     <div className={styles.item}>
-      <form className={styles.content} onSubmit={(e) => handleSubmitStake(e, amount)}>
+      <form className={styles.content} onSubmit={handleSubmit}>
         <div className={styles.header}>
           <span>Amount</span>
           <div className={styles.amount}>
@@ -34,7 +40,9 @@ export default function Stake({ currency, handleSubmitStake }) {
           />
           <span>{currency}</span>
         </div>
-        <button type="submit">Stake</button>
+        <button type="submit" disabled={amount == 0}>
+          Stake
+        </button>
       </form>
     </div>
   );

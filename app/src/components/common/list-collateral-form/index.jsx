@@ -6,17 +6,21 @@ import { useOnClickOutside } from 'usehooks-ts';
 import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import ReactLoading from 'react-loading';
+import { ethers } from 'ethers';
 import { createOrder } from '@src/api/order.api';
+import { getVote } from '@src/api/vote.api';
 import {
-  generateSignature,
+  generateOrderSignature,
   calculateAPR,
   calculateRepayment,
   calculateRealPrice,
   getRandomNumber,
   checkApproved,
   approveERC721,
+  parseMetamaskError,
+  acceptOfferLendingPool,
 } from '@src/utils';
-import { COLLATERAL_FORM_TYPE, NFT_CONTRACT_ADDRESS } from '@src/constants';
+import { COLLATERAL_FORM_TYPE, NFT_CONTRACT_ADDRESS, WXCR_ADDRESS, ONE_DAY } from '@src/constants';
 import styles from './styles.module.scss';
 
 export default function ListCollateralForm({ item, onClose, type }) {
@@ -55,12 +59,45 @@ export default function ListCollateralForm({ item, onClose, type }) {
     setData(newData);
   };
 
+  const handleGetLoan = async () => {
+    try {
+      setIsLoading(true);
+
+      const repayment = calculateRepayment(item.offer, item.rate, item.duration);
+
+      const offer = {
+        principalAmount: ethers.utils.parseUnits(item.offer, 18),
+        maximumRepaymentAmount: ethers.utils.parseUnits(`${repayment}`, 18),
+        nftCollateralId: item.nftTokenId,
+        nftCollateralContract: item.nftAddress,
+        duration: item.duration * ONE_DAY,
+        adminFeeInBasisPoints: 25,
+        erc20Denomination: WXCR_ADDRESS,
+      };
+
+      const { data } = await getVote({ orderHash: item.hash, isAccepted: true });
+      const signatures = data.map((item) => item.signature);
+      const tx = await acceptOfferLendingPool(item.hash, offer, signatures);
+      await tx.wait();
+      toast.success('Get loan successfully!');
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+      const txError = parseMetamaskError(error);
+      setIsLoading(false);
+      toast.error(txError.context);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       if (type === COLLATERAL_FORM_TYPE.VIEW) {
-        console.log('item', item);
+        console.log('Unlist', item);
       } else {
         if (Object.values(data).includes(0)) {
           toast.error('Please fill required information!');
@@ -75,7 +112,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
           rate: data.apr,
           lender: data.lender,
         };
-        const signature = await generateSignature(order);
+        const signature = await generateOrderSignature(order);
         order.signature = signature;
         order.metadata = {
           name: item.name,
@@ -87,11 +124,9 @@ export default function ListCollateralForm({ item, onClose, type }) {
           await tx.wait();
         }
 
-        toast.promise(createOrder(order), {
-          loading: 'Listing...',
-          success: <b style={{ color: '#000' }}>List collateral successfully!</b>,
-          error: <b style={{ color: '#000' }}>An error has been occurred!</b>,
-        });
+        await createOrder(order);
+
+        toast.success('List collateral successfully!');
         setTimeout(() => {
           onClose(true);
         }, 1000);
@@ -243,7 +278,10 @@ export default function ListCollateralForm({ item, onClose, type }) {
         </div>
         {type === COLLATERAL_FORM_TYPE.VIEW && item.lender === 'pool' && (
           <div className={styles.section}>
-            <div className={styles.head}>Status:</div>
+            <div className={styles.head}>
+              Status: <span>{calculatePercentVote(item.vote.accepted, item.vote.total) >= 75 ? 'Accepted' : ''}</span>
+              <span>{calculatePercentVote(item.vote.rejected, item.vote.total) > 25 ? 'Rejected' : ''}</span>
+            </div>
             <div className={styles.details}>
               <span>
                 {' '}
@@ -257,9 +295,21 @@ export default function ListCollateralForm({ item, onClose, type }) {
           <button type="button" onClick={() => onClose()}>
             Close
           </button>
-          <button type="submit" disabled={data.lender === 'pool' && type === COLLATERAL_FORM_TYPE.VIEW}>
-            {type === COLLATERAL_FORM_TYPE.VIEW ? 'Unlist' : 'List'} Collateral
-          </button>
+
+          {item.lender === 'pool' ? (
+            <button
+              type="button"
+              className={styles['get-loan-btn']}
+              disabled={calculatePercentVote(item.vote.accepted, item.vote.total) < 75}
+              onClick={handleGetLoan}
+            >
+              Get loan
+            </button>
+          ) : (
+            <button type="submit" disabled={type === COLLATERAL_FORM_TYPE.VIEW}>
+              {type === COLLATERAL_FORM_TYPE.VIEW ? 'Unlist' : 'List'} Collateral
+            </button>
+          )}
         </div>
       </form>
     </div>

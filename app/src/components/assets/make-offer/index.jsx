@@ -6,8 +6,7 @@ import ReactLoading from 'react-loading';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 import { getOffersByOrder } from '@src/api/offer.api';
-import { calculateRepayment } from '@src/utils/apr';
-import { sliceAddress, calculateRealPrice } from '@src/utils/misc';
+import { calculateRepayment, sliceAddress, calculateRealPrice } from '@src/utils';
 import Table from './table';
 import Form from './form';
 import styles from './styles.module.scss';
@@ -24,7 +23,7 @@ export default function MakeOffer({ item }) {
 
   const fetchOffers = async () => {
     try {
-      const { data } = await getOffersByOrder(hash);
+      const { data } = await getOffersByOrder(hash, { status: 0 });
       setOfferList(data);
       setIsLoading(false);
     } catch (error) {

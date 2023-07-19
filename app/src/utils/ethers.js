@@ -1,11 +1,10 @@
 import { ethers } from 'ethers';
 import { LOAN_ADDRESS, CHAIN_ID, WXCR_ADDRESS } from '@src/constants';
-import { getRandomInt } from './misc';
 
 const RPC_URL = 'https://rpc-kura.cross.technology';
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 
-export const getBalance = async (account) => {
+export const getNativeBalance = async (account) => {
   const balance = await provider.getBalance(account);
   return Number(ethers.utils.formatEther(balance)).toFixed(2);
 };
@@ -17,6 +16,21 @@ export const generateSignature = async (data) => {
 
   const bytes = new TextEncoder().encode(JSON.stringify(data));
   const orderHash = ethers.utils.sha256(bytes).slice(2);
+  const signature = await signer.signMessage(orderHash);
+  return signature;
+};
+
+export const generateOrderSignature = async (order) => {
+  const encodedOrder = ethers.utils.solidityPack(
+    ['address', 'address', 'uint256', 'string', 'string', 'string', 'string'],
+    [order.creator, order.nftAddress, order.nftTokenId, order.offer, order.duration, order.rate, order.lender]
+  );
+
+  const orderHash = ethers.utils.keccak256(encodedOrder);
+
+  const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+  const account = (await provider.listAccounts())[0];
+  const signer = provider.getSigner(account);
   const signature = await signer.signMessage(orderHash);
   return signature;
 };
@@ -49,6 +63,7 @@ export const generateOfferSignature = async (
     ['bytes', 'bytes', 'address', 'uint256'],
     [encodedOffer, encodedSignature, loanContract, chainId]
   );
+
   const message = ethers.utils.arrayify(ethers.utils.keccak256(payload));
 
   const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');

@@ -45,15 +45,15 @@ contract PermittedNFTs is Ownable, Pausable, ReentrancyGuard, IPermittedNFTs {
      */
     constructor(address _admin) Ownable(_admin) {}
 
-    /* ********* */
-    /* FUNCTIONS */
-    /* ********* */
+    /* ****************** */
+    /* EXTERNAL FUNCTIONS */
+    /* ****************** */
 
     /**
-     * @notice This function can be called by admins to change the permitted list status of an NFT contract. This
+     * @notice Change the permitted list status of an NFT contract. This
      * includes both adding an NFT contract to the permitted list and removing it.
      * `_nftContract` can not be zero address.
-     *
+     * @dev Only owner can call
      * @param _nftContract - The address of the NFT contract.
      * @param _isPermitted - true - enable / false - disable
      */
@@ -62,10 +62,10 @@ contract PermittedNFTs is Ownable, Pausable, ReentrancyGuard, IPermittedNFTs {
     }
 
     /**
-     * @notice This function can be called by admins to change the permitted list status of a batch NFT contracts. This
+     * @notice Change the permitted list status of a batch NFT contracts. This
      * includes both adding an NFT contract to the permitted list and removing it.
      * `_nftContract` can not be zero address.
-     *
+     * @dev Only owner can call
      * @param _nftContracts - The addresses of the NFT contracts.
      * @param _isPermitted - true - enable / false - disable
      */
@@ -73,13 +73,22 @@ contract PermittedNFTs is Ownable, Pausable, ReentrancyGuard, IPermittedNFTs {
         _setNFTPermits(_nftContracts, _isPermitted);
     }
 
+    /* ************** */
+    /* VIEW FUNCTIONS */
+    /* ************** */
+
     /**
-     * @notice This function can be called by anyone to lookup the Nft Type associated with the contract.
+     * @notice Lookup the Nft Type associated with the contract.
+     * @dev Everyone can call this function
      * @param  _nftContract - The address of the NFT contract.
      */
     function getNFTPermit(address _nftContract) external view override returns (bool) {
         return nftPermits[_nftContract];
     }
+
+    /* ****************** */
+    /* INTERNAL FUNCTIONS */
+    /* ****************** */
 
     /**
      * @notice This function changes the permitted list status of an NFT contract. This includes both adding an NFT
