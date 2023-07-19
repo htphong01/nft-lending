@@ -1,11 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 import ReactLoading from 'react-loading';
 import { useSelector } from 'react-redux';
 import { getNfts } from '@src/api/nfts.api';
 import Card from '@src/components/common/card';
 import ListCollateralForm from '@src/components/common/list-collateral-form';
-import { COLLATERAL_FORM_TYPE } from '@src/constants';
+import TokenBoundAccountCard from '@src/components/common/token-bound-account-card';
+import { COLLATERAL_FORM_TYPE, TOKEN_BOUND_ACCOUNT_NFT_ADDRESS } from '@src/constants';
+import { ERC721Contract } from '@src/utils';
 import styles from './styles.module.scss';
 
 export default function Assets() {
@@ -14,6 +17,13 @@ export default function Assets() {
   const [isLoading, setIsLoading] = useState(true);
   const [listNFT, setListNFT] = useState([]);
   const [selectedNFT, setSelectedNFT] = useState();
+  const [selectedTokenBoundAccount, setSelectedTokenBoundAccount] = useState();
+
+  const handleOnClose = (isRefetch = false) => {
+    setSelectedNFT();
+    setSelectedTokenBoundAccount();
+    if (isRefetch) fetchNFTs();
+  };
 
   const fetchNFTs = async () => {
     try {
@@ -21,7 +31,8 @@ export default function Assets() {
         owner: account.address,
         isAvailable: true,
       });
-      setListNFT(data);
+      const tbaNFt = await fetchTokenBoundAccount();
+      setListNFT([...data, tbaNFt]);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -29,9 +40,28 @@ export default function Assets() {
     }
   };
 
-  const handleOnClose = (isRefetch = false) => {
-    setSelectedNFT();
-    if (isRefetch) fetchNFTs();
+  const fetchTokenBoundAccount = async () => {
+    if (account.address) {
+      const erc721 = ERC721Contract(TOKEN_BOUND_ACCOUNT_NFT_ADDRESS);
+      const isOwnTBA = (await erc721.ownerOf(1)).toLowerCase() == account.address;
+      if (isOwnTBA) {
+        const tokenURI = await erc721.tokenURI(1);
+        const { data } = await axios.get(tokenURI);
+        return {
+          collectionAddress: TOKEN_BOUND_ACCOUNT_NFT_ADDRESS,
+          collectionName: erc721.name(),
+          collectionSymbol: erc721.symbol(),
+          isAvailable: true,
+          metadata: { ...data, isTokenBoundAccount: true },
+          owner: account.address,
+          tokenId: 1,
+          tokenURI,
+        };
+      }
+      return {};
+    }
+
+    return {};
   };
 
   useEffect(() => {
@@ -43,6 +73,9 @@ export default function Assets() {
       {selectedNFT && (
         <ListCollateralForm item={selectedNFT} onClose={handleOnClose} type={COLLATERAL_FORM_TYPE.EDIT} />
       )}
+      {selectedTokenBoundAccount && (
+        <TokenBoundAccountCard item={selectedTokenBoundAccount} onClose={handleOnClose} />
+      )}
       <div className={styles.heading}>Your assets</div>
       {isLoading ? (
         <div className="react-loading-item">
@@ -51,7 +84,12 @@ export default function Assets() {
       ) : listNFT.length > 0 ? (
         <div className={styles['list-nfts']}>
           {listNFT.map((item, index) => (
-            <Card key={index} item={item.metadata} action={{ text: 'List collateral', handle: setSelectedNFT }} />
+            <Card
+              key={index}
+              item={item.metadata}
+              action={{ text: 'List collateral', handle: setSelectedNFT }}
+              handleTokenBoundAccount={setSelectedTokenBoundAccount}
+            />
           ))}
         </div>
       ) : (

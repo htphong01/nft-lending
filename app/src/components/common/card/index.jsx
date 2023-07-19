@@ -1,10 +1,9 @@
 /* eslint-disable react/prop-types */
 import { useImageLoaded } from '@src/hooks/useImageLoaded';
-import axios from 'axios';
 import styles from './styles.module.scss';
 import Skeleton from 'react-loading-skeleton';
 
-export default function Card({ item, action: { text, handle } }) {
+export default function Card({ item, action: { text, handle }, handleTokenBoundAccount }) {
   const [ref, loaded, onLoad] = useImageLoaded();
 
   return (
@@ -18,6 +17,10 @@ export default function Card({ item, action: { text, handle } }) {
       </div>
       <div className={styles.collection}>{item.collection}</div>
       <div className={styles.name}>{item.name}</div>
+      <div className={styles.extension}>
+        <span>{item.isTokenBoundAccount ? 'Token bound account' : 'ERC-721'}</span>
+        {item.isTokenBoundAccount && <button onClick={() => handleTokenBoundAccount(item)}>View assets</button>}
+      </div>
     </div>
   );
 }

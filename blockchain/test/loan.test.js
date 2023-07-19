@@ -24,7 +24,7 @@ const LoanStatus = {
     LIQUIDATED: 2,
 };
 
-describe.only("Loan", () => {
+describe("Loan", () => {
     beforeEach(async () => {
         [deployer, lender, borrower, treasury, ...accounts] = await ethers.getSigners();
 
@@ -430,7 +430,7 @@ describe.only("Loan", () => {
             console.log(await chonkSociety.ownerOf(1), borrower.address);
         });
 
-        it.only("test liquidateNFT", async () => {
+        it("test liquidateNFT", async () => {
             await chonkSociety.connect(borrower).approve(directLoanFixedOffer.address, 1);
             await wXCR.connect(lender).approve(directLoanFixedOffer.address, TOKEN_1.mul(100));
 
