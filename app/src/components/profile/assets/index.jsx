@@ -32,7 +32,10 @@ export default function Assets() {
         isAvailable: true,
       });
       const tbaNFt = await fetchTokenBoundAccount();
-      setListNFT([...data, tbaNFt]);
+      if (tbaNFt) {
+        data.push(tbaNFt);
+      }
+      setListNFT(data);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -58,10 +61,7 @@ export default function Assets() {
           tokenURI,
         };
       }
-      return {};
     }
-
-    return {};
   };
 
   useEffect(() => {
@@ -73,9 +73,7 @@ export default function Assets() {
       {selectedNFT && (
         <ListCollateralForm item={selectedNFT} onClose={handleOnClose} type={COLLATERAL_FORM_TYPE.EDIT} />
       )}
-      {selectedTokenBoundAccount && (
-        <TokenBoundAccountCard item={selectedTokenBoundAccount} onClose={handleOnClose} />
-      )}
+      {selectedTokenBoundAccount && <TokenBoundAccountCard item={selectedTokenBoundAccount} onClose={handleOnClose} />}
       <div className={styles.heading}>Your assets</div>
       {isLoading ? (
         <div className="react-loading-item">

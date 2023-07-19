@@ -51,6 +51,7 @@ export default function Form({ order, fetchOffers }) {
       if (Object.values(data).includes(0)) return;
       if (order.creator.toLowerCase() == account.address.toLowerCase()) {
         toast.error('Can not make offer. You are the owner of this collateral!');
+        setIsLoading(false);
         return;
       }
 
@@ -68,7 +69,6 @@ export default function Form({ order, fetchOffers }) {
       offer.nftAddress = order.nftAddress;
       offer.nftTokenId = order.nftTokenId;
 
-      
       const { offerData, signatureData } = convertOfferDataToSign(offer);
       const signature = await generateOfferSignature(offerData, signatureData);
       signatureData.signature = signature;
@@ -91,7 +91,7 @@ export default function Form({ order, fetchOffers }) {
         duration: 0,
         repayment: 0,
         apr: 0,
-        expiration: 0
+        expiration: 0,
       });
       fetchOffers();
       setIsLoading(false);
