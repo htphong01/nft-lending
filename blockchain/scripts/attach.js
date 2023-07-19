@@ -11,16 +11,16 @@ async function main() {
     // const tx = await permittedNFT.connect(accounts[0]).setNFTPermit('0xf31a2e258bec65a46fb54cd808294ce215070150', true)
     // console.log(tx);
 
-    const DirectLoanFixedOffer = await ethers.getContractFactory("DirectLoanFixedOffer", {
-        libraries: {
-            LoanChecksAndCalculations: "0xF46E912d82e49104d332D69c2A9E1Aa0B7440892",
-            NFTfiSigningUtils: "0x4A0c460a775404B87674E2fBff48CA6607b7fBB3",
-        },
-    });
+    // const DirectLoanFixedOffer = await ethers.getContractFactory("DirectLoanFixedOffer", {
+    //     libraries: {
+    //         LoanChecksAndCalculations: "0xF46E912d82e49104d332D69c2A9E1Aa0B7440892",
+    //         NFTfiSigningUtils: "0x4A0c460a775404B87674E2fBff48CA6607b7fBB3",
+    //     },
+    // });
 
-    const loanId = "0x00277cd755dfc5c1ea413df8e2e6f91857aed441a9aa7f5394aca54fedce1332";
-    const loan = DirectLoanFixedOffer.attach("0xd5adFc323047792d60D36aF9fF3D7867442127D2");
-    console.log(await loan.loanIdToLoan(loanId));
+    // const loanId = "0x00277cd755dfc5c1ea413df8e2e6f91857aed441a9aa7f5394aca54fedce1332";
+    // const loan = DirectLoanFixedOffer.attach("0xd5adFc323047792d60D36aF9fF3D7867442127D2");
+    // console.log(await loan.loanIdToLoan(loanId));
     // const tx = await loan.payBackLoan(loanId);
     // console.log(tx)
     // const tx = await loan.connect(accounts[0]).setERC20Permit("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108", true);
@@ -32,10 +32,13 @@ async function main() {
     // await wXCR.connect(accounts[0]).mint("0x4F9EF07A6DDF73494D2fF51A8f7B78e9c5815eb2", ethers.utils.parseUnits("10", 18));
     // await wXCR.connect(accounts[0]).approve("0x9EAef20D024f7C2Ad9461CB6543B845C286B5Cb7", ethers.constants.MaxUint256);
 
-    // const Chonk = await ethers.getContractFactory('ChonkSociety');
-    // const chonk = Chonk.attach('0xf31a2e258bec65a46fb54cd808294ce215070150');
+    const ChonkSociety = await ethers.getContractFactory("ChonkSociety");
+    // const chonkSociety = await ChonkSociety.deploy("https://chonksociety.s3.us-east-2.amazonaws.com/metadata/");
+    // await chonkSociety.deployed();
+    // console.log("address", chonkSociety.address);
+    const chonk = ChonkSociety.attach('0x9b42ed936c5fedf3ca20a2d97322531b1398412f');
     // console.log(await chonk.ownerOf(1));
-    // await chonk.connect(accounts[0]).mint('0xc8429C05315Ae47FFc0789A201E5F53E93D591D4', 1);
+    await chonk.connect(accounts[0]).mint('0xc8429C05315Ae47FFc0789A201E5F53E93D591D4', 20);
 
     // const WXCR = await ethers.getContractFactory("WXCRMultipleInternal");
     // const wXCR = await WXCR.attach("0x1ffB5A1D759C67084ea583C99891b1be34d323d3");

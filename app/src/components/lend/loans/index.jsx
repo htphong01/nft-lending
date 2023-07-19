@@ -29,6 +29,7 @@ export default function Loans() {
       await tx.wait();
       setCommitLoading(false);
       toast.success('Liquidate loan successfully');
+      setSelectedOffer();
     } catch (error) {
       const txError = parseMetamaskError(error);
       setCommitLoading(false);

@@ -6,6 +6,7 @@ import { DacsModule } from '../dacs/dacs.module';
 import { VotesController } from './votes.controller';
 import { VotesService } from './votes.service';
 import { LendingPoolModule } from '../lending-pool/lending-pool.module';
+import { NftsModule } from '../nfts/nfts.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { LendingPoolModule } from '../lending-pool/lending-pool.module';
     OrdersModule,
     DacsModule,
     LendingPoolModule,
+    NftsModule
   ],
   controllers: [VotesController],
   providers: [VotesService],

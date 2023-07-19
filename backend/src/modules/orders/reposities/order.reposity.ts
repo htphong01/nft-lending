@@ -29,13 +29,15 @@ export class Order {
     const orders = await this.getAll();
     if (!filters || Object.keys(filters).length === 0) return orders;
 
-    return orders.filter((item) => {
-      for (let key in filters) {
-        if (item[key] === undefined || !filters[key].includes(item[key]))
-          return false;
-      }
-      return true;
-    });
+    return orders
+      .filter((item) => {
+        for (let key in filters) {
+          if (item[key] === undefined || !filters[key].includes(item[key]))
+            return false;
+        }
+        return true;
+      })
+      .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 0));
   }
 
   async create(hash: string, data: any): Promise<boolean> {
