@@ -75,7 +75,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
         erc20Denomination: WXCR_ADDRESS,
       };
 
-      const { data } = await getVote({ orderHash: item.hash });
+      const { data } = await getVote({ orderHash: item.hash, isAccepted: true });
       const signatures = data.map((item) => item.signature);
       const tx = await acceptOfferLendingPool(item.hash, offer, signatures);
       await tx.wait();
@@ -85,6 +85,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
       }, 1000);
       setIsLoading(false);
     } catch (error) {
+      console.log(error);
       const txError = parseMetamaskError(error);
       setIsLoading(false);
       toast.error(txError.context);
