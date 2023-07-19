@@ -10,6 +10,8 @@ import { Vote } from './reposities/vote.reposity';
 import { Order } from './../orders/reposities/order.reposity';
 import { DacsService } from '../dacs/dacs.service';
 import { LendingPoolService } from '../lending-pool/lending-pool.service';
+import { Nft } from './../nfts/reposities/nft.reposity';
+import { OrderStatus } from '../orders/dto/order.enum';
 const sha256 = require('simple-sha256');
 
 @Injectable()
@@ -17,6 +19,7 @@ export class VotesService {
   constructor(
     private readonly vote: Vote,
     private readonly order: Order,
+    private readonly nft: Nft,
     private readonly dacs: DacsService,
     private readonly lendingPool: LendingPoolService,
   ) {}
@@ -71,9 +74,25 @@ export class VotesService {
     const dacs_cid = await this.dacs.upload(newVote);
     newVote.dacs_url = `${config.ENV.SERVER_HOST}:${config.ENV.SERVER_PORT}/dacs/${dacs_cid}`;
 
+    const orderUpdatedData: Record<string, any> = {
+      vote: currentVote,
+    };
+
+    if (
+      currentVote.total > 0 &&
+      currentVote.rejected / currentVote.total > 0.25
+    ) {
+      orderUpdatedData.status = OrderStatus.REJECTED;
+      this.nft.update(
+        currentOrder.nftAddress,
+        currentOrder.nftTokenId.toString(),
+        { isAvailable: true },
+      );
+    }
+
     await Promise.all([
       this.vote.create(voteHash, newVote),
-      this.order.update(createVoteDto.orderHash, { vote: currentVote }),
+      this.order.update(createVoteDto.orderHash, orderUpdatedData),
     ]);
     return currentVote;
   }

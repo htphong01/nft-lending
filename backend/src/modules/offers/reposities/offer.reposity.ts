@@ -29,13 +29,15 @@ export class Offer {
     const offers = await this.getAll();
     if (!filters || Object.keys(filters).length === 0) return offers;
 
-    return offers.filter((item) => {
-      for (let key in filters) {
-        if (item[key] === undefined || !filters[key].includes(item[key]))
-          return false;
-      }
-      return true;
-    });
+    return offers
+      .filter((item) => {
+        for (let key in filters) {
+          if (item[key] === undefined || !filters[key].includes(item[key]))
+            return false;
+        }
+        return true;
+      })
+      .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 0));
   }
 
   async create(
