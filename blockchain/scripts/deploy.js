@@ -1,65 +1,82 @@
 const { ethers } = require("hardhat");
-const { deployProxyAndLogger, contractFactoriesLoader } = require("../utils/deploy.utils");
-const { blockTimestamp } = require('../utils/test.utils');
 const fs = require("fs");
 require("dotenv").config();
 const env = process.env;
 
 async function main() {
     //* Get network */
-    const network = await ethers.provider.getNetwork();
-    const networkName = network.chainId === 31337 ? "hardhat" : network.name;
-    const blockTimeNow = await blockTimestamp();
-
-    //* Loading accounts */
     const accounts = await ethers.getSigners();
-    const addresses = accounts.map((item) => item.address);
-    const deployer = addresses[0];
 
-    //* Loading contract factories */
-    const { Monkey721, Monkey1155 } = await contractFactoriesLoader();
+    console.log("==========================================================================");
+    console.log("ACCOUNTS:");
+    console.log("==========================================================================");
+    for (let i = 0; i < accounts.length; i++) {
+        const account = accounts[i];
+        console.log(` Account ${i}: ${account.address}`);
+    }
+
+    //* Loading contract factory */
+    const PermittedNFTs = await ethers.getContractFactory("PermittedNFTs");
+    const LoanChecksAndCalculations = await hre.ethers.getContractFactory('LoanChecksAndCalculations');
+    const NFTfiSigningUtils = await hre.ethers.getContractFactory('NFTfiSigningUtils');
+    const LendingPool = await ethers.getContractFactory("LendingPoolV3");
+    const WXCR = await ethers.getContractFactory("WXCR");
+    const LiquidateNFTPool = await ethers.getContractFactory("LiquidateNFTPool");
 
     //* Deploy contracts */
-    const underline = "=".repeat(93);
-    console.log(underline);
+    console.log("==========================================================================");
     console.log("DEPLOYING CONTRACTS");
-    console.log(underline);
-    console.log("chainId   :>> ", network.chainId);
-    console.log("chainName :>> ", networkName);
-    console.log("deployer  :>> ", deployer);
-    console.log(underline);
+    console.log("==========================================================================");
 
-    const verifyArguments = {
-        chainId: network.chainId,
-        networkName,
-        deployer,
-    };
+    const treasury = "0x4F9EF07A6DDF73494D2fF51A8f7B78e9c5815eb2";
 
-    const monkey721 = await deployProxyAndLogger(Monkey721, [
-        "https://ipfs",
-        "Monkey 721",
-        "M721"
-    ]);
-    verifyArguments.monkey721 = monkey721.address;
-    verifyArguments.monkey721Verify = monkey721.addressVerify;
+    let loanChecksAndCalculations = await LoanChecksAndCalculations.deploy();
+    await loanChecksAndCalculations.deployed()
+    console.log("Library LoanChecksAndCalculations deployed to:", loanChecksAndCalculations.address);
 
-    const monkey1155 = await deployProxyAndLogger(Monkey1155, [
-        "https://ipfs",
-        "Monkey 1155",
-        "M1155"
-    ]);
-    verifyArguments.monkey1155 = monkey1155.address;
-    verifyArguments.monkey1155Verify = monkey1155.addressVerify;
+    let nftfiSigningUtils = await NFTfiSigningUtils.deploy();
+    await nftfiSigningUtils.deployed()
+    console.log("Library NFTfiSigningUtils deployed to:", nftfiSigningUtils.address);
 
-    console.log(underline);
+    const permittedNFTs = await PermittedNFTs.deploy(accounts[0].address);
+    await permittedNFTs.deployed();
+    console.log("PermittedNFTs                        deployed to:>>", permittedNFTs.address);
+
+    const liquidateNFTPool = await LiquidateNFTPool.deploy(accounts[0].address);
+    await liquidateNFTPool.deployed();
+    console.log("LiquidateNFTPool                        deployed to:>>", liquidateNFTPool.address);
+
+    const wXCR = await WXCR.deploy();
+    await wXCR.deployed();
+    console.log("WXCR                        deployed to:>>", wXCR.address);
+
+    // const loanChecksAndCalculations = await LoanChecksAndCalculations.attach("0xF46E912d82e49104d332D69c2A9E1Aa0B7440892");
+    // const nftfiSigningUtils = await NFTfiSigningUtils.attach("0x4A0c460a775404B87674E2fBff48CA6607b7fBB3");
+    // const permittedNFTs = await PermittedNFTs.attach("0x6b556f1A587ebEa1b3A42Ba9F6275966CA17BCd5");
+    // const wXCR = await WXCR.attach("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108");
+
+    const DirectLoanFixedOffer = await ethers.getContractFactory("DirectLoanFixedOffer", {
+        libraries: {
+            LoanChecksAndCalculations: loanChecksAndCalculations.address,
+            NFTfiSigningUtils: nftfiSigningUtils.address
+        },
+    });
+
+    const lendingPool = await LendingPool.deploy(wXCR.address, treasury, "10000000000000000000", 0);
+    await lendingPool.deployed();
+    console.log("LendingPool                     deployed to:>>", lendingPool.address);
+
+    // const lendingPool = await LendingPool.attach("0x985F6aC9bA18C97Ce59c1334Df716074ef02A684");
+
+    const directLoanFixedOffer = await DirectLoanFixedOffer.deploy(accounts[0].address, lendingPool.address, liquidateNFTPool.address, permittedNFTs.address, [wXCR.address]);
+    await directLoanFixedOffer.deployed();
+    console.log("DirectLoanFixedOffer                        deployed to:>>", directLoanFixedOffer.address);
+
+    await lendingPool.approve(directLoanFixedOffer.address, ethers.constants.MaxUint256);
+
+    console.log("==========================================================================");
     console.log("DONE");
-    console.log(underline);
-
-    const dir = `./deploy-history/${network.chainId}-${networkName}/`;
-    const fileName = network.chainId === 31337 ? "hardhat" : blockTimeNow;
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    await fs.writeFileSync("contracts.json", JSON.stringify(verifyArguments));
-    await fs.writeFileSync(`${dir}/${fileName}.json`, JSON.stringify(verifyArguments));
+    console.log("==========================================================================");
 }
 
 // We recommend this pattern to be able to use async/await everywhere

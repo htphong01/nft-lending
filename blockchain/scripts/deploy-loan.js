@@ -30,6 +30,8 @@ async function main() {
     console.log("DEPLOYING CONTRACTS");
     console.log("==========================================================================");
 
+    const treasury = "0x4F9EF07A6DDF73494D2fF51A8f7B78e9c5815eb2";
+
     // let loanChecksAndCalculations = await LoanChecksAndCalculations.deploy();
     // await loanChecksAndCalculations.deployed()
     // console.log("Library LoanChecksAndCalculations deployed to:", loanChecksAndCalculations.address);
@@ -58,11 +60,11 @@ async function main() {
         },
     });
 
-    // const lendingPool = await LendingPool.deploy(wXCR.address, "0x4F9EF07A6DDF73494D2fF51A8f7B78e9c5815eb2", "10000000000000000000", 0);
-    // await lendingPool.deployed();
-    // console.log("LendingPool                     deployed to:>>", lendingPool.address);
+    const lendingPool = await LendingPool.deploy(wXCR.address, treasury, "10000000000000000000", 0);
+    await lendingPool.deployed();
+    console.log("LendingPool                     deployed to:>>", lendingPool.address);
 
-    const lendingPool = await LendingPool.attach("0x985F6aC9bA18C97Ce59c1334Df716074ef02A684");
+    // const lendingPool = await LendingPool.attach("0x985F6aC9bA18C97Ce59c1334Df716074ef02A684");
 
     const directLoanFixedOffer = await DirectLoanFixedOffer.deploy(accounts[0].address, lendingPool.address, liquidateNFTPool.address, permittedNFTs.address, [wXCR.address]);
     await directLoanFixedOffer.deployed();

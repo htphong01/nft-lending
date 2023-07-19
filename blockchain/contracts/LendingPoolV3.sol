@@ -4,11 +4,13 @@ pragma solidity 0.8.18;
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./utils/Permission.sol";
 
 contract LendingPoolV3 is Permission {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     uint256 private constant REWARDS_PRECISION = 1e12; // A big number to perform mul and div operations
 
@@ -51,7 +53,7 @@ contract LendingPoolV3 is Permission {
     mapping(address => UserInfo) public userInfo;
 
     // addresses list
-    address[] public addressList;
+    EnumerableSet.AddressSet private addressList;
 
     // The block number when mining starts.
     uint256 public startBlock;
@@ -85,7 +87,25 @@ contract LendingPoolV3 is Permission {
     }
 
     function addressLength() external view returns (uint256) {
-        return addressList.length;
+        return addressList.length();
+    }
+
+    /**
+     *  @notice Get address by index
+     *
+     *  @dev    All caller can call this function.
+     */
+    function getAddressByIndex(uint256 _index) external view returns (address) {
+        return addressList.at(_index);
+    }
+
+    /**
+     *  @notice Get all address
+     *
+     *  @dev    All caller can call this function.
+     */
+    function getAllAddress() external view returns (address[] memory) {
+        return addressList.values();
     }
 
     // Return reward multiplier over the given _from to _to block.
@@ -146,7 +166,7 @@ contract LendingPoolV3 is Permission {
         wXCR.safeTransferFrom(address(msg.sender), address(this), _amount);
         // The deposit behavior before farming will result in duplicate addresses, and thus we will manually remove them when airdropping.
         if (user.amount == 0 && user.rewardPending == 0 && user.rewardDebt == 0) {
-            addressList.push(address(msg.sender));
+            addressList.add(address(msg.sender));
         }
         user.rewardPending = user
             .amount
@@ -181,6 +201,7 @@ contract LendingPoolV3 is Permission {
         user.rewardDebt = user.amount.mul(poolInfo.accRewardPerShare).div(REWARDS_PRECISION);
 
         poolInfo.stakedSupply = poolInfo.stakedSupply.sub(_amount);
+        addressList.remove(address(msg.sender));
 
         emit Withdraw(msg.sender, _amount);
     }

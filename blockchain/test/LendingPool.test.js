@@ -55,6 +55,14 @@ describe("LendingPoolV3", () => {
                     console.log("balanceAfter", balanceAfter.toString());
                 }
             }
+
+            const addressLength = await lendingPool.addressLength();
+            const addressByIndex = await lendingPool.getAddressByIndex(0);
+            const allAddress = await lendingPool.getAllAddress();
+
+            console.log("allAddress", allAddress)
+            console.log("addressByIndex", addressByIndex)
+            console.log("addressLength", addressLength)
         });
 
        
