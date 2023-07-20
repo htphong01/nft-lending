@@ -173,7 +173,7 @@ export default function Pool() {
               />
             </div>
             <div className={styles['section-item']}>
-              <Information title="Total bonus" value={`${poolBalance.bonus} ${account.currency}`} icon={bonusIcon} />
+              <Information title="Total interest" value={`${poolBalance.bonus} ${account.currency}`} icon={bonusIcon} isInterest={true} />
             </div>
           </div>
           {/* <div className={styles.row}>
