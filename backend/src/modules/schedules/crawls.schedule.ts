@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { JsonRpcProvider } from 'ethers';
 import { OffersService } from '../offers/offers.service';
 import { NftsService } from '../nfts/nfts.service';
+import { LendingPoolService } from '../lending-pool/lending-pool.service';
 import { Crawl } from './reposities/crawl.reposity';
 import config from 'src/config';
 
@@ -13,6 +14,7 @@ export class CrawlsSchedule implements OnModuleInit {
   constructor(
     private offersService: OffersService,
     private nftsService: NftsService,
+    private lendingPoolService: LendingPoolService,
     private readonly crawl: Crawl,
   ) {}
 
@@ -60,5 +62,10 @@ export class CrawlsSchedule implements OnModuleInit {
     // await this.offersService.handleExpiredOffer();
 
     await this.crawl.setCrawlLatestBlock(toBlock);
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async depositToLendingPoolTreasury() {
+    await this.lendingPoolService.depositBonusToTreasury();
   }
 }

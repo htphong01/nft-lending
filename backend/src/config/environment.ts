@@ -17,9 +17,14 @@ export const Environment = {
   REDIS_ORDER_FAMILY: Number(process.env.REDIS_ORDER_FAMILY || 4),
   REDIS_ORDER_DB: Number(process.env.REDIS_ORDER_DB || 1),
 
+  // OPERATOR ACCOUNT
+  OPERATOR_ACCOUNT_PRIVATE_KEY: process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+
   // Web3 host
   NETWORK_RPC_URL:
     process.env.NETWORK_RPC_URL || 'https://rpc-kura.cross.technology/',
+  WXCR_ADDRESS:
+    process.env.WXCR_ADDRESS || '0x747ae7dcf3ea10d242bd17ba5dfa034ca6102108',
   COLLECTION_ADDRESS:
     process.env.COLLECTION_ADDRESS ||
     '0x9b42ed936c5fedf3ca20a2d97322531b1398412f',
