@@ -40,8 +40,10 @@ async function main() {
     // console.log(await chonk.ownerOf(1));
     // await chonk.connect(accounts[0]).mint('0xc8429C05315Ae47FFc0789A201E5F53E93D591D4', 20);
 
-    // const WXCR = await ethers.getContractFactory("WXCRMultipleInternal");
-    // const wXCR = await WXCR.attach("0x1ffB5A1D759C67084ea583C99891b1be34d323d3");
+    const WXCR = await ethers.getContractFactory("WXCR");
+    const wXCR = await WXCR.attach("0x747ae7dcf3ea10d242bd17ba5dfa034ca6102108");
+    const tx = await wXCR.connect(accounts[0]).approve("0x603c668fd2dd8477b755f43c9ccac6a409684717", ethers.constants.MaxUint256);
+    console.log(tx);
     // const tx = await wXCR.mint(
     //     ["0xc8429C05315Ae47FFc0789A201E5F53E93D591D4", "0x4F9EF07A6DDF73494D2fF51A8f7B78e9c5815eb2", "0xbf4e57eA10b8D19Ad436293818469758145ee915"],
     //     ethers.utils.parseUnits("10")
@@ -59,10 +61,9 @@ async function main() {
     // let address = args[0];
     // console.log(address);
 
-    const Weapon = await ethers.getContractFactory("Weapon");
-    const weapon = Weapon.attach("0x91bf0d58ad0B913FaA82d60F8226E1524703bb2E");
-    const tx = await weapon.connect(accounts[0]).transferFrom(accounts[0].address, "0x174B3D4d3C8A2faA3b0d8e1a11c6f5866e9a72F2", 1);
-    console.log(tx);
+    // const LendingPool = await ethers.getContractFactory("LendingPoolV3");
+    // const lendingPool = LendingPool.attach("0x603c668fd2dd8477b755f43c9ccac6a409684717");
+    // console.log(await lendingPool.treasury());
 }
 
 // We recommend this pattern to be able to use async/await everywhere
