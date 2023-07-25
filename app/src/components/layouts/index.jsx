@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import { ethers } from 'ethers';
 import { setAccount } from '@src/redux/features/accountSlice';
 import { setRate } from '@src/redux/features/rateSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,10 +10,12 @@ import Header from './header';
 import Footer from './footer';
 import ConnectMetamask from './connect-metamask';
 
+const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+
 export default function UserLayout() {
   const rate = useSelector((state) => state.rate);
   const account = useSelector((state) => state.account);
-  const [network, setNetwork] = useState(window.ethereum.networkVersion)
+  const [network, setNetwork] = useState(window.ethereum.networkVersion);
 
   const dispatch = useDispatch();
 
@@ -25,7 +28,7 @@ export default function UserLayout() {
         setAccount({
           address: accounts[0].toLowerCase(),
           balance: balance,
-          currency: 'wXCR'
+          currency: 'wXCR',
         })
       );
     }
@@ -83,16 +86,18 @@ export default function UserLayout() {
         });
 
       window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('networkChanged', function(networkId){
-        setNetwork(networkId)
+      window.ethereum.on('networkChanged', function (networkId) {
+        setNetwork(networkId);
       });
       requireSwitchNetwork();
     } else {
       alert('MetaMask is not installed. Please consider installing it: https://metamask.io/download.html');
     }
 
+    provider.getNetwork().then(({ chainId,  }) => setNetwork(chainId));
+
     fetchRate();
-  }, []);
+  }, [window.ethereum]);
 
   return (
     <>
