@@ -80,7 +80,7 @@ export class VotesService {
 
     if (
       currentVote.total > 0 &&
-      currentVote.rejected / currentVote.total > 0.25
+      currentVote.rejected / currentVote.total >= 0.25
     ) {
       orderUpdatedData.status = OrderStatus.REJECTED;
       this.nft.update(
