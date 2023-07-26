@@ -74,8 +74,6 @@ export default function UserLayout() {
     });
   };
 
-  console.log('window.ethereum', window.ethereum);
-
   useEffect(() => {
     if (window.ethereum) {
       window.ethereum
