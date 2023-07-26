@@ -10,8 +10,6 @@ import Header from './header';
 import Footer from './footer';
 import ConnectMetamask from './connect-metamask';
 
-const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-
 export default function UserLayout() {
   const rate = useSelector((state) => state.rate);
   const account = useSelector((state) => state.account);
@@ -76,6 +74,8 @@ export default function UserLayout() {
     });
   };
 
+  console.log('window.ethereum', window.ethereum);
+
   useEffect(() => {
     if (window.ethereum) {
       window.ethereum
@@ -90,13 +90,13 @@ export default function UserLayout() {
         setNetwork(networkId);
       });
       requireSwitchNetwork();
+      fetchRate();
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+      provider.getNetwork().then(({ chainId }) => setNetwork(chainId));
     } else {
       alert('MetaMask is not installed. Please consider installing it: https://metamask.io/download.html');
     }
-
-    provider.getNetwork().then(({ chainId,  }) => setNetwork(chainId));
-
-    fetchRate();
   }, [window.ethereum]);
 
   return (
