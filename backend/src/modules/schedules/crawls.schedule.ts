@@ -66,6 +66,6 @@ export class CrawlsSchedule implements OnModuleInit {
 
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async depositToLendingPoolTreasury() {
-    await this.lendingPoolService.depositBonusToTreasury();
+    // await this.lendingPoolService.depositBonusToTreasury();
   }
 }
