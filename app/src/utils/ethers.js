@@ -76,3 +76,16 @@ export const generateOfferSignature = async (
 export const getBlockNumber = async () => {
   return provider.getBlockNumber();
 };
+
+export const getTransactionByEvents = async (address, abi, eventName) => {
+  try {
+    const contract = new ethers.Contract(address, abi, provider);
+    // const toBlock = await getBlockNumber();
+    const toBlock = 99153;
+    const events = await contract.queryFilter(eventName, toBlock - 10000, toBlock);
+    return events
+
+  } catch (error) {
+    return [];
+  }
+};
