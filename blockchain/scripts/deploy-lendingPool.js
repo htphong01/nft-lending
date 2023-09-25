@@ -31,7 +31,7 @@ async function main() {
     // await wXCR.deployed();
     // console.log("WXCR                        deployed to:>>", wXCR.address);
 
-    const wXCR = await WXCR.attach("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108");
+    const wXCR = await WXCR.attach("0x3b3f35c81488c49b370079fd05cfa917c83a38a9");
 
     const lendingPool = await LendingPool.deploy(wXCR.address, "0x4F9EF07A6DDF73494D2fF51A8f7B78e9c5815eb2", "10000000000000000000", 0);
     await lendingPool.deployed();

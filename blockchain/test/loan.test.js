@@ -365,7 +365,7 @@ describe("Loan", () => {
                 nftCollateralContract: "0xf31a2e258bec65a46fb54cd808294ce215070150",
                 duration: 2592000,
                 adminFeeInBasisPoints: 25,
-                erc20Denomination: "0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108",
+                erc20Denomination: "0x3b3f35c81488c49b370079fd05cfa917c83a38a9",
             };
             const signature = [
                 {
