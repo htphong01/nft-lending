@@ -80,3 +80,7 @@ button:disabled:hover {
     padding: 0 240px;
   }
 }
+
+.text-center {
+  text-align: center;
+}

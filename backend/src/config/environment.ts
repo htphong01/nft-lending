@@ -24,14 +24,14 @@ export const Environment = {
   NETWORK_RPC_URL:
     process.env.NETWORK_RPC_URL || 'https://rpc-kura.cross.technology/',
   WXCR_ADDRESS:
-    process.env.WXCR_ADDRESS || '0x747ae7dcf3ea10d242bd17ba5dfa034ca6102108',
+    process.env.WXCR_ADDRESS || '0x3b3f35c81488c49b370079fd05cfa917c83a38a9',
   COLLECTION_ADDRESS:
     process.env.COLLECTION_ADDRESS ||
-    '0x9b42ed936c5fedf3ca20a2d97322531b1398412f',
+    '0x25baf69a46923c0db775950b0ef96e6018343a36',
   LENDING_POOL_ADDRESS:
     process.env.LENDING_POOL_ADDRESS ||
-    '0x603c668fd2dd8477b755f43c9ccac6a409684717',
+    '0xa01d399346e76bd863f726366c31789b2fc43ad9',
   LOAN_ADDRESS:
-    process.env.LOAN_ADDRESS || '0x5a400dc64d2b77b5f3dd0061d037544521339676',
+    process.env.LOAN_ADDRESS || '0x1f2cd935b0ca5b7e9ee2f98970d1bb78797ba6d8',
   CHAIN_ID: process.env.CHAIN_ID || '5555',
 };

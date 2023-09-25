@@ -51,7 +51,7 @@ async function main() {
     const loanChecksAndCalculations = await LoanChecksAndCalculations.attach("0xF46E912d82e49104d332D69c2A9E1Aa0B7440892");
     const nftfiSigningUtils = await NFTfiSigningUtils.attach("0x4A0c460a775404B87674E2fBff48CA6607b7fBB3");
     const permittedNFTs = await PermittedNFTs.attach("0x6b556f1A587ebEa1b3A42Ba9F6275966CA17BCd5");
-    const wXCR = await WXCR.attach("0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108");
+    const wXCR = await WXCR.attach("0x3b3f35c81488c49b370079fd05cfa917c83a38a9");
 
     const DirectLoanFixedOffer = await ethers.getContractFactory("DirectLoanFixedOffer", {
         libraries: {

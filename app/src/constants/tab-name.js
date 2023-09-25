@@ -116,6 +116,19 @@ export const FOOTER_MENU = [
       title: 'Lending pool',
       link: '/lending-pool',
     },
+    {
+      title: 'Market',
+      items: [
+        {
+          title: 'Exchange',
+          link: '/exchange',
+        },
+        {
+          title: 'Marketplace',
+          link: '/marketplace',
+        }
+      ],
+    },
   ];
   
   export const PROFILE_TABS = [

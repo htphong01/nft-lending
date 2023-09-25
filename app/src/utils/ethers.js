@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { LOAN_ADDRESS, CHAIN_ID, WXCR_ADDRESS } from '@src/constants';
 
 const RPC_URL = 'https://rpc-kura.cross.technology';
-const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+export const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 
 export const getNativeBalance = async (account) => {
   const balance = await provider.getBalance(account);
@@ -75,4 +75,17 @@ export const generateOfferSignature = async (
 
 export const getBlockNumber = async () => {
   return provider.getBlockNumber();
+};
+
+export const getTransactionByEvents = async (address, abi, eventName) => {
+  try {
+    const contract = new ethers.Contract(address, abi, provider);
+    const toBlock = await getBlockNumber();
+    // const toBlock = 99153;
+    const events = await contract.queryFilter(eventName, toBlock - 10000, toBlock);
+    return events
+
+  } catch (error) {
+    return [];
+  }
 };

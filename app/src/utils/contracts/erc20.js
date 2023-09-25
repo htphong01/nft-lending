@@ -40,12 +40,16 @@ export const approveERC20 = async (
   return contract.approve(spender, amount);
 };
 
-export const mintERC20 = async (
-  address,
-  amount = ethers.utils.parseUnits('20', 18),
-  contractAddress = WXCR_ADDRESS
-) => {
+export const mintERC20 = async (amount, contractAddress = WXCR_ADDRESS) => {
   const signer = provider.getSigner();
   const contract = ERC20Contract(contractAddress, signer);
-  return contract.mint(address, amount);
+  const decimals = await contract.decimals();
+  return contract.mint({ value: ethers.utils.parseUnits(`${amount}`, decimals) });
+};
+
+export const burnERC20 = async (amount, contractAddress = WXCR_ADDRESS) => {
+  const signer = provider.getSigner();
+  const contract = ERC20Contract(contractAddress, signer);
+  const decimals = await contract.decimals();
+  return contract.burn(ethers.utils.parseUnits(`${amount}`, decimals));
 };
