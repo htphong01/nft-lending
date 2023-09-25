@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ethers } from 'ethers';
-import { LOAN_ADDRESS, NFT_CONTRACT_ADDRESS } from '@src/constants';
+import { LOAN_ADDRESS, NFT_CONTRACT_ADDRESS, DEFAULT_ERC6551_BASE_URI } from '@src/constants';
 import { ERC721_ABI } from '@src/abi';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
@@ -29,8 +29,8 @@ export const approveERC721 = async (tokenId, operator = LOAN_ADDRESS, contractAd
   return contract.approve(operator, tokenId);
 };
 
-export const mintERC721 = async (address, amount = 5, contractAddress = NFT_CONTRACT_ADDRESS) => {
+export const mintERC721 = async (address, uri = DEFAULT_ERC6551_BASE_URI, contractAddress = NFT_CONTRACT_ADDRESS) => {
   const signer = provider.getSigner();
   const contract = ERC721Contract(contractAddress, signer);
-  return contract.mint(address, amount);
+  return contract.mint(address, uri);
 };

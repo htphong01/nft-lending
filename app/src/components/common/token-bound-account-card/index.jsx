@@ -21,7 +21,7 @@ export default function TokenBoundAccountCard({ item, onClose }) {
 
   const handleFetchAssets = async () => {
     try {
-      const tbaAddress = await getTokenBoundAccount(item.edition);
+      const tbaAddress = await getTokenBoundAccount({ tokenId: item.edition });
       const listNFTs = [1, 2, 3, 4];
       const erc721 = ERC721Contract(WEAPON_NFT_ADDRESS);
       const tokenURIs = await Promise.all(listNFTs.map((tokenId) => erc721.tokenURI(tokenId)));

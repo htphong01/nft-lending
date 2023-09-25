@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { getNfts } from '@src/api/nfts.api';
 import Card from '@src/components/common/card';
 import ListCollateralForm from '@src/components/common/list-collateral-form';
+import ERC6551Form from '@src/components/common/erc-6551-form';
 import TokenBoundAccountCard from '@src/components/common/token-bound-account-card';
 import { COLLATERAL_FORM_TYPE, TOKEN_BOUND_ACCOUNT_NFT_ADDRESS } from '@src/constants';
 import { ERC721Contract } from '@src/utils';
@@ -17,11 +18,13 @@ export default function Assets() {
   const [isLoading, setIsLoading] = useState(true);
   const [listNFT, setListNFT] = useState([]);
   const [selectedNFT, setSelectedNFT] = useState();
+  const [isOpenERC6551, setIsOpenERC6551] = useState(false);
   const [selectedTokenBoundAccount, setSelectedTokenBoundAccount] = useState();
 
   const handleOnClose = (isRefetch = false) => {
     setSelectedNFT();
     setSelectedTokenBoundAccount();
+    setIsOpenERC6551(false)
     if (isRefetch) fetchNFTs();
   };
 
@@ -73,8 +76,12 @@ export default function Assets() {
       {selectedNFT && (
         <ListCollateralForm item={selectedNFT} onClose={handleOnClose} type={COLLATERAL_FORM_TYPE.EDIT} />
       )}
+      {isOpenERC6551 && <ERC6551Form onClose={handleOnClose} />}
       {selectedTokenBoundAccount && <TokenBoundAccountCard item={selectedTokenBoundAccount} onClose={handleOnClose} />}
-      <div className={styles.heading}>Your assets</div>
+      <div className={styles.heading}>
+        <span>Your assets</span>
+        <button onClick={() => setIsOpenERC6551(!isOpenERC6551)}>Import ERC-6551</button>
+      </div>
       {isLoading ? (
         <div className="react-loading-item">
           <ReactLoading type="bars" color="#fff" height={100} width={120} />
