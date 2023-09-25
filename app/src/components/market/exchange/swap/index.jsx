@@ -3,8 +3,10 @@ import { HiSwitchVertical } from 'react-icons/hi';
 import { InlineIcon } from '@iconify/react';
 import { useSelector } from 'react-redux';
 import ReactLoading from 'react-loading';
-import { formatNumber, getNativeBalance } from '@src/utils';
-import { WXCR_ADDRESS } from '@src/constants'
+import toast, { Toaster } from 'react-hot-toast';
+import { formatNumber, getNativeBalance, parseMetamaskError, mintERC20, burnERC20 } from '@src/utils';
+import { WXCR_ADDRESS } from '@src/constants';
+import cvcScanIcon from '@src/assets/cvcscan-icon.png';
 import { ethers } from 'ethers';
 import styles from '../styles.module.scss';
 
@@ -14,14 +16,14 @@ export default function Swap() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [fromToken, setFromToken] = useState({
-    img: 'https://icons.iconarchive.com/icons/cjdowner/cryptocurrency-flat/512/Ethereum-ETH-icon.png',
+    img: cvcScanIcon,
     symbol: 'XCR',
     address: WXCR_ADDRESS,
     balance: 0,
   });
 
   const [toToken, setToToken] = useState({
-    img: 'https://cryptologos.cc/logos/multi-collateral-dai-dai-logo.png',
+    img: cvcScanIcon,
     symbol: 'wXCR',
     address: ethers.constants.AddressZero,
     balance: account.balance,
@@ -51,23 +53,35 @@ export default function Swap() {
 
   const handleSubmit = async () => {
     try {
-      console.log('submit');
+      setIsLoading(true);
+      if (fromToken.symbol === 'XCR') {
+        const tx = await mintERC20(inputData.pay);
+        await tx.wait();
+      } else {
+        const tx = await burnERC20(inputData.pay);
+        await tx.wait();
+      }
+      toast.success('Swap successfully');
+      setIsLoading(false);
     } catch (error) {
-      console.error('error', error);
+      console.log(error);
+      const txError = parseMetamaskError(error);
+      setIsLoading(false);
+      toast.error(txError.context);
     }
   };
 
   useEffect(() => {
     setIsLoading(true);
-    getNativeBalance(account.address).then((xcr) => {
-      setFromToken({ ...fromToken, balance: xcr });
-      setIsLoading(false);
-    })
-    .catch(err => {
-      console.log('init', err);
-      setIsLoading(false);
-    });
-
+    getNativeBalance(account.address)
+      .then((xcr) => {
+        setFromToken({ ...fromToken, balance: xcr });
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.log('init', err);
+        setIsLoading(false);
+      });
   }, []);
 
   return (
@@ -77,7 +91,8 @@ export default function Swap() {
           <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
         </div>
       )}
-      <div className={styles.title}>OTC</div>
+      <Toaster position="top-center" reverseOrder={false} />
+      <div className={styles.title}>Swap</div>
       <div className={styles.inputControl}>
         <div className={styles.label}>
           <span>Pay</span>

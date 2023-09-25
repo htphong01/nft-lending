@@ -101,6 +101,7 @@
 
           img {
             width: 20px;
+            filter: invert(100%);
           }
 
           span {
@@ -221,6 +222,14 @@
         box-shadow: 1px 0 0 #000;
         background: #0f0d18;
         padding: 0 24px;
+
+        a.table-list-item {
+          text-decoration: none;
+
+          &:hover {
+            font-weight: bold;
+          }
+        }
 
         .table-list-item {
           padding: 12px 0;
