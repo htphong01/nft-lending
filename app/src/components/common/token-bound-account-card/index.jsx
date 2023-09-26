@@ -101,9 +101,9 @@ export default function TokenBoundAccountCard({ item, onClose }) {
           <div className={styles['list-assets']}>
             {activeTab === 1 ? (
               <div className={styles['list-nfts']}>
-                {assets.nfts.map((item, index) => (
+                {assets.nfts.length > 0 ? assets.nfts.map((item, index) => (
                   <img src={item.image} key={index} />
-                ))}
+                )) : <div>There are no assets.</div>}
               </div>
             ) : (
               <div className={styles['list-tokens']}>

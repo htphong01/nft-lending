@@ -13,6 +13,7 @@ import {
 } from '@src/utils';
 import { DEFAULT_ERC6551_BASE_URI, TOKEN_BOUND_ACCOUNT_NFT_ADDRESS } from '@src/constants';
 import { createTokenBoundAccount as createTokenBoundAccountApi } from '@src/api/token-bound-account.api';
+import URLForm from './url-form';
 import styles from './styles.module.scss';
 
 export default function ERC6551Form({ onClose }) {
@@ -21,6 +22,7 @@ export default function ERC6551Form({ onClose }) {
   const ref = useRef(null);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [openUrlForm, setOpenUrlForm] = useState(false);
   const [data, setData] = useState({
     account: '',
     registryAddress: '',
@@ -42,7 +44,7 @@ export default function ERC6551Form({ onClose }) {
         const importedAccount = await getTokenBoundAccount(newData);
         newData.account = importedAccount;
       } catch (error) {
-        console.log('error', error)
+        console.log('error', error);
       }
     } else {
       newData.account = '';
@@ -51,10 +53,10 @@ export default function ERC6551Form({ onClose }) {
     setData(newData);
   };
 
-  const handleCreateERC6551 = async () => {
+  const handleCreateERC6551 = async (url = DEFAULT_ERC6551_BASE_URI) => {
     setIsLoading(true);
     try {
-      const tx = await mintERC721(account.address, DEFAULT_ERC6551_BASE_URI, TOKEN_BOUND_ACCOUNT_NFT_ADDRESS);
+      const tx = await mintERC721(account.address, url, TOKEN_BOUND_ACCOUNT_NFT_ADDRESS);
       const receipt = await tx.wait();
       const args = receipt.events.find((ev) => ev.event === 'Transfer').args;
       const tokenId = parseInt(args[2], 16);
@@ -103,6 +105,7 @@ export default function ERC6551Form({ onClose }) {
       )}
       <Toaster position="top-center" reverseOrder={false} />
       <form className={styles.form} onSubmit={handleSubmit} ref={ref}>
+        {openUrlForm && <URLForm onClose={() => setOpenUrlForm(false)} handleCreateERC6551={handleCreateERC6551} />}
         <div className={styles.title}>Import your Token Bound Account</div>
         <div className={styles['sub-title']}>Provide opportunity to access a larger loan</div>
         <div className={styles.section}>
@@ -154,7 +157,7 @@ export default function ERC6551Form({ onClose }) {
         </div>
         <div className={`${styles['sub-title']} ${styles['sub-title-button']}`}>
           Don&apos;t have an ERC-6551 account yet?
-          <button type="button" onClick={handleCreateERC6551}>
+          <button type="button" onClick={() => setOpenUrlForm(true)}>
             Create now
           </button>
         </div>
