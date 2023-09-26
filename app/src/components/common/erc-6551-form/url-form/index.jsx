@@ -13,6 +13,7 @@ export default function URLForm({ onClose, handleCreateERC6551 }) {
   };
 
   const handleSubmit = () => {
+    if(!url) return;
     handleCreateERC6551(url);
     onClose();
   };
