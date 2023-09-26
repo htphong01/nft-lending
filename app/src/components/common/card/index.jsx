@@ -19,7 +19,7 @@ export default function Card({ item, action: { text, handle }, handleTokenBoundA
       <div className={styles.name}>{item.name}</div>
       <div className={styles.extension}>
         <span>{item.isTokenBoundAccount ? 'Token bound account' : 'ERC-721'}</span>
-        {item.isTokenBoundAccount && <button onClick={() => handleTokenBoundAccount(item)}>View assets</button>}
+        {item.isTokenBoundAccount && <button onClick={handleTokenBoundAccount}>View assets</button>}
       </div>
     </div>
   );

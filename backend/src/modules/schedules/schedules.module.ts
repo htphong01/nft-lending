@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { ConnectionsModule } from 'src/connections/connections.module';
 import { ReposityModule } from './reposities/reposity.module';
 import { OffersModule } from '../offers/offers.module';
+import { TokenBoundAccountsModule } from '../token-bound-accounts/token-bound-accounts.module';
 import { CrawlsSchedule } from './crawls.schedule';
 
 @Module({
@@ -13,6 +14,7 @@ import { CrawlsSchedule } from './crawls.schedule';
     OffersModule,
     NftsModule,
     LendingPoolModule,
+    TokenBoundAccountsModule,
   ],
   controllers: [],
   providers: [CrawlsSchedule],

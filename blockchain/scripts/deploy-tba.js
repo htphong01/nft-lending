@@ -29,6 +29,21 @@ async function main() {
     const tokenBoundAccountRegistry = await TokenBoundAccountRegistry.deploy();
     console.log("tokenBoundAccountRegistry", tokenBoundAccountRegistry.address);
 
+    const Weapon = await ethers.getContractFactory("Weapon");
+    const weapon = await Weapon.deploy();
+    console.log("weapon", weapon.address);
+    await weapon.deployed();
+
+    for (let i = 1; i < 5; i++) {
+        const BASE_URI = `https://res.cloudinary.com/htphong02/raw/upload/v1689756298/metadata/weapons/${i}.json`;
+        let tx = await weapon.connect(accounts[0]).mint(accounts[0].address, BASE_URI);
+        console.log("mint", i, tx.hash);
+        await tx.wait();
+        tx = await weapon.connect(accounts[0]).transferFrom(accounts[0].address, "0x2221C6C1dd592b9dffCeA63F5199F99B900C486b", i);
+        console.log("transfer", i, tx.hash);
+        await tx.wait();
+    }
+
     console.log("==========================================================================");
     console.log("DONE");
     console.log("==========================================================================");
