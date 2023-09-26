@@ -8,6 +8,7 @@ import { VotesModule } from './modules/votes/votes.module';
 import { DacsModule } from './modules/dacs/dacs.module';
 import { LendingPoolModule } from './modules/lending-pool/lending-pool.module';
 import { SchedulesModule } from './modules/schedules/schedules.module';
+import { TokenBoundAccountsModule } from './modules/token-bound-accounts/token-bound-accounts.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { SchedulesModule } from './modules/schedules/schedules.module';
     DacsModule,
     LendingPoolModule,
     SchedulesModule,
+    TokenBoundAccountsModule,
   ],
   providers: [ConnectionsModule],
 })

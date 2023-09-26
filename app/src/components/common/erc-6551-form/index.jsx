@@ -12,6 +12,7 @@ import {
   parseMetamaskError,
 } from '@src/utils';
 import { DEFAULT_ERC6551_BASE_URI, TOKEN_BOUND_ACCOUNT_NFT_ADDRESS } from '@src/constants';
+import { createTokenBoundAccount as createTokenBoundAccountApi } from '@src/api/token-bound-account.api';
 import styles from './styles.module.scss';
 
 export default function ERC6551Form({ onClose }) {
@@ -37,8 +38,12 @@ export default function ERC6551Form({ onClose }) {
     };
 
     if (!Object.values(newData).includes('')) {
-      const importedAccount = await getTokenBoundAccount(newData);
-      newData.account = importedAccount;
+      try {
+        const importedAccount = await getTokenBoundAccount(newData);
+        newData.account = importedAccount;
+      } catch (error) {
+        console.log('error', error)
+      }
     } else {
       newData.account = '';
     }
@@ -78,7 +83,8 @@ export default function ERC6551Form({ onClose }) {
         toast.error(`You are not owner of the Token ID: ${data.tokenId}`);
         return;
       }
-      toast.success('import success');
+      await createTokenBoundAccountApi({ ...data, owner: account.address });
+      toast.success('import ERC-6551 Account successfully');
     } catch (error) {
       console.log(error);
       setIsLoading(false);
