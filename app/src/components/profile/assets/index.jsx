@@ -9,7 +9,7 @@ import Card from '@src/components/common/card';
 import ListCollateralForm from '@src/components/common/list-collateral-form';
 import ERC6551Form from '@src/components/common/erc-6551-form';
 import TokenBoundAccountCard from '@src/components/common/token-bound-account-card';
-import { COLLATERAL_FORM_TYPE, TOKEN_BOUND_ACCOUNT_NFT_ADDRESS } from '@src/constants';
+import { COLLATERAL_FORM_TYPE } from '@src/constants';
 import { ERC721Contract } from '@src/utils';
 import styles from './styles.module.scss';
 
@@ -109,7 +109,7 @@ export default function Assets() {
           {listNFT.map((item, index) => (
             <Card
               key={index}
-              item={item.metadata}
+              item={{...item.metadata, collectionAddress: item.collectionAddress}}
               action={{ text: 'List collateral', handle: setSelectedNFT }}
               handleTokenBoundAccount={() => setSelectedTokenBoundAccount(item)}
             />
