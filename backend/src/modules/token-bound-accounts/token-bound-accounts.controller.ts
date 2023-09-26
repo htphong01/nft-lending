@@ -44,7 +44,7 @@ export class TokenBoundAccountsController {
     @Body() updateTokenBoundAccountDto: UpdateTokenBoundAccountDto,
   ) {
     return this.tokenBoundAccountsService.update(
-      +id,
+      id,
       updateTokenBoundAccountDto,
     );
   }

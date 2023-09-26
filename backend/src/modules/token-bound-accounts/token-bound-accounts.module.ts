@@ -15,7 +15,7 @@ import { LendingPoolModule } from '../lending-pool/lending-pool.module';
     DacsModule,
     LendingPoolModule,
   ],
-  exports: [ReposityModule],
+  exports: [ReposityModule, TokenBoundAccountsService],
   controllers: [TokenBoundAccountsController],
   providers: [TokenBoundAccountsService],
 })

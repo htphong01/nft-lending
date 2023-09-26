@@ -2,6 +2,8 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
@@ -87,11 +89,38 @@ export class TokenBoundAccountsService {
     return await this.tokenBoundAccount.find({ owner });
   }
 
-  update(id: number, updateTokenBoundAccountDto: UpdateTokenBoundAccountDto) {
-    return `This action updates a #${id} order`;
+  update(id: string, updateTokenBoundAccountDto: UpdateTokenBoundAccountDto) {
+    return this.tokenBoundAccount.update(id, updateTokenBoundAccountDto);
   }
 
   remove(id: number) {
-    return `This action removes a #${id} order`;
+    return `This action updates a #${id} order`;
+  }
+
+  async handleEvents() {
+    try {
+      const erc6551List = await this.tokenBoundAccount.find({});
+      for (let i = 0; i < erc6551List.length; i++) {
+        const nftContract = new Contract(
+          erc6551List[i].tokenAddress,
+          ERC721_ABI,
+          this.rpcProvider,
+        );
+
+        const owner = await nftContract.ownerOf(erc6551List[i].tokenId);
+        if (owner.toLowerCase() !== erc6551List[i].owner.toLowerCase()) {
+          this.tokenBoundAccount.update(erc6551List[i].hash, {
+            owner: owner.toLowerCase(),
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.response?.data) {
+        throw new HttpException(error.response.data, error.response.status);
+      } else {
+        throw new HttpException(error.body, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    }
   }
 }

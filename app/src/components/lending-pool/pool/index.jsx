@@ -62,7 +62,6 @@ export default function Pool() {
           getTotalBonusInPool(),
         ]);
 
-
       setStakerBalance({
         staked: stakedByUser,
         bonus: stakerBonus,
@@ -92,11 +91,12 @@ export default function Pool() {
       const amountBN = ethers.utils.parseUnits(amount, 18);
       const tx = await withdraw(amountBN);
       await tx.wait();
-
+      toast.success(`Withdraw wXCR successfully`);
       fetchBalanceInfo();
     } catch (error) {
+      const txError = parseMetamaskError(error);
       setIsLoading(false);
-      console.log('error', error);
+      toast.error(txError.context);
     }
   };
 
@@ -108,8 +108,9 @@ export default function Pool() {
       toast.success(`Claim wXCR successfully`);
       fetchBalanceInfo();
     } catch (error) {
+      const txError = parseMetamaskError(error);
       setIsLoading(false);
-      console.log('error', error);
+      toast.error(txError.context);
     }
   };
 
@@ -173,7 +174,12 @@ export default function Pool() {
               />
             </div>
             <div className={styles['section-item']}>
-              <Information title="Total interest" value={`${poolBalance.bonus} ${account.currency}`} icon={bonusIcon} isInterest={true} />
+              <Information
+                title="Total interest"
+                value={`${poolBalance.bonus} ${account.currency}`}
+                icon={bonusIcon}
+                isInterest={true}
+              />
             </div>
           </div>
           {/* <div className={styles.row}>
