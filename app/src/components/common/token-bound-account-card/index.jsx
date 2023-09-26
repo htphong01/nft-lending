@@ -1,17 +1,22 @@
 /* eslint-disable react/prop-types */
 import axios from 'axios';
 import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useOnClickOutside } from 'usehooks-ts';
 import ReactLoading from 'react-loading';
 import { ethers } from 'ethers';
-import { getTokenBoundAccount, ERC721Contract, ERC20Contract, getBalance } from '@src/utils';
+import { getTokenBoundAccount, ERC721Contract, ERC20Contract, getBalance, sliceHeadTail, provider } from '@src/utils';
 import { WEAPON_NFT_ADDRESS, GOLD_ERC20_ADDRESS, SILVER_ERC20_ADDRESS } from '@src/constants';
+import { ERC721_WEAPON_ABI } from '@src/abi/erc721';
 
 import styles from './styles.module.scss';
+
+const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
 export default function TokenBoundAccountCard({ item, onClose }) {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(1);
+  const [tbaAddress, setTbaAddress] = useState('');
   const [assets, setAssets] = useState({
     nfts: [],
     tokens: [],
@@ -21,9 +26,9 @@ export default function TokenBoundAccountCard({ item, onClose }) {
 
   const handleFetchAssets = async () => {
     try {
-      const tbaAddress = await getTokenBoundAccount({ tokenId: item.edition });
-      const listNFTs = [1, 2, 3, 4];
-      const erc721 = ERC721Contract(WEAPON_NFT_ADDRESS);
+      const currentTbaAddress = await getTokenBoundAccount(item.tokenBoundAccount);
+      const erc721 = ERC721Contract(WEAPON_NFT_ADDRESS, provider, ERC721_WEAPON_ABI);
+      const listNFTs = await erc721.tokensOfOwner(currentTbaAddress);
       const tokenURIs = await Promise.all(listNFTs.map((tokenId) => erc721.tokenURI(tokenId)));
       const nftData = (await Promise.all(tokenURIs.map((uri) => axios.get(uri)))).map((res) => res.data);
 
@@ -31,9 +36,9 @@ export default function TokenBoundAccountCard({ item, onClose }) {
       const silverContract = ERC20Contract(SILVER_ERC20_ADDRESS);
 
       const [wXCR, GOLD, SILVER] = await Promise.all([
-        getBalance(tbaAddress),
-        goldContract.balanceOf(tbaAddress),
-        silverContract.balanceOf(tbaAddress),
+        getBalance(currentTbaAddress),
+        goldContract.balanceOf(currentTbaAddress),
+        silverContract.balanceOf(currentTbaAddress),
       ]);
 
       const tokensData = [
@@ -52,7 +57,7 @@ export default function TokenBoundAccountCard({ item, onClose }) {
       ];
 
       setAssets({ tokens: tokensData, nfts: nftData });
-      console.log({ tokens: tokensData, nfts: nftData });
+      setTbaAddress(currentTbaAddress);
 
       setIsLoading(false);
     } catch (error) {
@@ -76,8 +81,13 @@ export default function TokenBoundAccountCard({ item, onClose }) {
       )}
       <div className={styles.form} ref={ref}>
         <div className={styles.left}>
-          <div className={styles['item-name']}>{item.name}</div>
-          <img src={item.image} />
+          <div className={styles['item-name']}>
+            {item.metadata.name}{' '}
+            <Link to={`${CVC_SCAN}/address/${tbaAddress}`} target="_blank">
+              ({sliceHeadTail(tbaAddress, 5)})
+            </Link>
+          </div>
+          <img src={item.metadata.image} />
         </div>
         <div className={styles.right}>
           <div className={styles['tab-list']}>

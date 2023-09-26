@@ -5,8 +5,12 @@ import { ERC721_ABI } from '@src/abi';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
 
-export const ERC721Contract = (contractAddress = NFT_CONTRACT_ADDRESS, providerOrSigner = provider) => {
-  return new ethers.Contract(contractAddress, ERC721_ABI, providerOrSigner);
+export const ERC721Contract = (
+  contractAddress = NFT_CONTRACT_ADDRESS,
+  providerOrSigner = provider,
+  ABI = ERC721_ABI
+) => {
+  return new ethers.Contract(contractAddress, ABI, providerOrSigner);
 };
 
 export const getNFTs = async (address, contractAddress = NFT_CONTRACT_ADDRESS) => {

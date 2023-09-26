@@ -57,12 +57,10 @@ export default function ERC6551Form({ onClose }) {
       const tx = await mintERC721(account.address, DEFAULT_ERC6551_BASE_URI, TOKEN_BOUND_ACCOUNT_NFT_ADDRESS);
       const receipt = await tx.wait();
       const args = receipt.events.find((ev) => ev.event === 'Transfer').args;
-      const tokenId = args[2];
+      const tokenId = parseInt(args[2], 16);
       const result = await createTokenBoundAccount(tokenId);
-      console.log('result', result);
       setData(result);
       setIsLoading(false);
-      toast.success('hello world');
     } catch (error) {
       console.log(error);
       setIsLoading(false);
@@ -85,6 +83,7 @@ export default function ERC6551Form({ onClose }) {
       }
       await createTokenBoundAccountApi({ ...data, owner: account.address });
       toast.success('import ERC-6551 Account successfully');
+      onClose(true);
     } catch (error) {
       console.log(error);
       setIsLoading(false);
