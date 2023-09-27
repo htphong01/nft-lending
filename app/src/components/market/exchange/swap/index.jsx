@@ -61,6 +61,16 @@ export default function Swap() {
         const tx = await burnERC20(inputData.pay);
         await tx.wait();
       }
+
+      setFromToken({
+        ...fromToken,
+        balance: fromToken.balance - inputData.pay,
+      });
+
+      setToToken({
+        ...toToken,
+        balance: Number(toToken.balance) + Number(inputData.pay),
+      });
       toast.success('Swap successfully');
       setIsLoading(false);
     } catch (error) {
