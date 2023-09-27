@@ -75,16 +75,17 @@ export default function ERC6551Form({ onClose }) {
     e.preventDefault();
     setIsLoading(true);
     try {
-      setIsLoading(false);
       const erc721Contract = await ERC721Contract(data.tokenAddress);
       const isOwnerOfTokenId =
         (await erc721Contract.ownerOf(data.tokenId)).toLowerCase() === account.address.toLowerCase();
       if (!isOwnerOfTokenId) {
         toast.error(`You are not owner of the Token ID: ${data.tokenId}`);
+        setIsLoading(false);
         return;
       }
       await createTokenBoundAccountApi({ ...data, owner: account.address });
       toast.success('import ERC-6551 Account successfully');
+      setIsLoading(false);
       onClose(true);
     } catch (error) {
       console.log(error);
