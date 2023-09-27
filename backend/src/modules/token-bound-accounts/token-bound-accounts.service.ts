@@ -59,9 +59,8 @@ export class TokenBoundAccountsService {
     }
 
     const encodedTokenBoundAccount = ethers.solidityPacked(
-      ['address', 'address', 'address', 'address', 'uint256', 'uint256'],
+      ['address', 'address', 'address', 'uint256', 'uint256'],
       [
-        createTokenBoundAccountDto.owner,
         createTokenBoundAccountDto.registryAddress,
         createTokenBoundAccountDto.implementationAddress,
         createTokenBoundAccountDto.tokenAddress,
@@ -74,7 +73,7 @@ export class TokenBoundAccountsService {
     this.tokenBoundAccount.create(tokenBoundAccountHash, {
       hash: tokenBoundAccountHash,
       ...createTokenBoundAccountDto,
-      isAvaliable: true,
+      isAvailable: true,
     });
   }
 
@@ -112,7 +111,7 @@ export class TokenBoundAccountsService {
         if (owner.toLowerCase() !== erc6551List[i].owner.toLowerCase()) {
           this.tokenBoundAccount.update(erc6551List[i].hash, {
             owner: owner.toLowerCase(),
-            isAvaliable: true,
+            isAvailable: true,
           });
         }
       }

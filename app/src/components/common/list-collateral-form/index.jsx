@@ -119,8 +119,9 @@ export default function ListCollateralForm({ item, onClose, type }) {
           name: item.name,
           image: item.image,
           collection: item.collection,
-          isTokenBoundAccount: !!item.isTokenBoundAccount
         };
+
+        if (item.hash) order.metadata.hash = item.hash;
 
         if (!(await checkApproved(item.edition, LOAN_ADDRESS, item.collectionAddress))) {
           const tx = await approveERC721(item.edition, LOAN_ADDRESS, item.collectionAddress);

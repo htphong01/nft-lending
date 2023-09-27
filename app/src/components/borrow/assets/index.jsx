@@ -60,7 +60,7 @@ export default function Assets() {
             collectionName: erc721.name(),
             collectionSymbol: erc721.symbol(),
             isAvailable: true,
-            metadata: { isTokenBoundAccount: true, edition: data[i].tokenId },
+            metadata: { isTokenBoundAccount: true, edition: data[i].tokenId, hash: data[i].hash },
             owner: data[i].owner,
             tokenId: data[i].tokenId,
             tokenURI: '',
