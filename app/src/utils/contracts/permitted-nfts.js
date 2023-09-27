@@ -5,8 +5,13 @@ import { ethers } from 'ethers';
 const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
 const signer = provider.getSigner();
 
-export const PermittedNFTsContract = (address = PERMITTED_NFTS_ADDRESS, signerOrProvider = provider) => {
-  return new ethers.Contract(address, PERMITTED_NFTS_ABI, signerOrProvider);
+export const PermittedNFTsContract = (signerOrProvider = provider) => {
+  return new ethers.Contract(PERMITTED_NFTS_ADDRESS, PERMITTED_NFTS_ABI, signerOrProvider);
+};
+
+export const getNFTPermit = (address) => {
+  const contract = PermittedNFTsContract();
+  return contract.getNFTPermit(address);
 };
 
 export const setNFTPermit = (nftContract, isPermitted) => {

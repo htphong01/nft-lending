@@ -9,6 +9,7 @@ import { DacsModule } from './modules/dacs/dacs.module';
 import { LendingPoolModule } from './modules/lending-pool/lending-pool.module';
 import { SchedulesModule } from './modules/schedules/schedules.module';
 import { TokenBoundAccountsModule } from './modules/token-bound-accounts/token-bound-accounts.module';
+import { PermittedNFTsModule } from './modules/permitted-nfts/permitted-nfts.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TokenBoundAccountsModule } from './modules/token-bound-accounts/token-b
     LendingPoolModule,
     SchedulesModule,
     TokenBoundAccountsModule,
+    PermittedNFTsModule,
   ],
   providers: [ConnectionsModule],
 })

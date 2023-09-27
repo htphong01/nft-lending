@@ -36,7 +36,7 @@ export default function ERC6551Form({ onClose }) {
     // eslint-disable-next-line no-unused-vars
     const { account, ...newData } = {
       ...data,
-      [e.target.name]: e.target.value,
+      [e.target.name]: String(e.target.value).toLowerCase(),
     };
 
     if (!Object.values(newData).includes('')) {
@@ -84,7 +84,7 @@ export default function ERC6551Form({ onClose }) {
         return;
       }
       await createTokenBoundAccountApi({ ...data, owner: account.address });
-      toast.success('import ERC-6551 Account successfully');
+      toast.success('Import ERC-6551 Account successfully');
       setIsLoading(false);
       onClose(true);
     } catch (error) {

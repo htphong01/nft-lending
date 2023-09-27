@@ -23,6 +23,9 @@ export const Environment = {
   // Web3 host
   NETWORK_RPC_URL:
     process.env.NETWORK_RPC_URL || 'https://rpc-kura.cross.technology/',
+  PERMITTED_NFTS_ADDRESS:
+    process.env.PERMITTED_NFTS_ADDRESS ||
+    '0xD17Beddb48e6D29A8798845FCCa341566669db13',
   WXCR_ADDRESS:
     process.env.WXCR_ADDRESS || '0x3b3f35c81488c49b370079fd05cfa917c83a38a9',
   COLLECTION_ADDRESS:

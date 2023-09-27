@@ -1,19 +1,37 @@
 .table {
   margin-top: 24px;
+  margin-bottom: 60px;
   background-color: #221e37;
 
   .heading {
-    padding: 24px;
+    padding: 0 24px;
+    height: 60px;
     font-size: 16px;
     font-weight: 600;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     box-shadow: 1px 1px 0 #000;
+
+    > div > button {
+      outline: none;
+      background: transparent;
+      border: 1px solid #fff;
+      padding: 4px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      margin-left: 12px;
+
+      &:hover {
+        background: #7d5fd7;
+        border-color: #7d5fd7;
+      }
+    }
   }
 
   .table-list {
     display: grid;
-    grid-template-columns: 1fr 3fr 3fr 3fr 3fr 3fr;
+    grid-template-columns: 1fr 3fr 3fr 3fr 3fr 2fr;
     grid-template-rows: auto;
     overflow-x: auto;
     box-shadow: 1px 0 0 #000;
@@ -37,6 +55,10 @@
         }
       }
 
+      > input {
+        cursor: pointer;
+      }
+
       button {
         outline: none;
         background: transparent;
@@ -44,6 +66,11 @@
         padding: 4px 12px;
         border-radius: 20px;
         cursor: pointer;
+
+        &:hover {
+          background: #7d5fd7;
+          border-color: #7d5fd7;
+        }
       }
     }
   }
