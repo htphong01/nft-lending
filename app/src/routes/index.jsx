@@ -14,7 +14,8 @@ import MakeOfferPage from '@src/pages/assets/make-offer';
 import LendingPoolPage from '@src/pages/lending-pool';
 import LendingPoolRequestsPage from '@src/pages/lending-pool/requests';
 import ExchangePage from '@src/pages/market/exchange';
-import { BORROW_TABS, LEND_TABS, LENDING_POOL_TABS, PROFILE_TABS } from '@src/constants';
+import AdminCollectionsPage from '@src/pages/admin/collections';
+import { BORROW_TABS, LEND_TABS, LENDING_POOL_TABS, PROFILE_TABS, ADMIN_TABS } from '@src/constants';
 
 export const userRoutes = [
   {
@@ -119,7 +120,17 @@ export const userRoutes = [
       {
         path: '/exchange',
         element: <ExchangePage />,
-      }
+      },
+      {
+        path: '/admin',
+        element: <HeaderBanner tabs={ADMIN_TABS} />,
+        children: [
+          {
+            path: '/admin/collections',
+            element: <AdminCollectionsPage />,
+          },
+        ],
+      },
     ],
   },
 ];

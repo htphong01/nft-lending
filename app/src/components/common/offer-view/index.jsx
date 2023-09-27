@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import ReactLoading from 'react-loading';
 import { Icon } from '@iconify/react';
-import { calculateRepayment, sliceAddress, calculateRealPrice } from '@src/utils';
+import { calculateRepayment, sliceAddress } from '@src/utils';
 import { getOrderByHash } from '@src/api/order.api';
 import styles from './styles.module.scss';
 
@@ -106,12 +106,6 @@ export default function OfferView({ item, onClose, action }) {
                 <div className={styles.label}>Float price: </div>
                 <div className={styles.value}>
                   {data.floorPrice} {currency}
-                </div>
-              </div>
-              <div className={styles.info}>
-                <div className={styles.label}>Oracle price: </div>
-                <div className={styles.value}>
-                  {calculateRealPrice(data.offer * 1.2, rate, 1e7)} {currency}
                 </div>
               </div>
               {action && (

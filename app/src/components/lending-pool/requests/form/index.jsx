@@ -11,7 +11,6 @@ import {
   getStakedByUser,
   calculateRepayment,
   sliceAddress,
-  calculateRealPrice,
   convertOfferDataToSign,
   generateOfferSignature,
   liquidateLoan,
@@ -177,12 +176,6 @@ export default function Form({ item, onClose, type }) {
                   <div className={styles.label}>Float price: </div>
                   <div className={styles.value}>
                     {item.floorPrice} {account.currency}
-                  </div>
-                </div>
-                <div className={styles.info}>
-                  <div className={styles.label}>Oracle price: </div>
-                  <div className={styles.value}>
-                    {calculateRealPrice(item.offer * 1.2, rate, 1e7)} {account.currency}
                   </div>
                 </div>
               </div>

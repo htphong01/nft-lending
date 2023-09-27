@@ -13,8 +13,6 @@ import {
   generateOrderSignature,
   calculateAPR,
   calculateRepayment,
-  calculateRealPrice,
-  getRandomNumber,
   checkApproved,
   approveERC721,
   parseMetamaskError,
@@ -25,12 +23,10 @@ import styles from './styles.module.scss';
 
 export default function ListCollateralForm({ item, onClose, type }) {
   const account = useSelector((state) => state.account);
-  const rate = useSelector((state) => state.rate.rate);
 
   const ref = useRef(null);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [randomPrice, _] = useState(getRandomNumber(10, 30));
   const [data, setData] = useState({
     currency: account.currency,
     offer: 0,
@@ -174,9 +170,6 @@ export default function ListCollateralForm({ item, onClose, type }) {
               <Icon icon="uil:edit" />
             </Link>
           )}
-        </div>
-        <div className={styles.title}>
-          Real price: {calculateRealPrice(randomPrice * 1.2, rate, 1e7)} {data.currency}
         </div>
         <div className={styles['sub-title']}>Proposed loan agreement</div>
         <div className={styles.section}>
