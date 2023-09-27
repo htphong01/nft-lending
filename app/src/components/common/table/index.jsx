@@ -25,7 +25,7 @@ export default function Table({ title, data, action, type = '' }) {
       {data && data.length > 0 ? (
         data.map((item, index) => (
           <div className={styles['table-list']} key={index}>
-            <div className={styles['table-list-item']}>{item.metadata.collection}</div>
+            <div className={styles['table-list-item']}>{item.metadata.collection || item.metadata.name}</div>
             <div className={styles['table-list-item']}>{item.metadata.name}</div>
             <div className={styles['table-list-item']}>
               {type === 'HISTORY'
