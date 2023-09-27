@@ -6,7 +6,7 @@ import ReactLoading from 'react-loading';
 import { Icon } from '@iconify/react';
 import { Link } from 'react-router-dom';
 import { getOffersByOrder } from '@src/api/offer.api';
-import { calculateRepayment, sliceAddress, calculateRealPrice } from '@src/utils';
+import { calculateRepayment, sliceAddress } from '@src/utils';
 import Table from './table';
 import Form from './form';
 import styles from './styles.module.scss';
@@ -40,15 +40,6 @@ export default function MakeOffer({ item }) {
     <div className={styles.container}>
       <div className={styles['make-offer']}>
         <div className={`${styles.section} ${styles['section-image']}`}>
-          <div>
-            <div className={styles['real-price']}>
-              Real price:{' '}
-              <b>
-                {calculateRealPrice(item.offer * 1.2, rate, 1e7)} {currency}
-              </b>
-            </div>
-            <div className={styles['real-price-source']}>Fetch price from Oracle</div>
-          </div>
           <img src={item.metadata.image} alt={item.metadata.name} />
         </div>
         <div className={styles.section}>

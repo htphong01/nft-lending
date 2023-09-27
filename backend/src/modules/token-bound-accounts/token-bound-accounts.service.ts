@@ -74,6 +74,7 @@ export class TokenBoundAccountsService {
       hash: tokenBoundAccountHash,
       ...createTokenBoundAccountDto,
       isAvailable: true,
+      isApproved: false,
     });
   }
 

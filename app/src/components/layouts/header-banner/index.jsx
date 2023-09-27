@@ -42,9 +42,9 @@ export default function HeaderBanner({ title = '', description = '', tabs = [], 
       <Toaster position="top-center" reverseOrder={false} />
       <div className={styles.header}>
         <div className={styles.left}>
-          {pathname.startsWith('/profile') ? (
+          {pathname.startsWith('/profile') || pathname.startsWith('/admin') ? (
             <>
-              <h1>Account</h1>
+              <h1>{pathname.startsWith('/admin') ? 'Administrator' : 'Account'}</h1>
               <div className={styles.address}>{account.address}</div>
               <div className={styles.social}>
                 <Link

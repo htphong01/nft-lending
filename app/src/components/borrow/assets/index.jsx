@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import ReactLoading from 'react-loading';
 import { useSelector } from 'react-redux';
 import { getNfts } from '@src/api/nfts.api';
-import { getTokenBoundAccountByOwner } from '@src/api/token-bound-account.api';
+import { getTokenBoundAccounts } from '@src/api/token-bound-account.api';
 import Card from '@src/components/common/card';
 import ListCollateralForm from '@src/components/common/list-collateral-form';
 import ERC6551Form from '@src/components/common/erc-6551-form';
@@ -49,7 +49,7 @@ export default function Assets() {
 
   const fetchTokenBoundAccount = async () => {
     if (account.address) {
-      const { data } = await getTokenBoundAccountByOwner(account.address);
+      const { data } = await getTokenBoundAccounts({ owner: account.address, isAvailable: true });
       const erc6551Accounts = [];
       for (let i = 0; i < data.length; i++) {
         const erc721 = ERC721Contract(data[i].tokenAddress);
