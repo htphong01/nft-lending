@@ -3,13 +3,35 @@
   margin-bottom: 60px;
 
   .heading {
-    height: 54px;
-    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     background-color: #221e37;
     box-shadow: 1px 1px 0 #000;
-    line-height: 54px;
     margin-bottom: 8px;
-    font-weight: bold;
+    padding: 0 12px;
+
+    > span {
+      height: 54px;
+      line-height: 54px;
+      font-weight: bold;
+    }
+
+    button {
+      outline: none;
+      border: none;
+      background-color: rgb(146, 108, 227);
+      border-radius: 8px;
+      font-size: 12px;
+      letter-spacing: 0.05px;
+      padding: 6px 16px;
+      cursor: pointer;
+      font-weight: bold;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
   }
 
   .list-nfts {

@@ -20,7 +20,7 @@ import {
   parseMetamaskError,
   acceptOfferLendingPool,
 } from '@src/utils';
-import { COLLATERAL_FORM_TYPE, NFT_CONTRACT_ADDRESS, WXCR_ADDRESS, ONE_DAY } from '@src/constants';
+import { COLLATERAL_FORM_TYPE, WXCR_ADDRESS, LOAN_ADDRESS, ONE_DAY } from '@src/constants';
 import styles from './styles.module.scss';
 
 export default function ListCollateralForm({ item, onClose, type }) {
@@ -101,11 +101,12 @@ export default function ListCollateralForm({ item, onClose, type }) {
       } else {
         if (Object.values(data).includes(0)) {
           toast.error('Please fill required information!');
+          setIsLoading(false);
           return;
         }
         const order = {
           creator: account.address,
-          nftAddress: NFT_CONTRACT_ADDRESS,
+          nftAddress: item.collectionAddress,
           nftTokenId: item.edition,
           offer: data.offer,
           duration: data.duration,
@@ -119,8 +120,11 @@ export default function ListCollateralForm({ item, onClose, type }) {
           image: item.image,
           collection: item.collection,
         };
-        if (!(await checkApproved(item.edition))) {
-          const tx = await approveERC721(item.edition);
+
+        if (item.hash) order.metadata.hash = item.hash;
+
+        if (!(await checkApproved(item.edition, LOAN_ADDRESS, item.collectionAddress))) {
+          const tx = await approveERC721(item.edition, LOAN_ADDRESS, item.collectionAddress);
           await tx.wait();
         }
 
