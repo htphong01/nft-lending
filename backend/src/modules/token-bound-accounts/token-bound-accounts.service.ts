@@ -10,13 +10,17 @@ import config from 'src/config';
 import { CreateTokenBoundAccountDto } from './dto/create-token-bound-account.dto';
 import { UpdateTokenBoundAccountDto } from './dto/update-token-bound-account.dto';
 import { TokenBoundAccount } from './reposities/token-bound-account.reposity';
+import { PermittedNFTsService } from '../permitted-nfts/permitted-nfts.service';
 import * as ERC721_ABI from './abi/ERC721.json';
 
 @Injectable()
 export class TokenBoundAccountsService {
   private rpcProvider: JsonRpcProvider;
 
-  constructor(private readonly tokenBoundAccount: TokenBoundAccount) {
+  constructor(
+    private readonly tokenBoundAccount: TokenBoundAccount,
+    private readonly permittedNFTService: PermittedNFTsService,
+  ) {
     this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
   }
 
@@ -74,8 +78,18 @@ export class TokenBoundAccountsService {
       hash: tokenBoundAccountHash,
       ...createTokenBoundAccountDto,
       isAvailable: true,
-      isApproved: false,
     });
+
+    const isPermittedNFT = await this.permittedNFTService.findById(
+      createTokenBoundAccountDto.tokenAddress,
+    );
+    if (!isPermittedNFT) {
+      this.permittedNFTService.create({
+        collection: createTokenBoundAccountDto.tokenAddress,
+        from: createTokenBoundAccountDto.owner,
+        usage: 'ERC-6551',
+      });
+    }
   }
 
   async findAll(conditions: Record<string, any> = {}) {

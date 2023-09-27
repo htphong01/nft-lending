@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import ReactLoading from 'react-loading';
 import { ethers } from 'ethers';
+import { getNFTPermit } from '@src/utils';
 import { createOrder } from '@src/api/order.api';
 import { getVote } from '@src/api/vote.api';
 import {
@@ -27,6 +28,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
   const ref = useRef(null);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isPermittedNFT, setIsPermittedNFT] = useState(false);
   const [data, setData] = useState({
     currency: account.currency,
     offer: 0,
@@ -151,6 +153,8 @@ export default function ListCollateralForm({ item, onClose, type }) {
         apr: item.rate,
         lender: item.lender,
       });
+    } else {
+      getNFTPermit(item.collectionAddress).then(setIsPermittedNFT);
     }
   }, []);
 
@@ -172,6 +176,9 @@ export default function ListCollateralForm({ item, onClose, type }) {
           )}
         </div>
         <div className={styles['sub-title']}>Proposed loan agreement</div>
+        {!isPermittedNFT && (
+          <div className={styles['error-text']}>This collection has not been permitted on this system.</div>
+        )}
         <div className={styles.section}>
           <div className={styles.head}>
             Amount:{' '}
@@ -188,7 +195,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
                 name="offer"
                 onChange={handleChange}
                 checked={true}
-                readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
+                readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
               />
             </label>
           </div>
@@ -205,7 +212,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
                 value={data.duration}
                 name="duration"
                 onChange={handleChange}
-                readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
+                readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
               />
               <span>days</span>
             </label>
@@ -227,7 +234,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
                 value={data.repayment}
                 name="repayment"
                 onChange={handleChange}
-                readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
+                readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
               />
               <input
                 className={styles['apr-input']}
@@ -235,7 +242,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
                 value={data.apr}
                 name="apr"
                 onChange={handleChange}
-                readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
+                readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
               />
               <div className={styles['percent-label']}>%</div>
             </label>
@@ -303,7 +310,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
               Get loan
             </button>
           ) : (
-            <button type="submit" disabled={type === COLLATERAL_FORM_TYPE.VIEW}>
+            <button type="submit" disabled={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}>
               {type === COLLATERAL_FORM_TYPE.VIEW ? 'Unlist' : 'List'} Collateral
             </button>
           )}
