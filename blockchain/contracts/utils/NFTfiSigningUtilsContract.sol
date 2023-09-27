@@ -79,10 +79,6 @@ contract NFTfiSigningUtilsContract {
      * @param _loanId - The unique identifier for the loan to be renegotiated
      * @param _newLoanDuration - The new amount of time (measured in seconds) that can elapse before the lender can
      * liquidate the loan and seize the underlying collateral NFT.
-     * @param _newMaximumRepaymentAmount - The new maximum amount of money that the borrower would be required to
-     * retrieve their collateral, measured in the smallest units of the ERC20 currency used for the loan. The
-     * borrower will always have to pay this amount to retrieve their collateral, regardless of whether they repay
-     * early.
      * @param _renegotiationFee Agreed upon fee in ether that borrower pays for the lender for the renegitiation
      * @param _signature - The signature structure containing:
      * - signer: The address of the signer. The borrower for `acceptOffer` the lender for `acceptListing`.
@@ -111,7 +107,6 @@ contract NFTfiSigningUtilsContract {
     function isValidLenderRenegotiationSignature(
         bytes32 _loanId,
         uint32 _newLoanDuration,
-        uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,
         LoanData.Signature memory _signature,
         address _loanContract
@@ -120,7 +115,6 @@ contract NFTfiSigningUtilsContract {
             NFTfiSigningUtils.isValidLenderRenegotiationSignature(
                 _loanId,
                 _newLoanDuration,
-                _newMaximumRepaymentAmount,
                 _renegotiationFee,
                 _signature,
                 _loanContract

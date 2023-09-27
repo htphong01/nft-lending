@@ -242,10 +242,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param loanId - The unique identifier for the loan to be renegotiated
      * @param newLoanDuration - The new amount of time (measured in seconds) that can elapse before the lender can
      * liquidate the loan and seize the underlying collateral NFT.
-     * @param newMaximumRepaymentAmount - The new maximum amount of money that the borrower would be required to
-     * retrieve their collateral, measured in the smallest units of the ERC20 currency used for the loan. The
-     * borrower will always have to pay this amount to retrieve their collateral, regardless of whether they repay
-     * early.
      * @param renegotiationFee Agreed upon fee in loan denomination that borrower pays for the lender for the
      * renegotiation, has to be paid with an ERC20 transfer erc20Denomination token, uses transfer from,
      * frontend will have to propmt an erc20 approve for this from the borrower to the lender
@@ -256,7 +252,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         address indexed borrower,
         address indexed lender,
         uint32 newLoanDuration,
-        uint256 newMaximumRepaymentAmount,
         uint256 renegotiationFee,
         uint256 renegotiationAdminFee
     );
@@ -410,10 +405,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param _loanId - The unique identifier for the loan to be renegotiated
      * @param _newLoanDuration - The new amount of time (measured in seconds) that can elapse before the lender can
      * liquidate the loan and seize the underlying collateral NFT.
-     * @param _newMaximumRepaymentAmount - The new maximum amount of money that the borrower would be required to
-     * retrieve their collateral, measured in the smallest units of the ERC20 currency used for the loan. The
-     * borrower will always have to pay this amount to retrieve their collateral, regardless of whether they repay
-     * early.
      * @param _renegotiationFee Agreed upon fee in ether that borrower pays for the lender for the renegitiation
      * @param _lenderNonce - The nonce referred to here is not the same as an Ethereum account's nonce. We are
      * referring instead to nonces that are used by both the lender and the borrower when they are first signing
@@ -438,7 +429,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     function renegotiateLoan(
         bytes32 _loanId,
         uint32 _newLoanDuration,
-        uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,
         uint256 _lenderNonce,
         uint256 _expiry,
@@ -447,7 +437,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         _renegotiateLoan(
             _loanId,
             _newLoanDuration,
-            _newMaximumRepaymentAmount,
             _renegotiationFee,
             _lenderNonce,
             _expiry,
@@ -613,10 +602,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param _loanId - The unique identifier for the loan to be renegotiated
      * @param _newLoanDuration - The new amount of time (measured in seconds) that can elapse before the lender can
      * liquidate the loan and seize the underlying collateral NFT.
-     * @param _newMaximumRepaymentAmount - The new maximum amount of money that the borrower would be required to
-     * retrieve their collateral, measured in the smallest units of the ERC20 currency used for the loan. The
-     * borrower will always have to pay this amount to retrieve their collateral, regardless of whether they repay
-     * early.
      * @param _renegotiationFee Agreed upon fee in loan denomination that borrower pays for the lender and
      * the admin for the renegotiation, has to be paid with an ERC20 transfer erc20Denomination token,
      * uses transfer from, frontend will have to propmt an erc20 approve for this from the borrower to the lender,
@@ -635,7 +620,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * following combination of parameters:
      * - _loanId
      * - _newLoanDuration
-     * - _newMaximumRepaymentAmount
      * - _lender
      * - _expiry
      * - address of this contract
@@ -646,7 +630,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     function _renegotiateLoan(
         bytes32 _loanId,
         uint32 _newLoanDuration,
-        uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,
         uint256 _lenderNonce,
         uint256 _expiry,
@@ -658,7 +641,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
             loan,
             _loanId,
             _newLoanDuration,
-            _newMaximumRepaymentAmount,
             _lenderNonce
         );
 
@@ -668,7 +650,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
             NFTfiSigningUtils.isValidLenderRenegotiationSignature(
                 _loanId,
                 _newLoanDuration,
-                _newMaximumRepaymentAmount,
                 _renegotiationFee,
                 Signature({signer: lender, nonce: _lenderNonce, expiry: _expiry, signature: _lenderSignature})
             ),
@@ -698,14 +679,12 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         }
 
         loan.duration = _newLoanDuration;
-        loan.maximumRepaymentAmount = _newMaximumRepaymentAmount;
 
         emit LoanRenegotiated(
             _loanId,
             borrower,
             lender,
             _newLoanDuration,
-            _newMaximumRepaymentAmount,
             _renegotiationFee,
             renegotiationAdminFee
         );

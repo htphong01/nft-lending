@@ -60,10 +60,6 @@ library LoanChecksAndCalculations {
      * @param _loanId - The unique identifier for the loan to be renegotiated
      * @param _newLoanDuration - The new amount of time (measured in seconds) that can elapse before the lender can
      * liquidate the loan and seize the underlying collateral NFT.
-     * @param _newMaximumRepaymentAmount - The new maximum amount of money that the borrower would be required to
-     * retrieve their collateral, measured in the smallest units of the ERC20 currency used for the loan. The
-     * borrower will always have to pay this amount to retrieve their collateral, regardless of whether they repay
-     * early.
      * @param _lenderNonce - The nonce referred to here is not the same as an Ethereum account's nonce. We are
      * referring instead to nonces that are used by both the lender and the borrower when they are first signing
      * off-chain Loan orders. These nonces can be any uint256 value that the user has not previously used to sign an
@@ -79,7 +75,6 @@ library LoanChecksAndCalculations {
         LoanData.LoanTerms memory _loan,
         bytes32 _loanId,
         uint32 _newLoanDuration,
-        uint256 _newMaximumRepaymentAmount,
         uint256 _lenderNonce
     ) external view returns (address, address) {
         checkLoanIdValidity(_loanId);
@@ -90,8 +85,6 @@ library LoanChecksAndCalculations {
             "New duration exceeds maximum loan duration"
         );
         require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
-        require(_newMaximumRepaymentAmount >= _loan.principalAmount, "Negative interest rate loans are not allowed.");
-
         require(
             !IDirectLoanBase(address(this)).getWhetherNonceHasBeenUsedForUser(_loan.lender, _lenderNonce),
             "Lender nonce invalid"
