@@ -10,13 +10,17 @@ import config from 'src/config';
 import { CreateTokenBoundAccountDto } from './dto/create-token-bound-account.dto';
 import { UpdateTokenBoundAccountDto } from './dto/update-token-bound-account.dto';
 import { TokenBoundAccount } from './reposities/token-bound-account.reposity';
+import { PermittedNFTsService } from '../permitted-nfts/permitted-nfts.service';
 import * as ERC721_ABI from './abi/ERC721.json';
 
 @Injectable()
 export class TokenBoundAccountsService {
   private rpcProvider: JsonRpcProvider;
 
-  constructor(private readonly tokenBoundAccount: TokenBoundAccount) {
+  constructor(
+    private readonly tokenBoundAccount: TokenBoundAccount,
+    private readonly permittedNFTService: PermittedNFTsService,
+  ) {
     this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
   }
 
@@ -59,9 +63,8 @@ export class TokenBoundAccountsService {
     }
 
     const encodedTokenBoundAccount = ethers.solidityPacked(
-      ['address', 'address', 'address', 'address', 'uint256', 'uint256'],
+      ['address', 'address', 'address', 'uint256', 'uint256'],
       [
-        createTokenBoundAccountDto.owner,
         createTokenBoundAccountDto.registryAddress,
         createTokenBoundAccountDto.implementationAddress,
         createTokenBoundAccountDto.tokenAddress,
@@ -74,7 +77,19 @@ export class TokenBoundAccountsService {
     this.tokenBoundAccount.create(tokenBoundAccountHash, {
       hash: tokenBoundAccountHash,
       ...createTokenBoundAccountDto,
+      isAvailable: true,
     });
+
+    const isPermittedNFT = await this.permittedNFTService.findById(
+      createTokenBoundAccountDto.tokenAddress,
+    );
+    if (!isPermittedNFT) {
+      this.permittedNFTService.create({
+        collection: createTokenBoundAccountDto.tokenAddress,
+        from: createTokenBoundAccountDto.owner,
+        usage: 'ERC-6551',
+      });
+    }
   }
 
   async findAll(conditions: Record<string, any> = {}) {
@@ -111,6 +126,7 @@ export class TokenBoundAccountsService {
         if (owner.toLowerCase() !== erc6551List[i].owner.toLowerCase()) {
           this.tokenBoundAccount.update(erc6551List[i].hash, {
             owner: owner.toLowerCase(),
+            isAvailable: true,
           });
         }
       }

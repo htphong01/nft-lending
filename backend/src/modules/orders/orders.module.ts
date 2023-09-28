@@ -4,6 +4,7 @@ import { OrdersController } from './orders.controller';
 import { ConnectionsModule } from 'src/connections/connections.module';
 import { ReposityModule } from './reposities/reposity.module';
 import { NftsModule } from '../nfts/nfts.module';
+import { TokenBoundAccountsModule } from '../token-bound-accounts/token-bound-accounts.module';
 import { DacsModule } from '../dacs/dacs.module';
 import { LendingPoolModule } from '../lending-pool/lending-pool.module';
 
@@ -14,6 +15,7 @@ import { LendingPoolModule } from '../lending-pool/lending-pool.module';
     NftsModule,
     DacsModule,
     LendingPoolModule,
+    TokenBoundAccountsModule
   ],
   exports: [ReposityModule],
   controllers: [OrdersController],

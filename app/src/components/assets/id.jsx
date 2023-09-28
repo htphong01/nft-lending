@@ -8,7 +8,7 @@ import MakeOffer from './make-offer';
 
 export default function Assets() {
   const { hash } = useParams();
-  const nagivate = useNavigate();
+  const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(true);
   const [order, setOrder] = useState();
@@ -17,7 +17,7 @@ export default function Assets() {
     if (hash) {
       getOrderByHash(hash)
         .then(({ data }) => {
-          if (!data || data.lender === 'pool' ||data.status !== OrderStatus.OPENING ) nagivate('/lend/assets');
+          if (!data || data.lender === 'pool' ||data.status !== OrderStatus.OPENING ) navigate('/lend/assets');
           setOrder(data);
           setIsLoading(false);
         })

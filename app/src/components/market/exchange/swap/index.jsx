@@ -61,6 +61,16 @@ export default function Swap() {
         const tx = await burnERC20(inputData.pay);
         await tx.wait();
       }
+
+      setFromToken({
+        ...fromToken,
+        balance: fromToken.balance - inputData.pay,
+      });
+
+      setToToken({
+        ...toToken,
+        balance: Number(toToken.balance) + Number(inputData.pay),
+      });
       toast.success('Swap successfully');
       setIsLoading(false);
     } catch (error) {
@@ -75,14 +85,20 @@ export default function Swap() {
     setIsLoading(true);
     getNativeBalance(account.address)
       .then((xcr) => {
-        setFromToken({ ...fromToken, balance: xcr });
+        if (fromToken.symbol === 'XCR') {
+          setFromToken({ ...fromToken, balance: xcr });
+          setToToken({ ...toToken, balance: account.balance });
+        } else {
+          setToToken({ ...toToken, balance: xcr });
+          setFromToken({ ...fromToken, balance: account.balance });
+        }
         setIsLoading(false);
       })
       .catch((err) => {
         console.log('init', err);
         setIsLoading(false);
       });
-  }, []);
+  }, [account]);
 
   return (
     <div className={styles['swap-container']}>

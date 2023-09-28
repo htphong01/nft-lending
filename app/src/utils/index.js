@@ -8,3 +8,4 @@ export * from './contracts/erc721';
 export * from './contracts/lending-pool';
 export * from './contracts/loan';
 export * from './contracts/token-bound-account';
+export * from './contracts/permitted-nfts';

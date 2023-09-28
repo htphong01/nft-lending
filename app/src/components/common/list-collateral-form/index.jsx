@@ -7,30 +7,28 @@ import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import ReactLoading from 'react-loading';
 import { ethers } from 'ethers';
+import { getNFTPermit } from '@src/utils';
 import { createOrder } from '@src/api/order.api';
 import { getVote } from '@src/api/vote.api';
 import {
   generateOrderSignature,
   calculateAPR,
   calculateRepayment,
-  calculateRealPrice,
-  getRandomNumber,
   checkApproved,
   approveERC721,
   parseMetamaskError,
   acceptOfferLendingPool,
 } from '@src/utils';
-import { COLLATERAL_FORM_TYPE, NFT_CONTRACT_ADDRESS, WXCR_ADDRESS, ONE_DAY } from '@src/constants';
+import { COLLATERAL_FORM_TYPE, WXCR_ADDRESS, LOAN_ADDRESS, ONE_DAY } from '@src/constants';
 import styles from './styles.module.scss';
 
 export default function ListCollateralForm({ item, onClose, type }) {
   const account = useSelector((state) => state.account);
-  const rate = useSelector((state) => state.rate.rate);
 
   const ref = useRef(null);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [randomPrice, _] = useState(getRandomNumber(10, 30));
+  const [isPermittedNFT, setIsPermittedNFT] = useState(true);
   const [data, setData] = useState({
     currency: account.currency,
     offer: 0,
@@ -101,11 +99,12 @@ export default function ListCollateralForm({ item, onClose, type }) {
       } else {
         if (Object.values(data).includes(0)) {
           toast.error('Please fill required information!');
+          setIsLoading(false);
           return;
         }
         const order = {
           creator: account.address,
-          nftAddress: NFT_CONTRACT_ADDRESS,
+          nftAddress: item.collectionAddress,
           nftTokenId: item.edition,
           offer: data.offer,
           duration: data.duration,
@@ -119,8 +118,11 @@ export default function ListCollateralForm({ item, onClose, type }) {
           image: item.image,
           collection: item.collection,
         };
-        if (!(await checkApproved(item.edition))) {
-          const tx = await approveERC721(item.edition);
+
+        if (item.hash) order.metadata.hash = item.hash;
+
+        if (!(await checkApproved(item.edition, LOAN_ADDRESS, item.collectionAddress))) {
+          const tx = await approveERC721(item.edition, LOAN_ADDRESS, item.collectionAddress);
           await tx.wait();
         }
 
@@ -151,6 +153,8 @@ export default function ListCollateralForm({ item, onClose, type }) {
         apr: item.rate,
         lender: item.lender,
       });
+    } else {
+      getNFTPermit(item.collectionAddress).then(setIsPermittedNFT);
     }
   }, []);
 
@@ -171,10 +175,10 @@ export default function ListCollateralForm({ item, onClose, type }) {
             </Link>
           )}
         </div>
-        <div className={styles.title}>
-          Real price: {calculateRealPrice(randomPrice * 1.2, rate, 1e7)} {data.currency}
-        </div>
         <div className={styles['sub-title']}>Proposed loan agreement</div>
+        {!isPermittedNFT && (
+          <div className={styles['error-text']}>This collection has not been permitted on this system.</div>
+        )}
         <div className={styles.section}>
           <div className={styles.head}>
             Amount:{' '}
@@ -191,7 +195,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
                 name="offer"
                 onChange={handleChange}
                 checked={true}
-                readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
+                readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
               />
             </label>
           </div>
@@ -208,7 +212,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
                 value={data.duration}
                 name="duration"
                 onChange={handleChange}
-                readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
+                readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
               />
               <span>days</span>
             </label>
@@ -230,7 +234,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
                 value={data.repayment}
                 name="repayment"
                 onChange={handleChange}
-                readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
+                readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
               />
               <input
                 className={styles['apr-input']}
@@ -238,7 +242,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
                 value={data.apr}
                 name="apr"
                 onChange={handleChange}
-                readOnly={type === COLLATERAL_FORM_TYPE.VIEW}
+                readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
               />
               <div className={styles['percent-label']}>%</div>
             </label>
@@ -306,7 +310,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
               Get loan
             </button>
           ) : (
-            <button type="submit" disabled={type === COLLATERAL_FORM_TYPE.VIEW}>
+            <button type="submit" disabled={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}>
               {type === COLLATERAL_FORM_TYPE.VIEW ? 'Unlist' : 'List'} Collateral
             </button>
           )}

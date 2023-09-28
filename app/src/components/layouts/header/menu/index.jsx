@@ -3,7 +3,7 @@ import styles from '../styles.module.scss';
 import { HEADER_MENU } from '@src/constants';
 import { useLocation } from 'react-router-dom';
 
-export default function Menu() {
+export default function Menu({ isAdmin }) {
   const { pathname } = useLocation();
 
   const isActiveLink = (menu) => {
@@ -43,6 +43,16 @@ export default function Menu() {
               </Link>
             </li>
           )
+        )}
+        {isAdmin && (
+          <li className={styles['menu-item']}>
+            <Link
+              to="/admin/collections"
+              className={`${styles['menu-item-link']} ${isActiveLink({ link: '/admin' }) ? styles.active : ''}`}
+            >
+              Admin
+            </Link>
+          </li>
         )}
       </ul>
     </div>

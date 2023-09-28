@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useState, useEffect } from 'react';
+import { PermittedNFTsContract } from '@src/utils';
 import Menu from './menu';
 import Account from './account';
 import styles from './styles.module.scss';
@@ -9,6 +10,7 @@ export default function Header({ handleAccountsChanged, requireSwitchNetwork }) 
   const account = useSelector((state) => state.account);
 
   const [darkBackground, setDarkBackground] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const changeBackground = () => {
     if (window.scrollY >= 10) {
@@ -41,12 +43,17 @@ export default function Header({ handleAccountsChanged, requireSwitchNetwork }) 
     return () => window.removeEventListener('scroll', changeBackground);
   });
 
+  useEffect(() => {
+    const permittedNFTsContract = PermittedNFTsContract();
+    permittedNFTsContract.owner().then((owner) => setIsAdmin(owner.toLowerCase() === account.address.toLowerCase()));
+  }, [account]);
+
   return (
     <div className={`${styles.header} ${darkBackground ? styles.dark : ''}`}>
       <Link to="/" className={styles.logo}>
         AvengersFI
       </Link>
-      <Menu />
+      <Menu isAdmin={isAdmin} />
       <div className={styles.account}>
         {account.address ? (
           <Account account={account} />

@@ -5,6 +5,7 @@ import { OrderStatus } from './dto/order.enum';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './reposities/order.reposity';
 import { Nft } from './../nfts/reposities/nft.reposity';
+import { TokenBoundAccount } from './../token-bound-accounts/reposities/token-bound-account.reposity';
 import { verifySignature } from '../utils/signature';
 import { DacsService } from '../dacs/dacs.service';
 import { LendingPoolService } from '../lending-pool/lending-pool.service';
@@ -15,6 +16,7 @@ export class OrdersService {
   constructor(
     private readonly order: Order,
     private readonly nft: Nft,
+    private readonly tokenBoundAccount: TokenBoundAccount,
     private readonly dacs: DacsService,
     private readonly lendingPool: LendingPoolService,
   ) {}
@@ -68,11 +70,15 @@ export class OrdersService {
 
     await Promise.all([
       this.order.create(orderHash, newOrder),
-      this.nft.update(
-        createOrderDto.nftAddress,
-        createOrderDto.nftTokenId.toString(),
-        { isAvailable: false },
-      ),
+      createOrderDto.metadata.hash
+        ? this.tokenBoundAccount.update(createOrderDto.metadata.hash, {
+            isAvailable: false,
+          })
+        : this.nft.update(
+            createOrderDto.nftAddress,
+            createOrderDto.nftTokenId.toString(),
+            { isAvailable: false },
+          ),
     ]);
   }
 
