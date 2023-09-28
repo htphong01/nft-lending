@@ -16,8 +16,31 @@
       flex-direction: column;
       justify-content: space-between;
 
+      .token-bound-account {
+        margin: 12px 8px 0 12px;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.2;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        > button {
+          outline: none;
+          border: none;
+          background-color: rgb(146, 108, 227);
+          border-radius: 8px;
+          font-size: 14px;
+          letter-spacing: 0.05px;
+          padding: 6px 16px;
+          cursor: pointer;
+          font-weight: bold;
+        }
+      }
+
       &.section-image {
-        justify-content: flex-start;
+        justify-content: space-between;
       }
 
       .heading {
@@ -107,7 +130,6 @@
               font-size: 12px;
               margin-bottom: 8px;
             }
-
 
             label {
               color: #6d50cd;

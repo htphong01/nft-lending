@@ -28,7 +28,7 @@ export default function ListCollateralForm({ item, onClose, type }) {
   const ref = useRef(null);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isPermittedNFT, setIsPermittedNFT] = useState(false);
+  const [isPermittedNFT, setIsPermittedNFT] = useState(true);
   const [data, setData] = useState({
     currency: account.currency,
     offer: 0,
