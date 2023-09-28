@@ -18,8 +18,8 @@ export default function Card({ item, action: { text, handle }, handleTokenBoundA
       <div className={styles.collection}>{item.collection}</div>
       <div className={styles.name}>{item.name}</div>
       <div className={styles.extension}>
-        <span>{item.isTokenBoundAccount ? 'Token bound account' : 'ERC-721'}</span>
-        {item.isTokenBoundAccount && <button onClick={handleTokenBoundAccount}>View assets</button>}
+        <span>{item.isTokenBoundAccount || item.hash ? 'Token bound account' : 'ERC-721'}</span>
+        {(item.isTokenBoundAccount || item.hash) && <button onClick={handleTokenBoundAccount}>View assets</button>}
       </div>
     </div>
   );
