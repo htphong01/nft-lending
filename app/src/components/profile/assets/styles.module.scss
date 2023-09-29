@@ -17,21 +17,28 @@
       font-weight: bold;
     }
 
-    button {
-      outline: none;
-      border: none;
-      background-color: rgb(146, 108, 227);
-      border-radius: 8px;
-      font-size: 12px;
-      letter-spacing: 0.05px;
-      padding: 6px 16px;
-      cursor: pointer;
-      font-weight: bold;
+    .button-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
 
-      &:hover {
-        opacity: 0.8;
+      button {
+        outline: none;
+        border: none;
+        background-color: rgb(146, 108, 227);
+        border-radius: 8px;
+        font-size: 12px;
+        letter-spacing: 0.05px;
+        padding: 6px 16px;
+        cursor: pointer;
+        font-weight: bold;
+  
+        &:hover {
+          opacity: 0.8;
+        }
       }
     }
+
   }
 
   .list-nfts {

@@ -19,10 +19,16 @@ export default function Assets() {
   const [isLoading, setIsLoading] = useState(true);
   const [listNFT, setListNFT] = useState([]);
   const [selectedNFT, setSelectedNFT] = useState();
+  const [isOpenERC721, setIsOpenERC721] = useState(false);
   const [isOpenERC6551, setIsOpenERC6551] = useState(false);
   const [selectedTokenBoundAccount, setSelectedTokenBoundAccount] = useState();
 
-  const handleOnClose = (isRefetch = false) => {
+  const handleOnCloseERC721 = (isRefetch = false) => {
+    setIsOpenERC721(false);
+    if (isRefetch) fetchNFTs();
+  };
+
+  const handleOnCloseERC6551 = (isRefetch = false) => {
     setSelectedNFT();
     setSelectedTokenBoundAccount();
     setIsOpenERC6551(false);
@@ -92,13 +98,17 @@ export default function Assets() {
   return (
     <div className={styles.container}>
       {selectedNFT && (
-        <ListCollateralForm item={selectedNFT} onClose={handleOnClose} type={COLLATERAL_FORM_TYPE.EDIT} />
+        <ListCollateralForm item={selectedNFT} onClose={handleOnCloseERC6551} type={COLLATERAL_FORM_TYPE.EDIT} />
       )}
-      {isOpenERC6551 && <ERC6551Form onClose={handleOnClose} />}
-      {selectedTokenBoundAccount && <TokenBoundAccountCard item={selectedTokenBoundAccount} onClose={handleOnClose} />}
+      {isOpenERC721 && <ERC6551Form onClose={handleOnCloseERC721} />}
+      {isOpenERC6551 && <ERC6551Form onClose={handleOnCloseERC6551} />}
+      {selectedTokenBoundAccount && <TokenBoundAccountCard item={selectedTokenBoundAccount} onClose={handleOnCloseERC6551} />}
       <div className={styles.heading}>
         <span>Your assets</span>
-        <button onClick={() => setIsOpenERC6551(!isOpenERC6551)}>Import ERC-6551</button>
+        <div className={styles["button-group"]}>
+          <button onClick={() => setIsOpenERC721(!isOpenERC721)}>Import ERC-721</button>
+          <button onClick={() => setIsOpenERC6551(!isOpenERC6551)}>Import ERC-6551</button>
+        </div>
       </div>
       {isLoading ? (
         <div className="react-loading-item">
