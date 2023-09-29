@@ -7,7 +7,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { NftsService } from './nfts.service';
-import { ImportTokenDto } from './dto/import-token.dto';
+import { ImportCollectionDto } from './dto/import-collection.dto';
 
 @Controller('nfts')
 export class NftsController {
@@ -19,8 +19,8 @@ export class NftsController {
   }
 
   @Post("import")
-  importToken(@Body() importTokenDto: ImportTokenDto) {
-    return this.nftsService.importToken(importTokenDto);
+  importCollection(@Body() importCollectionDto: ImportCollectionDto) {
+    return this.nftsService.importCollection(importCollectionDto);
   }
 
   // @Get(':id')
