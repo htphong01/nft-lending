@@ -39,6 +39,10 @@ export const FOOTER_MENU = [
         title: 'Offers sent',
         link: '/lend/offers',
       },
+      {
+        title: 'Requests sent',
+        link: '/lend/requests',
+      },
     ],
   },
   {
@@ -55,6 +59,10 @@ export const FOOTER_MENU = [
       {
         title: 'Offers received',
         link: '/borrow/offers',
+      },
+      {
+        title: 'Requests received',
+        link: '/borrow/requests',
       },
     ],
   },
@@ -93,6 +101,10 @@ export const HEADER_MENU = [
         title: 'Offers received',
         link: '/borrow/offers',
       },
+      {
+        title: 'Requests received',
+        link: '/borrow/requests',
+      },
     ],
   },
   {
@@ -109,6 +121,10 @@ export const HEADER_MENU = [
       {
         title: 'Offers sent',
         link: '/lend/offers',
+      },
+      {
+        title: 'Requests sent',
+        link: '/lend/requests',
       },
     ],
   },
@@ -159,6 +175,10 @@ export const BORROW_TABS = [
     text: 'Offers received',
     url: '/borrow/offers',
   },
+  {
+    text: 'Requests received',
+    url: '/borrow/requests',
+  },
 ];
 
 export const LEND_TABS = [
@@ -173,6 +193,10 @@ export const LEND_TABS = [
   {
     text: 'Offers sent',
     url: '/lend/offers',
+  },
+  {
+    text: 'Requests sent',
+    url: '/lend/requests',
   },
 ];
 

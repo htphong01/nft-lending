@@ -14,6 +14,7 @@ export default function UserLayout() {
   const rate = useSelector((state) => state.rate);
   const account = useSelector((state) => state.account);
   const [network, setNetwork] = useState(window.ethereum.networkVersion);
+  console.log('network', network);
 
   const dispatch = useDispatch();
 

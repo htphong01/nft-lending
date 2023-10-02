@@ -7,9 +7,11 @@ import HeaderBanner from '@src/components/layouts/header-banner';
 import BorrowAssetsPage from '@src/pages/borrow/assets';
 import BorrowLoansPage from '@src/pages/borrow/loans';
 import BorrowOffersPage from '@src/pages/borrow/offers';
+import BorrowRequestsPage from '../pages/borrow/requests';
 import LendAssetsPage from '@src/pages/lend/assets';
 import LendLoansPage from '@src/pages/lend/loans';
 import LendOffersPage from '@src/pages/lend/offers';
+import LendRequestsPage from '../pages/lend/requests';
 import MakeOfferPage from '@src/pages/assets/make-offer';
 import LendingPoolPage from '@src/pages/lending-pool';
 import LendingPoolRequestsPage from '@src/pages/lending-pool/requests';
@@ -66,6 +68,10 @@ export const userRoutes = [
             path: '/borrow/offers',
             element: <BorrowOffersPage />,
           },
+          {
+            path: '/borrow/requests',
+            element: <BorrowRequestsPage />,
+          },
         ],
       },
       {
@@ -89,6 +95,10 @@ export const userRoutes = [
           {
             path: '/lend/offers',
             element: <LendOffersPage />,
+          },
+          {
+            path: '/lend/requests',
+            element: <LendRequestsPage />,
           },
         ],
       },

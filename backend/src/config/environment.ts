@@ -17,6 +17,13 @@ export const Environment = {
   REDIS_ORDER_FAMILY: Number(process.env.REDIS_ORDER_FAMILY || 4),
   REDIS_ORDER_DB: Number(process.env.REDIS_ORDER_DB || 1),
 
+  // Redis Request config
+  REDIS_REQUEST_HOST: process.env.REDIS_REQUEST_HOST || 'localhost',
+  REDIS_REQUEST_PORT: Number(process.env.REDIS_REQUEST_PORT || 6379),
+  REDIS_REQUEST_PASS: process.env.REDIS_REQUEST_PASS,
+  REDIS_REQUEST_FAMILY: Number(process.env.REDIS_REQUEST_FAMILY || 4),
+  REDIS_REQUEST_DB: Number(process.env.REDIS_REQUEST_DB || 2),
+
   // OPERATOR ACCOUNT
   OPERATOR_ACCOUNT_PRIVATE_KEY: process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
 
