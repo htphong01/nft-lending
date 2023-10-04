@@ -1,9 +1,4 @@
 const { ethers } = require("hardhat");
-const { deployProxyAndLogger, contractFactoriesLoader } = require("../utils/deploy.utils");
-const { blockTimestamp } = require("../utils/test.utils");
-const fs = require("fs");
-require("dotenv").config();
-const env = process.env;
 
 async function main() {
     //* Get network */
