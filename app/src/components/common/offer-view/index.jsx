@@ -9,6 +9,9 @@ import { Icon } from '@iconify/react';
 import { calculateRepayment, sliceAddress } from '@src/utils';
 import { getOrderByHash } from '@src/api/order.api';
 import styles from './styles.module.scss';
+import RequestView from '../request-form';
+import { useCallback } from 'react';
+import { useMemo } from 'react';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
@@ -19,6 +22,7 @@ export default function OfferView({ item, onClose, action }) {
 
   const [data, setData] = useState(item);
   const [isLoading, setIsLoading] = useState(true);
+  const [isOpenRequest, setIsOpenRequest] = useState(false);
 
   useOnClickOutside(ref, () => onClose());
 
@@ -32,6 +36,10 @@ export default function OfferView({ item, onClose, action }) {
       console.log('error', error);
     }
   };
+
+  const handleOpenRequestForm = useCallback(() => {
+    setIsOpenRequest(!isOpenRequest);
+  }, [isOpenRequest]);
 
   useEffect(() => {
     fetchOrder();
@@ -110,7 +118,7 @@ export default function OfferView({ item, onClose, action }) {
               </div>
               {action && (
                 <div className={styles.info}>
-                  <button onClick={() => onClose()}>Close</button>
+                  <button onClick={() => handleOpenRequestForm()}>Renegotiate</button>
                   <button onClick={() => action.handle(data)}>{action.text}</button>
                 </div>
               )}
@@ -118,6 +126,7 @@ export default function OfferView({ item, onClose, action }) {
           </div>
         )}
       </div>
+      {isOpenRequest && <RequestView item={data} />}
     </div>
   );
 }

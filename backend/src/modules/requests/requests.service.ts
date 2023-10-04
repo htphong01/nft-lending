@@ -7,14 +7,17 @@ import {
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
-import { verifySignature, generateOfferMessage } from '../utils/signature';
-import { CreateOfferDto } from './dto/create-offer.dto';
-import { OfferStatus } from './dto/offer.enum';
-import { OrderStatus } from '../orders/dto/order.enum';
-import { Offer } from './reposities/offer.reposity';
+import {
+  verifySignature,
+  generateOfferMessage,
+  generateRequestMessage,
+} from '../utils/signature';
+import { CreateRequestDto } from './dto/create-request.dto';
+import { RequestStatus } from './dto/request.enum';
+import { Request } from './reposities/request.reposity';
 import { Order } from '../orders/reposities/order.reposity';
 import { DacsService } from '../dacs/dacs.service';
-import * as FACTORY_ABI from './abi/LOAN.json';
+// import * as FACTORY_ABI from './abi/LOAN.json';
 
 @Injectable()
 export class RequestsService implements OnModuleInit {
@@ -22,28 +25,27 @@ export class RequestsService implements OnModuleInit {
   private nftContract: Contract;
 
   constructor(
-    private readonly offer: Offer,
+    private readonly request: Request,
     private readonly order: Order,
     private readonly dacs: DacsService,
   ) {}
 
   onModuleInit() {
     this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
-    this.nftContract = new Contract(
-      config.ENV.COLLECTION_ADDRESS,
-      FACTORY_ABI,
-      this.rpcProvider,
-    );
+    // this.nftContract = new Contract(
+    //   config.ENV.COLLECTION_ADDRESS,
+    //   FACTORY_ABI,
+    //   this.rpcProvider,
+    // );
   }
 
-  async create(createOfferDto: CreateOfferDto) {
-    const offerHash = generateOfferMessage(
+  async create(createOfferDto: CreateRequestDto) {
+    const offerHash = generateRequestMessage(
       createOfferDto,
       createOfferDto.signature,
       config.ENV.LOAN_ADDRESS,
       config.ENV.CHAIN_ID,
     );
-
     if (
       !verifySignature(
         createOfferDto.creator,
@@ -53,18 +55,15 @@ export class RequestsService implements OnModuleInit {
     ) {
       throw new UnauthorizedException();
     }
-
-    const newOffer: Record<string, any> = {
+    const newRequest: Record<string, any> = {
       ...createOfferDto,
-      floorPrice: (createOfferDto.offer * 1.1).toFixed(2),
+      // floorPrice: (createOfferDto.offer * 1.1).toFixed(2),
       hash: offerHash,
-      status: OfferStatus.OPENING,
-      // createdAt: new Date().getTime(),
+      status: RequestStatus.OPENING,
+      createdAt: new Date().getTime(),
     };
-
-    const dacs_cid = await this.dacs.upload(newOffer);
-    newOffer.dacs_url = `${config.ENV.SERVER_HOST}:${config.ENV.SERVER_PORT}/dacs/${dacs_cid}`;
-
-    await this.offer.create(createOfferDto.order, offerHash, newOffer);
+    const dacs_cid = await this.dacs.upload(newRequest);
+    newRequest.dacs_url = `${config.ENV.SERVER_HOST}:${config.ENV.SERVER_PORT}/dacs/${dacs_cid}`;
+    await this.request.create(offerHash, newRequest);
   }
 }

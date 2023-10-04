@@ -5,8 +5,8 @@ const sha256 = require('simple-sha256');
 const DATABASE_NAME = 'Requests';
 
 @Injectable()
-export class Order {
-  public logger: Logger = new Logger(Order.name);
+export class Request {
+  public logger: Logger = new Logger(Request.name);
 
   constructor(private readonly redisService: OrderRedisService) {}
 
