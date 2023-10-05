@@ -31,6 +31,30 @@
       }
     }
 
+    .sub-title {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
+      line-height: 18px;
+      margin-bottom: 12px;
+
+      &.sub-title-button {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        > button {
+          background-color: #6d50cd;
+          margin-left: 8px;
+          font-weight: 600;
+          outline: none;
+          border: none;
+          cursor: pointer;
+          padding: 4px;
+        }
+      }
+    }
+
     .section {
       display: flex;
       flex-direction: column;

@@ -1,66 +1,35 @@
 /* eslint-disable react/prop-types */
-import { useState, useRef } from 'react';
-import { useSelector } from 'react-redux';
-import { useOnClickOutside } from 'usehooks-ts';
+import {
+  parseMetamaskError
+} from '@src/utils';
+import { useRef, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import ReactLoading from 'react-loading';
-import {
-  mintERC721,
-  createTokenBoundAccount,
-  getTokenBoundAccount,
-  ERC721Contract,
-  parseMetamaskError,
-} from '@src/utils';
-import { DEFAULT_ERC6551_BASE_URI, TOKEN_BOUND_ACCOUNT_NFT_ADDRESS } from '@src/constants';
-import { createTokenBoundAccount as createTokenBoundAccountApi } from '@src/api/token-bound-account.api';
+import { useSelector } from 'react-redux';
+import { useOnClickOutside } from 'usehooks-ts';
+import { importCollection } from '../../../api/nft.api';
 import styles from './styles.module.scss';
+import { isAddress } from 'ethers/lib/utils';
 
-export default function ERC6551Form({ onClose }) {
+export default function ERC721Form({ onClose }) {
   const account = useSelector((state) => state.account);
 
   const ref = useRef(null);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState({
-    account: '',
-    collectionAddress: '',
-  });
-
-  const handleChange = async (e) => {
-    // eslint-disable-next-line no-unused-vars
-    const { account, ...newData } = {
-      ...data,
-      [e.target.name]: String(e.target.value).toLowerCase(),
-    };
-
-    if (!Object.values(newData).includes('')) {
-      try {
-        const importedAccount = await getTokenBoundAccount(newData);
-        newData.account = importedAccount;
-      } catch (error) {
-        console.log('error', error);
-      }
-    } else {
-      newData.account = '';
-    }
-
-    setData(newData);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const erc721Contract = await ERC721Contract(data.tokenAddress);
-      const isOwnerOfTokenId =
-        (await erc721Contract.ownerOf(data.tokenId)).toLowerCase() === account.address.toLowerCase();
-      if (!isOwnerOfTokenId) {
-        toast.error(`You are not owner of the Token ID: ${data.tokenId}`);
-        setIsLoading(false);
-        return;
-      }
-      await createTokenBoundAccountApi({ ...data, owner: account.address });
-      toast.success('Import ERC-6551 Account successfully');
+      const formData = new FormData(e.target);
+      const collectionAddress = formData.get('collectionAddress').toLowerCase();
+
+      if (!isAddress(collectionAddress)) throw new Error('Invalid collection address');
+
+      const res = await importCollection({ collectionAddress});
+
+      toast.success(res.data.message);
       setIsLoading(false);
       onClose(true);
     } catch (error) {
@@ -85,11 +54,15 @@ export default function ERC6551Form({ onClose }) {
         <div className={styles.title}>Import your NFT Collection</div>
         <div className={styles['sub-title']}>Easier to make a loan with your NFTs</div>
         <div className={styles.section}>
-          <div className={styles.head}>Your Account Address: xxxx</div>
+          <div className={styles.head}>Your Account Address: {account.address}</div>
           <div className={styles.details}>
             <div className={styles.label}>NFT Collection Address:</div>
             <label className={styles.input}>
-              <input type="text" value={data.collectionAddress} name="collectionAddress" onChange={handleChange} required />
+              <input
+                type="text"
+                name="collectionAddress"
+                required
+              />
             </label>
           </div>
         </div>

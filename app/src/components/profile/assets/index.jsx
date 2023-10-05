@@ -1,16 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { getNfts } from '@src/api/nfts.api';
+import { getTokenBoundAccounts } from '@src/api/token-bound-account.api';
+import Card from '@src/components/common/card';
+import ERC6551Form from '@src/components/common/erc-6551-form';
+import ERC721Form from '@src/components/common/erc-721-form';
+import ListCollateralForm from '@src/components/common/list-collateral-form';
+import TokenBoundAccountCard from '@src/components/common/token-bound-account-card';
+import { COLLATERAL_FORM_TYPE } from '@src/constants';
+import { ERC721Contract } from '@src/utils';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import ReactLoading from 'react-loading';
 import { useSelector } from 'react-redux';
-import { getNfts } from '@src/api/nfts.api';
-import { getTokenBoundAccounts } from '@src/api/token-bound-account.api';
-import Card from '@src/components/common/card';
-import ListCollateralForm from '@src/components/common/list-collateral-form';
-import ERC6551Form from '@src/components/common/erc-6551-form';
-import TokenBoundAccountCard from '@src/components/common/token-bound-account-card';
-import { COLLATERAL_FORM_TYPE } from '@src/constants';
-import { ERC721Contract } from '@src/utils';
 import styles from './styles.module.scss';
 
 export default function Assets() {
@@ -100,7 +101,7 @@ export default function Assets() {
       {selectedNFT && (
         <ListCollateralForm item={selectedNFT} onClose={handleOnCloseERC6551} type={COLLATERAL_FORM_TYPE.EDIT} />
       )}
-      {isOpenERC721 && <ERC6551Form onClose={handleOnCloseERC721} />}
+      {isOpenERC721 && <ERC721Form onClose={handleOnCloseERC721} />}
       {isOpenERC6551 && <ERC6551Form onClose={handleOnCloseERC6551} />}
       {selectedTokenBoundAccount && <TokenBoundAccountCard item={selectedTokenBoundAccount} onClose={handleOnCloseERC6551} />}
       <div className={styles.heading}>
