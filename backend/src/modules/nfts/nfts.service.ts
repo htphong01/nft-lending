@@ -1,14 +1,53 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Contract, JsonRpcProvider } from 'ethers';
+import { Contract, JsonRpcProvider, ZeroAddress } from 'ethers';
 import axios from 'axios';
 import { Nft } from './reposities/nft.reposity';
 import config from 'src/config';
-import * as FACTORY_ABI from './abi/ERC721.json';
 import { SyncNftDto } from './dto/sync-nft.dto';
+import { ERC721, ERC721__factory } from './typechain';
+import { ImportCollectionDto } from './dto/import-collection.dto';
 
 @Injectable()
 export class NftsService {
-  constructor(private readonly nft: Nft) {}
+  private rpcProvider: JsonRpcProvider;
+
+  constructor(private readonly nft: Nft) {
+    this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
+
+    this.attachCollectionListeners();
+  }
+
+  private async attachCollectionListeners() {
+    const collections = await this.nft.getAllCollections();
+
+    await Promise.all(
+      collections.map(async (collectionAddress) =>
+        this.registerCollectionTransferEvent(collectionAddress),
+      ),
+    );
+
+    console.log('All collections have been attached to listeners');
+  }
+
+  private async registerCollectionTransferEvent(collectionAddress: string) {
+    const nftContract = ERC721__factory.connect(
+      collectionAddress,
+      this.rpcProvider,
+    );
+
+    await nftContract.on(
+      nftContract.getEvent('Transfer'),
+      async (from, to, currentTokenId) => {
+        // When burn, remove from database
+        if (to === ZeroAddress)
+          return this.nft.delete(collectionAddress, currentTokenId.toString());
+
+        await this.saveNft(to, Number(currentTokenId), collectionAddress);
+      },
+    );
+
+    console.log(`Listening to ${collectionAddress} Transfer events`);
+  }
 
   async getNfts(address: string) {
     try {
@@ -20,13 +59,16 @@ export class NftsService {
 
   async handleEvents(rpcProvider: JsonRpcProvider, from: number, to: number) {
     try {
-      const nftContract = new Contract(
+      const nftContract = ERC721__factory.connect(
         config.ENV.COLLECTION_ADDRESS,
-        FACTORY_ABI,
         rpcProvider,
       );
       // Fetch events data
-      const events = await nftContract.queryFilter('Transfer', from, to);
+      const events = await nftContract.queryFilter(
+        nftContract.getEvent('Transfer'),
+        from,
+        to,
+      );
 
       // Retrieve all event informations
       if (!events || events.length === 0) return;
@@ -83,7 +125,44 @@ export class NftsService {
     }
   }
 
+  async saveNft(owner: string, tokenId: number, collectionAddress: string) {
+    const nftContract = ERC721__factory.connect(
+      collectionAddress,
+      this.rpcProvider,
+    );
+
+    const { data } = await axios.get(await nftContract.tokenURI(tokenId));
+
+    const nftData = {
+      owner: owner,
+      tokenId: tokenId,
+      tokenURI: await nftContract.tokenURI(tokenId),
+      collectionName: await nftContract.name(),
+      collectionSymbol: await nftContract.symbol(),
+      collectionAddress: await nftContract.getAddress(),
+      metadata: data,
+      isAvailable: true,
+    };
+
+    await this.syncNft(nftData);
+  }
+
   async findAll(conditions: Record<string, any> = {}) {
     return await this.nft.find(conditions);
+  }
+
+  async importCollection({ collectionAddress }: ImportCollectionDto) {
+    const existedCollection = await this.nft.findCollection(collectionAddress);
+    if (existedCollection)
+      throw new HttpException(
+        'Collection already imported',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    await this.registerCollectionTransferEvent(collectionAddress)
+
+    this.nft.addCollection(collectionAddress);
+
+    return { message: `Collection ${collectionAddress} imported successfully` };
   }
 }
