@@ -39,7 +39,7 @@ const config = {
             blockGasLimit: 500e9,
         },
         cvc_testnet: {
-            url: "https://rpc-kura.cross.technology",
+            url: process.env.CVC_RPC,
             accounts: [process.env.SYSTEM_PRIVATE_KEY],
         }
     },
