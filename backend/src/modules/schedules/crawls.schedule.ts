@@ -7,10 +7,12 @@ import { TokenBoundAccountsService } from '../token-bound-accounts/token-bound-a
 import { LendingPoolService } from '../lending-pool/lending-pool.service';
 import { Crawl } from './reposities/crawl.reposity';
 import config from 'src/config';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class CrawlsSchedule implements OnModuleInit {
   private rpcProvider: JsonRpcProvider;
+  private readonly logger: Logger = new Logger(CrawlsSchedule.name);
 
   constructor(
     private offersService: OffersService,
@@ -48,6 +50,10 @@ export class CrawlsSchedule implements OnModuleInit {
     if (toBlock - crawlLatestBlock > 5000) {
       toBlock = crawlLatestBlock + 5000;
     }
+
+    this.logger.log(
+      `Crawl events from block ${crawlLatestBlock} to block ${toBlock}`,
+    );
 
     await this.nftsService.handleEvents(
       this.rpcProvider,

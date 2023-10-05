@@ -149,6 +149,25 @@ export class OffersService implements OnModuleInit {
 
             break;
           }
+
+          case 'LoanRenegotiated':
+            const {
+              loanId,
+              borrower,
+              lender,
+              newLoanDuration,
+              newMaximumRepaymentAmount,
+              renegotiationFee,
+              renegotiationAdminFee,
+            } = event.args.loanId;
+
+            const order = await this.order.getByKey(loanId);
+            if (order) {
+              this.order.update(loanId, {
+                duration: newLoanDuration,
+              });
+            }
+
           default: {
             break;
           }

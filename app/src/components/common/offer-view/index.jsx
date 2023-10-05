@@ -11,7 +11,6 @@ import { getOrderByHash } from '@src/api/order.api';
 import styles from './styles.module.scss';
 import RequestView from '../request-form';
 import { useCallback } from 'react';
-import { useMemo } from 'react';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
@@ -24,7 +23,7 @@ export default function OfferView({ item, onClose, action }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isOpenRequest, setIsOpenRequest] = useState(false);
 
-  useOnClickOutside(ref, () => onClose());
+  // useOnClickOutside(ref, () => onClose());
 
   const fetchOrder = async () => {
     try {
@@ -43,6 +42,7 @@ export default function OfferView({ item, onClose, action }) {
 
   useEffect(() => {
     fetchOrder();
+    console.log('Data: ', data.status);
   }, []);
 
   return (
@@ -126,7 +126,7 @@ export default function OfferView({ item, onClose, action }) {
           </div>
         )}
       </div>
-      {isOpenRequest && <RequestView item={data} />}
+      {isOpenRequest && <RequestView item={data} onClose={handleOpenRequestForm} />}
     </div>
   );
 }
