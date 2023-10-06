@@ -1,221 +1,162 @@
-const { ethers } = require("hardhat");
 const { expect } = require("chai");
-const { parseEther } = require("ethers/lib/utils");
-const { getTimestamp, skipTime } = require("./utils")
 
-require("dotenv").config();
+const toWei = (num) => ethers.utils.parseEther(num.toString())
+const fromWei = (num) => ethers.utils.formatEther(num)
 
-const TEN_MINUTES = 600;
+describe("NFTMarketplace", function () {
 
-describe("Marketplace", () => {
-    before(async () => {
-        //** Get Wallets */
-        [user1, user2, user3] = await ethers.getSigners();
+    let NFT;
+    let nft;
+    let Marketplace;
+    let marketplace
+    let deployer;
+    let addr1;
+    let addr2;
+    let addrs;
+    let feePercent = 1;
 
-        //** Get Contracts */
-        const Marketplace = await ethers.getContractFactory("Marketplace");
-        const MockERC721 = await ethers.getContractFactory("MockERC721");
-        const MockERC1155 = await ethers.getContractFactory("MockERC1155");
+    beforeEach(async function () {
+        // Get the ContractFactories and Signers here.
+        NFT = await ethers.getContractFactory("MockERC721");
+        Marketplace = await ethers.getContractFactory("Marketplace");
+        [deployer, addr1, addr2, ...addrs] = await ethers.getSigners();
 
-        const marketPercent = 10 * 1e6;
-        marketplace = await Marketplace.deploy(marketPercent);
-        myERC721 = await MockERC721.deploy();
-        myERC1155 = await MockERC1155.deploy();
-
-        expect(await marketplace.verifier()).to.eq(user1.address);
-        expect(await marketplace.feeAccount()).to.eq(user1.address);
-        expect(await marketplace.feePercent()).to.eq(marketPercent);
-
-        // Offer Time
-        expTime = await getTimestamp() + TEN_MINUTES;
+        // To deploy our contracts
+        nft = await NFT.deploy();
+        marketplace = await Marketplace.deploy(feePercent);
     });
 
-    describe("mint", () => {
-        it("mint erc721", async () => {
-            await myERC721.connect(user2).mint(user2.address);
-            await myERC721.connect(user2).mint(user2.address);
+    describe("Deployment", function () {
 
-            expect(await myERC721.balanceOf(user2.address)).to.eq(2);
-        })
+        it("Should track name and symbol of the nft collection", async function () {
+            // This test expects the owner variable stored in the contract to be equal
+            // to our Signer's owner.
+            const nftName = "MockERC721"
+            const nftSymbol = "ERC721"
+            expect(await nft.name()).to.equal(nftName);
+            expect(await nft.symbol()).to.equal(nftSymbol);
+        });
 
-        it("mint erc1155", async () => {
-            await myERC1155.connect(user2).mint(user2.address, 50);
-            expect(await myERC1155.balanceOf(user2.address, 1)).to.eq(50);
-        })
+        it("Should track feeAccount and feePercent of the marketplace", async function () {
+            expect(await marketplace.feeAccount()).to.equal(deployer.address);
+            expect(await marketplace.feePercent()).to.equal(feePercent);
+        });
+    });
+
+    describe("Minting NFTs", function () {
+
+        it("Should track each minted NFT", async function () {
+            // addr1 mints an nft
+            await nft.connect(addr1).mint(addr1.address)
+            expect(await nft.balanceOf(addr1.address)).to.equal(1);
+            // addr2 mints an nft
+            await nft.connect(addr2).mint(addr2.address)
+            expect(await nft.balanceOf(addr2.address)).to.equal(1);
+        });
     })
 
-    describe("purchase", () => {
-        it("make offer erc721", async () => {
-            const itemId = 1;
-            const nft = myERC721.address;
-            const tokenId = 1;
-            const totalAmount = 1;
-            const price = parseEther('1');
-            const seller = user2.address;
-            const nonce = 1;
-            offer1 = [itemId, nft, tokenId, totalAmount, price, expTime, seller, nonce];
-
-            const messageHash = await ethers.utils.defaultAbiCoder.encode(
-                ["uint256", "address", "uint256", "uint256", "uint256", "uint256", "address", "uint256"],
-                [itemId, nft, tokenId, totalAmount, price, expTime, seller, nonce]
-            );
-
-            // Make offer
-            const signature = await user1.signMessage(ethers.utils.arrayify(messageHash));
-
-            // Approval all to Marketplace
-            await myERC721.connect(user2).setApprovalForAll(marketplace.address, true);
-
-            offer1.push(signature);
-            expect(await marketplace.signatureUsed(signature)).to.eq(false);
+    describe("Making marketplace items", function () {
+        let price = 1
+        let result
+        beforeEach(async function () {
+            // addr1 mints an nft
+            await nft.connect(addr1).mint(addr1.address)
+            // addr1 approves marketplace to spend nft
+            await nft.connect(addr1).setApprovalForAll(marketplace.address, true)
         })
 
-        it("make offer erc1155", async () => {
-            const itemId = 2;
-            const nft = myERC1155.address;
-            const tokenId = 1;
-            const totalAmount = 50;
-            const price = parseEther('1');
-            const seller = user2.address;
-            const nonce = 2;
-            offer2 = [itemId, nft, tokenId, totalAmount, price, expTime, seller, nonce];
 
-            const messageHash = await ethers.utils.defaultAbiCoder.encode(
-                ["uint256", "address", "uint256", "uint256", "uint256", "uint256", "address", "uint256"],
-                [itemId, nft, tokenId, totalAmount, price, expTime, seller, nonce]
-            );
+        it("Should track newly created item, transfer NFT from seller to marketplace and emit Offered event", async function () {
+            // addr1 offers their nft at a price of 1 ether
+            await expect(marketplace.connect(addr1).makeItem(nft.address, 1, toWei(price)))
+                .to.emit(marketplace, "Offered")
+                .withArgs(
+                    1,
+                    nft.address,
+                    1,
+                    toWei(price),
+                    addr1.address
+                )
+            // Owner of NFT should now be the marketplace
+            expect(await nft.ownerOf(1)).to.equal(marketplace.address);
+            // Item count should now equal 1
+            expect(await marketplace.itemCount()).to.equal(1)
+            // Get item from items mapping then check fields to ensure they are correct
+            const item = await marketplace.items(1)
+            expect(item.itemId).to.equal(1)
+            expect(item.nft).to.equal(nft.address)
+            expect(item.tokenId).to.equal(1)
+            expect(item.price).to.equal(toWei(price))
+            expect(item.sold).to.equal(false)
+        });
 
-            // Make offer
-            const signature = await user1.signMessage(ethers.utils.arrayify(messageHash));
+        it("Should fail if price is set to zero", async function () {
+            await expect(
+                marketplace.connect(addr1).makeItem(nft.address, 1, 0)
+            ).to.be.revertedWith("Price must be greater than zero");
+        });
 
-            // Approval all to Marketplace
-            await myERC1155.connect(user2).setApprovalForAll(marketplace.address, true);
-
-            offer2.push(signature);
-            expect(await marketplace.signatureUsed(signature)).to.eq(false);
+    });
+    describe("Purchasing marketplace items", function () {
+        let price = 2
+        let fee = (feePercent / 100) * price
+        let totalPriceInWei
+        beforeEach(async function () {
+            // addr1 mints an nft
+            await nft.connect(addr1).mint(addr1.address)
+            // addr1 approves marketplace to spend tokens
+            await nft.connect(addr1).setApprovalForAll(marketplace.address, true)
+            // addr1 makes their nft a marketplace item.
+            await marketplace.connect(addr1).makeItem(nft.address, 1, toWei(price))
         })
-
-        it("should return exception 'Amount exceeds balance'", async () => {
-            let amount = 2;
-            await expect(marketplace.connect(user3).purchaseItem(offer1, amount, { value: offer1[4] })).to.revertedWith("Amount exceeds balance");
-
-            amount = 51;
-            await expect(marketplace.connect(user3).purchaseItem(offer2, amount, { value: offer2[4].mul(amount) })).to.revertedWith("Amount exceeds balance");
+        it("Should update item as sold, pay seller, transfer NFT to buyer, charge fees and emit a Bought event", async function () {
+            const sellerInitalEthBal = await addr1.getBalance()
+            const feeAccountInitialEthBal = await deployer.getBalance()
+            // fetch items total price (market fees + item price)
+            totalPriceInWei = await marketplace.getTotalPrice(1);
+            // addr 2 purchases item.
+            await expect(marketplace.connect(addr2).purchaseItem(1, { value: totalPriceInWei }))
+                .to.emit(marketplace, "Bought")
+                .withArgs(
+                    1,
+                    nft.address,
+                    1,
+                    toWei(price),
+                    addr1.address,
+                    addr2.address
+                )
+            const sellerFinalEthBal = await addr1.getBalance()
+            const feeAccountFinalEthBal = await deployer.getBalance()
+            // Item should be marked as sold
+            expect((await marketplace.items(1)).sold).to.equal(true)
+            // Seller should receive payment for the price of the NFT sold.
+            expect(+fromWei(sellerFinalEthBal)).to.equal(+price + +fromWei(sellerInitalEthBal))
+            // feeAccount should receive fee
+            expect(+fromWei(feeAccountFinalEthBal)).to.equal(+fee + +fromWei(feeAccountInitialEthBal))
+            // The buyer should now own the nft
+            expect(await nft.ownerOf(1)).to.equal(addr2.address);
         })
-
-        it("should return exception 'The purchase price is not accurate'", async () => {
-            let amount = 1;
-            let priceInvalid = offer1[4].sub(1);
-            await expect(marketplace.connect(user3).purchaseItem(offer1, amount, { value: priceInvalid })).to.revertedWith("The purchase price is not accurate");
-
-            amount = 20;
-            priceInvalid = offer2[4].mul(amount).sub(1);
-            await expect(marketplace.connect(user3).purchaseItem(offer2, amount, { value: priceInvalid })).to.revertedWith("The purchase price is not accurate");
-        })
-
-        it("purchase item erc721 successfully", async () => {
-            const amount = 1;
-            const pricePay = offer1[4];
-            const marketFee = getPriceToPercent(pricePay, 10);
-            const sellerFee = pricePay.sub(marketFee);
-            // before purchase
-            expect(await myERC721.balanceOf(user3.address)).to.eq(0);
-            expect(await myERC721.ownerOf(1)).to.eq(user2.address);
-
-            // purchase
-            await expect(() => marketplace.connect(user3).purchaseItem(offer1, amount, { value: offer1[4] })).to.changeEtherBalances([user1, user2, user3], [marketFee, sellerFee, pricePay.mul(-1)]);
-
-            // after purchase
-            expect(await myERC721.balanceOf(user3.address)).to.eq(1);
-            expect(await myERC721.ownerOf(1)).to.eq(user3.address);
-        })
-
-        it("purchase item erc1155 successfully", async () => {
-            const amount = 20;
-            const pricePay = offer2[4].mul(amount);
-            const marketFee = getPriceToPercent(pricePay, 10);
-            const sellerFee = pricePay.sub(marketFee);
-
-            // before purchase
-            expect(await myERC1155.balanceOf(user3.address, 1)).to.eq(0);
-            expect(await myERC1155.balanceOf(user2.address, 1)).to.eq(50);
-
-            // purchase
-            await expect(() => marketplace.connect(user3).purchaseItem(offer2, amount, { value: offer2[4].mul(amount) })).to.changeEtherBalances([user1, user2, user3], [marketFee, sellerFee, pricePay.mul(-1)]);
-
-            // after purchase
-            expect(await myERC1155.balanceOf(user3.address, 1)).to.eq(amount);
-            expect(await myERC1155.balanceOf(user2.address, 1)).to.eq(50 - amount);
-        })
-
-        it("purchase with signature is used", async () => {
-            await expect(marketplace.connect(user3).purchaseItem(offer1, 1, { value: offer1[4] })).to.revertedWith("Invalid signature");
-            await expect(marketplace.connect(user3).purchaseItem(offer2, 20, { value: offer2[4].mul(20) })).to.revertedWith("Invalid signature");
-        })
-
-        it("purchase with signature sign by other user", async () => {
-            const itemId = 2;
-            const nft = myERC1155.address;
-            const tokenId = 1;
-            const totalAmount = 30;
-            const price = parseEther('1');
-            const seller = user2.address;
-            const nonce = 3;
-            let offer3 = [itemId, nft, tokenId, totalAmount, price, expTime, seller, nonce];
-
-            const messageHash = await ethers.utils.defaultAbiCoder.encode(
-                ["uint256", "address", "uint256", "uint256", "uint256", "uint256", "address", "uint256"],
-                [itemId, nft, tokenId, totalAmount, price, expTime, seller, nonce]
-            );
-
-            // Make offer
-            expect(await marketplace.verifier()).to.not.eq(user3.address);
-            let signature = await user3.signMessage(ethers.utils.arrayify(messageHash));
-            offer3.push(signature);
-
-            // purchase
-            const amount = 20;
-            const pricePay = offer3[4].mul(amount);
-            const marketFee = getPriceToPercent(pricePay, 10);
-            const sellerFee = pricePay.sub(marketFee);
-
-            // purchase with signature invalid
-            await expect(marketplace.connect(user3).purchaseItem(offer3, amount, { value: offer3[4].mul(amount) })).to.revertedWith("Invalid signature");
-
-            // sign with verifier
-            signature = await user1.signMessage(ethers.utils.arrayify(messageHash));
-            offer3[offer3.length - 1] = signature;
-
-            await expect(() => marketplace.connect(user3).purchaseItem(offer3, amount, { value: offer2[4].mul(amount) })).to.changeEtherBalances([user1, user2, user3], [marketFee, sellerFee, pricePay.mul(-1)]);
-        })
-
-        it("should return exception 'The purchasing time has expired'", async () => {
-            const itemId = 2;
-            const nft = myERC1155.address;
-            const tokenId = 1;
-            const totalAmount = 10;
-            const price = parseEther('1');
-            const seller = user2.address;
-            const nonce = 4;
-            let offer4 = [itemId, nft, tokenId, totalAmount, price, expTime, seller, nonce];
-
-            const messageHash = await ethers.utils.defaultAbiCoder.encode(
-                ["uint256", "address", "uint256", "uint256", "uint256", "uint256", "address", "uint256"],
-                [itemId, nft, tokenId, totalAmount, price, expTime, seller, nonce]
-            );
-
-            // Make offer
-            const signature = await user1.signMessage(ethers.utils.arrayify(messageHash));
-            offer4.push(signature);
-
-            // purchase
-            await skipTime(expTime);
-            const amount = 10;
-            await expect(marketplace.connect(user3).purchaseItem(offer4, amount, { value: offer4[4].mul(amount) })).to.revertedWith("The purchasing time has expired");
-        })
+        it("Should fail for invalid item ids, sold items and when not enough ether is paid", async function () {
+            // fails for invalid item ids
+            await expect(
+                marketplace.connect(addr2).purchaseItem(2, { value: totalPriceInWei })
+            ).to.be.revertedWith("item doesn't exist");
+            await expect(
+                marketplace.connect(addr2).purchaseItem(0, { value: totalPriceInWei })
+            ).to.be.revertedWith("item doesn't exist");
+            // Fails when not enough ether is paid with the transaction. 
+            // In this instance, fails when buyer only sends enough ether to cover the price of the nft
+            // not the additional market fee.
+            await expect(
+                marketplace.connect(addr2).purchaseItem(1, { value: toWei(price) })
+            ).to.be.revertedWith("not enough ether to cover item price and market fee");
+            // addr2 purchases item 1
+            await marketplace.connect(addr2).purchaseItem(1, { value: totalPriceInWei })
+            // addr3 tries purchasing item 1 after its been sold 
+            const addr3 = addrs[0]
+            await expect(
+                marketplace.connect(addr3).purchaseItem(1, { value: totalPriceInWei })
+            ).to.be.revertedWith("item already sold");
+        });
     })
-});
-
-function getPriceToPercent(price, percent) {
-    return (price.mul(percent * 1e6)).div(100 * 1e6)
-}
+})
