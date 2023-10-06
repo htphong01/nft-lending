@@ -39,25 +39,26 @@ export class RequestsService implements OnModuleInit {
     // );
   }
 
-  async create(createOfferDto: CreateRequestDto) {
+  async create(dto: CreateRequestDto) {
     const offerHash = generateRequestMessage(
-      createOfferDto,
-      createOfferDto.signature,
+      dto,
+      dto.signature,
       config.ENV.LOAN_ADDRESS,
       config.ENV.CHAIN_ID,
     );
     if (
       !verifySignature(
-        createOfferDto.creator,
+        dto.creator,
         ethers.getBytes(offerHash),
-        createOfferDto.signature.signature,
+        dto.signature.signature,
       )
     ) {
       throw new UnauthorizedException();
     }
     const newRequest: Record<string, any> = {
-      ...createOfferDto,
+      ...dto,
       // floorPrice: (createOfferDto.offer * 1.1).toFixed(2),
+      creator: dto.creator,
       hash: offerHash,
       status: RequestStatus.OPENING,
       createdAt: new Date().getTime(),

@@ -28,6 +28,7 @@ export default function OfferView({ item, onClose, action }) {
   const fetchOrder = async () => {
     try {
       const { data: order } = await getOrderByHash(item.order);
+      console.log('order: ', order);
       setData({ ...data, order });
       setIsLoading(false);
     } catch (error) {
@@ -42,7 +43,6 @@ export default function OfferView({ item, onClose, action }) {
 
   useEffect(() => {
     fetchOrder();
-    console.log('Data: ', data.status);
   }, []);
 
   return (

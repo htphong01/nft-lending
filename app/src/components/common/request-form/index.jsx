@@ -13,20 +13,21 @@ import toast, { Toaster } from 'react-hot-toast';
 import { parseMetamaskError } from '../../../utils/convert';
 import { renegotiateLoan } from '../../../utils/contracts/loan';
 import { ethers } from 'ethers';
+import { createRequest } from '../../../api/request.api';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
 export default function RequestView({ item, onClose, type }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
-  const currency = useSelector((state) => state.account.currency);
+  const account = useSelector((state) => state.account);
 
   const [data, setData] = useState({
     duration: 0,
     value: 0,
     fee: 0,
     expiry: 0,
-    currency,
+    currency: account.currency,
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -58,40 +59,16 @@ export default function RequestView({ item, onClose, type }) {
     setData(newData);
   };
 
-  const handleRenegotiate = async () => {
-    console.log(item.signature);
+  const handleCreateRenegotiation = async () => {
     try {
-      console.log(item);
-      const lenderNonce = item.signature.nonce;
-      const lenderSignature = item.signature.signature;
-
-      console.log({
-        id: item.hash,
-        duration: data.duration,
-        value: data.value,
-        fee: data.fee,
-        nonce: lenderNonce,
-        expiry: data.expiry,
-        signature: lenderSignature,
-      });
-      const tx = await renegotiateLoan(
-        item.hash,
-        data.duration,
-        ethers.utils.parseEther('0.001'),
-        ethers.utils.parseEther('0.001'),
-        lenderNonce,
-        1, //data.expiry,
-        lenderSignature
-      );
-      await tx.wait();
+      setIsLoading(true);
+      const { data: result } = await createRequest(data);
+      console.log('res: ', result);
     } catch (error) {
-      console.log(error);
-      const txError = parseMetamaskError(error);
-      toast.error(txError.context);
+      toast.error(error);
+    } finally {
       setIsLoading(false);
     }
-    // console.log("item: ", item)
-    // console.log('Alo');
   };
 
   // useEffect(() => {
@@ -129,11 +106,11 @@ export default function RequestView({ item, onClose, type }) {
           <div className={styles.head}>
             Loan value:{' '}
             <span>
-              {data.value} {data.currency}
+              {item.offer} {account.currency}
             </span>
           </div>
           <div className={styles.details}>
-            <div className={styles.label}>What loan value do you want to renegotiate?</div>
+            <div className={styles.label}>What repayment value do you want to renegotiate?</div>
             <label className={styles.input}>
               <input
                 type="number"
@@ -141,14 +118,14 @@ export default function RequestView({ item, onClose, type }) {
                 name="value"
                 onChange={handleChange}
                 checked={true}
-                // readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
+                readOnly={type === 'view'}
               />
             </label>
           </div>
         </div>
         <div className={styles.section}>
           <div className={styles.head}>
-            Loan duration: <span>{data.duration} days</span>
+            Loan duration: <span>{item.duration} days</span>
           </div>
           <div className={styles.details}>
             <div className={styles.label}>What loan duration do you want to renegotiate?</div>
@@ -158,19 +135,19 @@ export default function RequestView({ item, onClose, type }) {
                 value={data.duration}
                 name="duration"
                 onChange={handleChange}
-                // readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
+                readOnly={type === 'view'}
               />
               <span>days</span>
             </label>
           </div>
         </div>
         <div className={styles.section}>
-          <div className={styles.head}>
+          {/* <div className={styles.head}>
             Fee:{' '}
             <span>
               {data.fee} {data.currency}
             </span>
-          </div>
+          </div> */}
           <div className={styles.details}>
             <div className={styles.label}>What renegotiation fee that you want to pay?</div>
             <label className={styles.input}>
@@ -180,15 +157,15 @@ export default function RequestView({ item, onClose, type }) {
                 name="fee"
                 onChange={handleChange}
                 checked={true}
-                // readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
+                readOnly={type === 'view'}
               />
             </label>
           </div>
         </div>
         <div className={styles.section}>
-          <div className={styles.head}>
+          {/* <div className={styles.head}>
             Loan duration: <span>{data.duration} days</span>
-          </div>
+          </div> */}
           <div className={styles.details}>
             <div className={styles.label}>The loan renegotiation will be expired in</div>
             <label className={styles.input}>
@@ -196,8 +173,8 @@ export default function RequestView({ item, onClose, type }) {
                 type="number"
                 value={data.expiry}
                 name="expiry"
-                // onChange={handleChange}
-                // readOnly={type === COLLATERAL_FORM_TYPE.VIEW || !isPermittedNFT}
+                onChange={handleChange}
+                readOnly={type === 'view'}
               />
               <span>days</span>
             </label>
@@ -235,7 +212,7 @@ export default function RequestView({ item, onClose, type }) {
         </div> */}
         <div className={styles.section}>
           <div className={styles.head}>
-            Lender: <span>{data.lender === 'user' ? 'User' : 'Lending Pool'}</span>
+            Lender: <span>{item.lender === 'user' ? 'User' : 'Lending Pool'}</span>
           </div>
           <div className={styles.details}>
             {/* <div className={styles.label}>Where do you want to borrow from ?</div>
@@ -281,7 +258,7 @@ export default function RequestView({ item, onClose, type }) {
           </div>
         )} */}
         <div className={styles['button-wrap']}>
-          <button type="button" onClick={() => handleRenegotiate()}>
+          <button type="button" onClick={() => handleCreateRenegotiation()}>
             Submit
           </button>
           <button type="button" onClick={() => onClose()}>
