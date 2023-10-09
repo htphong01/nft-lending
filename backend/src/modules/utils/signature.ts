@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ethers, parseEther } from 'ethers';
 import { calculateRepayment } from './apr';
 
 const ONE_DAY = 24 * 60 * 60;
@@ -61,6 +61,26 @@ export const generateOfferMessage = (
   const payload = ethers.solidityPacked(
     ['bytes', 'bytes', 'address', 'uint256'],
     [encodedOffer, encodedSignature, loanContract, chainId],
+  );
+  return ethers.keccak256(payload);
+};
+
+export const generateItemMessage = (
+  itemData: any,
+  marketplaceContract,
+  chainId,
+  createdAt,
+) => {
+  const { nft, tokenId, price, creator } = itemData;
+
+  const itemHash = ethers.solidityPacked(
+    ['address', 'uint256', 'uint256', 'address'],
+    [nft, tokenId, parseEther(price.toString()), creator],
+  );
+
+  const payload = ethers.solidityPacked(
+    ['bytes', 'address', 'uint256', 'uint256'],
+    [itemHash, marketplaceContract, chainId, createdAt],
   );
   return ethers.keccak256(payload);
 };

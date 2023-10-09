@@ -17,6 +17,13 @@ export const Environment = {
   REDIS_ORDER_FAMILY: Number(process.env.REDIS_ORDER_FAMILY || 4),
   REDIS_ORDER_DB: Number(process.env.REDIS_ORDER_DB || 1),
 
+  // Redis Item config
+  REDIS_ITEM_HOST: process.env.REDIS_ITEM_HOST || 'localhost',
+  REDIS_ITEM_PORT: Number(process.env.REDIS_ITEM_PORT || 6379),
+  REDIS_ITEM_PASS: process.env.REDIS_ITEM_PASS,
+  REDIS_ITEM_FAMILY: Number(process.env.REDIS_ITEM_FAMILY || 4),
+  REDIS_ITEM_DB: Number(process.env.REDIS_ITEM_DB || 1),
+
   // OPERATOR ACCOUNT
   OPERATOR_ACCOUNT_PRIVATE_KEY: process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
 
@@ -37,4 +44,7 @@ export const Environment = {
   LOAN_ADDRESS:
     process.env.LOAN_ADDRESS || '0x1f2cd935b0ca5b7e9ee2f98970d1bb78797ba6d8',
   CHAIN_ID: process.env.CHAIN_ID || '5555',
+  MARKETPLACE_ADDRESS:
+    process.env.MARKETPLACE_ADDRESS ||
+    '0xe46013b8029cd676cCd269de65b0931dFAC20c94',
 };
