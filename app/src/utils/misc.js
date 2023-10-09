@@ -9,7 +9,7 @@ export const sliceAddress = (address) => {
 };
 
 export const sliceHeadTail = (input, amount) => {
-  return `${input.slice(0, amount)} ... ${input.slice(- amount + 1)}`;
+  return `${input.slice(0, amount)} ... ${input.slice(-amount + 1)}`;
 };
 
 export const calculateRealPrice = (price, rate, denominator) => {
@@ -52,4 +52,21 @@ export const convertOfferDataToSign = (offer) => {
   };
 
   return { offerData, signatureData };
+};
+
+export const convertRequestDataToSign = (request) => {
+  const requestData = {
+    loanId: request.loanId,
+    loanDuration: request.duration,
+    maxRepaymentAmount: ethers.utils.parseUnits(request.maxRepaymentAmount, 18),
+    renegotiateFee: ethers.utils.parseUnits(request.renegotiateFee, 18),
+  };
+
+  const signatureData = {
+    signer: request.creator,
+    nonce: getRandomInt(),
+    expiry: Math.floor(new Date().getTime() / 1000) + 24 * 60 * 60 * request.expiration,
+  };
+
+  return { requestData, signatureData };
 };

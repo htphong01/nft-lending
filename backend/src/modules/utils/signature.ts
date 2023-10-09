@@ -75,13 +75,8 @@ export const generateRequestMessage = (
     requestData;
 
   const encodedRequest = ethers.solidityPacked(
-    ['bytes32', 'uint32', 'uint256', 'uint256'],
-    [
-      loanId,
-      loanDuration,
-      maxRepaymentAmount,
-      ethers.parseEther(renegotiateFee),
-    ],
+    ['bytes', 'uint32', 'uint256', 'uint256'],
+    [loanId, loanDuration, maxRepaymentAmount, renegotiateFee],
   );
 
   const { signer, nonce, expiry } = signatureData;

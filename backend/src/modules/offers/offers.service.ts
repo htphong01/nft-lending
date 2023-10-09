@@ -163,9 +163,11 @@ export class OffersService implements OnModuleInit {
 
             const order = await this.order.getByKey(loanId);
             if (order) {
-              this.order.update(loanId, {
-                duration: newLoanDuration,
-              });
+              await Promise.all([
+                this.order.update(loanId, {
+                  duration: newLoanDuration,
+                }),
+              ]);
             }
 
           default: {

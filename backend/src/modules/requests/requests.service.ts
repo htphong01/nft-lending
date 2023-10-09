@@ -40,7 +40,7 @@ export class RequestsService implements OnModuleInit {
   }
 
   async create(dto: CreateRequestDto) {
-    const offerHash = generateRequestMessage(
+    const requestHash = generateRequestMessage(
       dto,
       dto.signature,
       config.ENV.LOAN_ADDRESS,
@@ -49,7 +49,7 @@ export class RequestsService implements OnModuleInit {
     if (
       !verifySignature(
         dto.creator,
-        ethers.getBytes(offerHash),
+        ethers.getBytes(requestHash),
         dto.signature.signature,
       )
     ) {
@@ -59,12 +59,16 @@ export class RequestsService implements OnModuleInit {
       ...dto,
       // floorPrice: (createOfferDto.offer * 1.1).toFixed(2),
       creator: dto.creator,
-      hash: offerHash,
+      hash: requestHash,
       status: RequestStatus.OPENING,
       createdAt: new Date().getTime(),
     };
     const dacs_cid = await this.dacs.upload(newRequest);
     newRequest.dacs_url = `${config.ENV.SERVER_HOST}:${config.ENV.SERVER_PORT}/dacs/${dacs_cid}`;
-    await this.request.create(offerHash, newRequest);
+    await this.request.create(requestHash, newRequest);
+  }
+
+  async findAll(conditions: Record<string, any> = {}) {
+    return await this.request.find(conditions);
   }
 }

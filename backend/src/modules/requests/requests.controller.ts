@@ -7,8 +7,13 @@ export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
   @Post()
-  create(@Body() createOfferDto: CreateRequestDto) {
-    return this.requestsService.create(createOfferDto);
+  create(@Body() dto: CreateRequestDto) {
+    return this.requestsService.create(dto);
+  }
+
+  @Get()
+  findAll(@Query() conditions: Record<string, string>) {
+    return this.requestsService.findAll(conditions);
   }
 
   // @Patch(':id')

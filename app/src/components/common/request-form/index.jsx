@@ -14,6 +14,9 @@ import { parseMetamaskError } from '../../../utils/convert';
 import { renegotiateLoan } from '../../../utils/contracts/loan';
 import { ethers } from 'ethers';
 import { createRequest } from '../../../api/request.api';
+import { convertRequestDataToSign } from '../../../utils/misc';
+import { LOAN_ADDRESS, CHAIN_ID } from '../../../constants/contract';
+import { generateRequestSignature } from '../../../utils/ethers';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
@@ -62,10 +65,34 @@ export default function RequestView({ item, onClose, type }) {
   const handleCreateRenegotiation = async () => {
     try {
       setIsLoading(true);
-      const { data: result } = await createRequest(data);
+      const request = {
+        creator: account.address,
+        loanId: item.hash,
+        loanDuration: data.duration,
+        maxRepaymentAmount: ethers.utils.parseUnits(data.value, 18).toString(),
+        renegotiateFee: ethers.utils.parseUnits(data.fee, 18).toString(),
+        expiration: data.expiry,
+        loanContract: LOAN_ADDRESS,
+        chainId: CHAIN_ID,
+        // signature: {
+        //   signer: account.address,
+        //   nonce,
+        //   expiry,
+        //   signature,
+        // },
+      };
+      const { signatureData } = convertRequestDataToSign(request);
+      const signature = await generateRequestSignature(request, signatureData);
+      request.signature = {
+        ...signatureData,
+        signature,
+      };
+
+      const { data: result } = await createRequest(request);
       console.log('res: ', result);
     } catch (error) {
-      toast.error(error);
+      // toast.error(error.message);
+      console.log(error);
     } finally {
       setIsLoading(false);
     }

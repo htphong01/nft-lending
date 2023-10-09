@@ -83,9 +83,39 @@ export const getTransactionByEvents = async (address, abi, eventName) => {
     const toBlock = await getBlockNumber();
     // const toBlock = 99153;
     const events = await contract.queryFilter(eventName, toBlock - 10000, toBlock);
-    return events
-
+    return events;
   } catch (error) {
     return [];
   }
+};
+
+export const generateRequestSignature = async (
+  requestData,
+  signatureData,
+  loanContract = LOAN_ADDRESS,
+  chainId = CHAIN_ID
+) => {
+  const { loanId, loanDuration, maxRepaymentAmount, renegotiateFee } = requestData;
+
+  const encodedRequest = ethers.utils.solidityPack(
+    ['bytes', 'uint32', 'uint256', 'uint256'],
+    [loanId, loanDuration, maxRepaymentAmount, renegotiateFee]
+  );
+
+  const { signer: signerAddress, nonce, expiry } = signatureData;
+
+  const encodedSignature = ethers.utils.solidityPack(['address', 'uint256', 'uint256'], [signerAddress, nonce, expiry]);
+
+  const payload = ethers.utils.solidityPack(
+    ['bytes', 'bytes', 'address', 'uint256'],
+    [encodedRequest, encodedSignature, loanContract, chainId]
+  );
+
+  const message = ethers.utils.arrayify(ethers.utils.keccak256(payload));
+
+  const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+  const account = (await provider.listAccounts())[0];
+  const signer = provider.getSigner(account);
+  const signature = await signer.signMessage(message);
+  return signature;
 };

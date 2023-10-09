@@ -1,3 +1,4 @@
+import { RequestsModule } from './modules/requests/requests.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ConnectionsModule } from './connections/connections.module';
@@ -24,6 +25,7 @@ import { PermittedNFTsModule } from './modules/permitted-nfts/permitted-nfts.mod
     SchedulesModule,
     TokenBoundAccountsModule,
     PermittedNFTsModule,
+    RequestsModule,
   ],
   providers: [ConnectionsModule],
 })
