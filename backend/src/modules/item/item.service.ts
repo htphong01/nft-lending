@@ -68,7 +68,7 @@ export class ItemService implements OnModuleInit {
   }
 
   async purchase(id: string) {
-    return await this.item.updateStatus(id, ItemStatus.SOLD_OUT);
+    return await this.item.updateStatus(id, ItemStatus.SOLD);
   }
 
   async close(id: string) {
