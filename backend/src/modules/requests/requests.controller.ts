@@ -16,6 +16,11 @@ export class RequestsController {
     return this.requestsService.findAll(conditions);
   }
 
+  @Get(':id')
+  findById(@Param('id') id: string) {
+    return this.requestsService.findById(id);
+  }
+
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
   //   return this.offersService.update(+id, updateOrderDto);

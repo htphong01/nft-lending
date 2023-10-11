@@ -1,9 +1,13 @@
+import { OffersService } from './../offers/offers.service';
 import {
   HttpException,
   HttpStatus,
   Injectable,
   UnauthorizedException,
   OnModuleInit,
+  BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
@@ -17,6 +21,9 @@ import { RequestStatus } from './dto/request.enum';
 import { Request } from './reposities/request.reposity';
 import { Order } from '../orders/reposities/order.reposity';
 import { DacsService } from '../dacs/dacs.service';
+import { OfferStatus } from '../offers/dto/offer.enum';
+import { OrdersService } from '../orders/orders.service';
+import { OrderStatus } from '../orders/dto/order.enum';
 // import * as FACTORY_ABI from './abi/LOAN.json';
 
 @Injectable()
@@ -26,8 +33,10 @@ export class RequestsService implements OnModuleInit {
 
   constructor(
     private readonly request: Request,
-    private readonly order: Order,
     private readonly dacs: DacsService,
+    @Inject(forwardRef(() => OffersService))
+    private readonly offerService: OffersService,
+    private readonly ordersService: OrdersService,
   ) {}
 
   onModuleInit() {
@@ -40,6 +49,12 @@ export class RequestsService implements OnModuleInit {
   }
 
   async create(dto: CreateRequestDto) {
+    const order = await this.ordersService.findById(dto.loanId);
+
+    if (order.status !== OrderStatus.FILLED) {
+      throw new BadRequestException('invalid_status');
+    }
+
     const requestHash = generateRequestMessage(
       dto,
       dto.signature,
@@ -55,9 +70,17 @@ export class RequestsService implements OnModuleInit {
     ) {
       throw new UnauthorizedException();
     }
+
+    const offers = await this.offerService.findByOrder(dto.loanId);
+
+    const offer = offers.find((o) => {
+      return o.status === OfferStatus.FILLED;
+    });
+
     const newRequest: Record<string, any> = {
       ...dto,
       // floorPrice: (createOfferDto.offer * 1.1).toFixed(2),
+      borrower: offer.creator,
       creator: dto.creator,
       hash: requestHash,
       status: RequestStatus.OPENING,
@@ -69,6 +92,21 @@ export class RequestsService implements OnModuleInit {
   }
 
   async findAll(conditions: Record<string, any> = {}) {
-    return await this.request.find(conditions);
+    let requests = await this.request.find(conditions);
+
+    for (let request of requests) {
+      const order = await this.ordersService.findById(request.loanId);
+      request.order = order;
+    }
+
+    return requests;
+  }
+
+  async findById(id: string) {
+    const request = await this.request.getByKey(id);
+
+    const order = await this.ordersService.findById(request.loanId);
+
+    return { ...request, order };
   }
 }

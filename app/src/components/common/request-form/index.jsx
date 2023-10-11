@@ -69,11 +69,12 @@ export default function RequestView({ item, onClose, type }) {
         creator: account.address,
         loanId: item.hash,
         loanDuration: data.duration,
-        maxRepaymentAmount: ethers.utils.parseUnits(data.value, 18).toString(),
-        renegotiateFee: ethers.utils.parseUnits(data.fee, 18).toString(),
+        maxRepaymentAmount: data.value,
+        renegotiateFee: data.fee,
         expiration: data.expiry,
         loanContract: LOAN_ADDRESS,
         chainId: CHAIN_ID,
+        borrower: item.borrower,
         // signature: {
         //   signer: account.address,
         //   nonce,
@@ -88,13 +89,13 @@ export default function RequestView({ item, onClose, type }) {
         signature,
       };
 
-      const { data: result } = await createRequest(request);
-      console.log('res: ', result);
+      await createRequest(request);
     } catch (error) {
-      // toast.error(error.message);
       console.log(error);
+      toast.error('An error has been occured!');
     } finally {
       setIsLoading(false);
+      onClose(true);
     }
   };
 
@@ -103,7 +104,7 @@ export default function RequestView({ item, onClose, type }) {
   // }, []);
 
   useEffect(() => {
-    console.log('item: ', item);
+    console.log('Hash: ', item.hash);
   }, []);
 
   const handleSubmit = () => {};

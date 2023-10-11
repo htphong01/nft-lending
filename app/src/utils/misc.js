@@ -58,7 +58,6 @@ export const convertRequestDataToSign = (request) => {
   const requestData = {
     loanId: request.loanId,
     loanDuration: request.duration,
-    maxRepaymentAmount: ethers.utils.parseUnits(request.maxRepaymentAmount, 18),
     renegotiateFee: ethers.utils.parseUnits(request.renegotiateFee, 18),
   };
 

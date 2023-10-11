@@ -7,3 +7,9 @@ export const acceptRequest = (id) => {
 export const createRequest = (data) => {
   return axios.post('/requests', data);
 };
+
+export const getRequests = (params) => {
+  return axios.get('/requests', {
+    params,
+  });
+};

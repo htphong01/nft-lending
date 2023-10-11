@@ -8,8 +8,9 @@ import { getOffers } from '@src/api/offer.api';
 import { calculateRepayment, acceptOffer, parseMetamaskError } from '@src/utils';
 import { OfferStatus, ONE_DAY } from '@src/constants';
 import OfferView from '@src/components/common/offer-view';
-import Table from '@src/components/common/offer-table';
+import Table from '@src/components/common/request-table';
 import styles from './styles.module.scss';
+import { getRequests } from '../../../api/request.api';
 
 export default function Requests() {
   const account = useSelector((state) => state.account);
@@ -18,6 +19,9 @@ export default function Requests() {
   const [isLoading, setIsLoading] = useState(true);
   const [offerList, setOfferList] = useState([]);
   const [selectedOffer, setSelectedOffer] = useState();
+
+  const [requests, setRequests] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState();
 
   const handleAcceptOffer = async (item) => {
     try {
@@ -49,10 +53,15 @@ export default function Requests() {
     }
   };
 
-  const fetchOffers = async () => {
+  const fetchRequests = async () => {
     try {
       const { data } = await getOffers({ borrower: account.address, status: OfferStatus.OPENING });
       setOfferList(data);
+
+      const { data: requests } = await getRequests({ borrower: account.address });
+      console.log('Requests: ', requests);
+      setRequests(requests);
+
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -61,7 +70,7 @@ export default function Requests() {
   };
 
   useEffect(() => {
-    fetchOffers();
+    fetchRequests();
   }, [account.address]);
 
   return (
@@ -85,7 +94,11 @@ export default function Requests() {
           <ReactLoading type="bars" color="#fff" height={100} width={120} />
         </div>
       ) : (
-        <Table title="Offers received" data={offerList} action={{ text: 'View', handle: setSelectedOffer }} />
+        <Table
+          title="Renegotiation requests received"
+          data={requests}
+          action={{ text: 'View', handle: setSelectedRequest }}
+        />
       )}
     </div>
   );

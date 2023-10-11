@@ -14,7 +14,7 @@ import { useCallback } from 'react';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
-export default function OfferView({ item, onClose, action }) {
+export default function RequestView({ item, onClose, action }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
   const currency = useSelector((state) => state.account.currency);
@@ -28,7 +28,7 @@ export default function OfferView({ item, onClose, action }) {
   const fetchOrder = async () => {
     try {
       const { data: order } = await getOrderByHash(item.order);
-      setData({ ...data, order });
+      setData({ ...data, ...order });
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
