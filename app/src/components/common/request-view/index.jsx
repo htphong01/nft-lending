@@ -9,7 +9,7 @@ import { Icon } from '@iconify/react';
 import { calculateRepayment, sliceAddress } from '@src/utils';
 import { getOrderByHash } from '@src/api/order.api';
 import styles from './styles.module.scss';
-import RequestView from '../request-form';
+import RequestForm from '../request-form';
 import { useCallback } from 'react';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
@@ -26,6 +26,7 @@ export default function RequestView({ item, onClose, action }) {
   // useOnClickOutside(ref, () => onClose());
 
   const fetchOrder = async () => {
+    console.log('item ne: ', item);
     try {
       const { data: order } = await getOrderByHash(item.order);
       setData({ ...data, ...order });
@@ -125,7 +126,7 @@ export default function RequestView({ item, onClose, action }) {
           </div>
         )}
       </div>
-      {isOpenRequest && <RequestView item={data} onClose={handleOpenRequestForm} />}
+      {isOpenRequest && <RequestForm item={data} onClose={handleOpenRequestForm} />}
     </div>
   );
 }

@@ -20,7 +20,7 @@ import { generateRequestSignature } from '../../../utils/ethers';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
-export default function RequestView({ item, onClose, type }) {
+export default function RequestForm({ item, onClose, type }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
   const account = useSelector((state) => state.account);

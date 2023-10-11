@@ -8,6 +8,7 @@ import { getOffers } from '@src/api/offer.api';
 import { calculateRepayment, acceptOffer, parseMetamaskError } from '@src/utils';
 import { OfferStatus, ONE_DAY } from '@src/constants';
 import OfferView from '@src/components/common/offer-view';
+import RequestView from '../../common/request-view';
 import Table from '@src/components/common/request-table';
 import styles from './styles.module.scss';
 import { getRequests } from '../../../api/request.api';
@@ -24,33 +25,28 @@ export default function Requests() {
   const [selectedRequest, setSelectedRequest] = useState();
 
   const handleAcceptOffer = async (item) => {
-    try {
-      setIsCommitLoading(true);
-
-      const repayment = calculateRepayment(item.offer, item.rate, item.duration);
-
-      const offer = {
-        principalAmount: ethers.utils.parseUnits(item.offer, 18),
-        maximumRepaymentAmount: ethers.utils.parseUnits(`${repayment}`, 18),
-        nftCollateralId: item.nftTokenId,
-        nftCollateralContract: item.nftAddress,
-        duration: item.duration * ONE_DAY,
-        adminFeeInBasisPoints: item.adminFeeInBasisPoints,
-        erc20Denomination: item.erc20Denomination,
-      };
-
-      const signature = item.signature;
-
-      const tx = await acceptOffer(item.hash, offer, signature);
-      await tx.wait();
-
-      setIsCommitLoading(false);
-      toast.success('Accept offer successfully');
-    } catch (error) {
-      const txError = parseMetamaskError(error);
-      toast.error(txError.context);
-      setIsCommitLoading(false);
-    }
+    // try {
+    //   setIsCommitLoading(true);
+    //   const repayment = calculateRepayment(item.offer, item.rate, item.duration);
+    //   const offer = {
+    //     principalAmount: ethers.utils.parseUnits(item.offer, 18),
+    //     maximumRepaymentAmount: ethers.utils.parseUnits(`${repayment}`, 18),
+    //     nftCollateralId: item.nftTokenId,
+    //     nftCollateralContract: item.nftAddress,
+    //     duration: item.duration * ONE_DAY,
+    //     adminFeeInBasisPoints: item.adminFeeInBasisPoints,
+    //     erc20Denomination: item.erc20Denomination,
+    //   };
+    //   const signature = item.signature;
+    //   const tx = await acceptOffer(item.hash, offer, signature);
+    //   await tx.wait();
+    //   setIsCommitLoading(false);
+    //   toast.success('Accept offer successfully');
+    // } catch (error) {
+    //   const txError = parseMetamaskError(error);
+    //   toast.error(txError.context);
+    //   setIsCommitLoading(false);
+    // }
   };
 
   const fetchRequests = async () => {
@@ -82,10 +78,10 @@ export default function Requests() {
       )}
       <Toaster position="top-center" reverseOrder={false} />
 
-      {selectedOffer && (
-        <OfferView
-          item={selectedOffer}
-          onClose={setSelectedOffer}
+      {selectedRequest && (
+        <RequestView
+          item={selectedRequest}
+          onClose={setSelectedRequest}
           action={{ text: 'Accept', handle: handleAcceptOffer }}
         />
       )}
