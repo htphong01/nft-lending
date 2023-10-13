@@ -1,6 +1,15 @@
 import { RequestsService } from './requests.service';
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Patch,
+} from '@nestjs/common';
 import { CreateRequestDto } from './dto/create-request.dto';
+import { UpdateRequestDto } from './dto/update-request.dto';
 
 @Controller('requests')
 export class RequestsController {
@@ -21,10 +30,11 @@ export class RequestsController {
     return this.requestsService.findById(id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-  //   return this.offersService.update(+id, updateOrderDto);
-  // }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateRequestDto) {
+    console.log(dto);
+    return this.requestsService.update(id, dto);
+  }
 
   // @Delete(':id')
   // remove(@Param('id') id: string) {

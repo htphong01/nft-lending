@@ -35,6 +35,12 @@
       }
     }
 
+    .title {
+      font-weight: 400;
+      font-size: 30px;
+      text-align: center;
+    }
+
     .row {
       grid-auto-rows: 1fr;
       display: grid;
@@ -154,5 +160,11 @@
         }
       }
     }
+  }
+
+  textarea {
+    height: 50px;
+    resize: none;
+    color: rgb(54, 40, 72);
   }
 }

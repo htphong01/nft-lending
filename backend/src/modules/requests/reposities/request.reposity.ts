@@ -52,8 +52,13 @@ export class Request {
 
   async update(id: string, data: any): Promise<boolean> {
     try {
+      console.log(data);
       const queryData = await this.redisService.hget(DATABASE_NAME, id);
       if (!queryData) return;
+
+      console.log(
+        JSON.stringify({ ...JSON.parse(queryData.toString()), ...data }),
+      );
 
       await this.redisService.hset(
         DATABASE_NAME,

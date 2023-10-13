@@ -13,3 +13,7 @@ export const getRequests = (params) => {
     params,
   });
 };
+
+export const updateRequest = (id, data) => {
+  return axios.patch(`/requests/${id}`, data);
+};

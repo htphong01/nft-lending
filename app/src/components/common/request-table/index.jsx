@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useSelector } from 'react-redux';
-import { calculateRepayment, sliceAddress, getOfferStatusText } from '@src/utils';
+import { calculateRepayment, sliceAddress, getRequestStatusText } from '@src/utils';
 import styles from './styles.module.scss';
 
 export default function Table({ title, data, action }) {
@@ -38,10 +38,10 @@ export default function Table({ title, data, action }) {
             </div>
             <div className={styles['table-list-item']}>{item.order.duration} days</div>
             <div className={styles['table-list-item']}>{item.order.rate} %</div>
-            <div className={styles['table-list-item']}>{getOfferStatusText(item.order.status)}</div>
+            <div className={styles['table-list-item']}>{getRequestStatusText(item.status)}</div>
 
             <div className={styles['table-list-item']}>{new Date(item.order.createdAt).toLocaleDateString()}</div>
-            <div className={styles['table-list-item']}>{item.order.expiration} days</div>
+            <div className={styles['table-list-item']}>{item.expiration} day(s)</div>
             <div className={styles['table-list-item']}>
               <button onClick={() => action.handle(item)}>{action.text}</button>
             </div>

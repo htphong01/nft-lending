@@ -11,38 +11,41 @@ import { getOrderByHash } from '@src/api/order.api';
 import styles from './styles.module.scss';
 import RequestForm from '../request-form';
 import { useCallback } from 'react';
+import { updateRequest } from '../../../api/request.api';
+import { toast } from 'react-hot-toast';
+import { RequestStatus } from '../../../constants/enum';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
-export default function OfferView({ item, onClose, action }) {
+export default function RequestPopup({ item, onClose }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
   const currency = useSelector((state) => state.account.currency);
 
   const [data, setData] = useState(item);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isOpenRequest, setIsOpenRequest] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // useOnClickOutside(ref, () => onClose());
 
-  const fetchOrder = async () => {
-    try {
-      const { data: order } = await getOrderByHash(item.order);
-      setData({ ...data, order });
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      console.log('error', error);
-    }
+  const handleAcceptRenegotiation = async () => {
+    // @TODO: Call renegotiateLoan() contract
+    console.log('Ahihi');
   };
 
-  const handleOpenRequestForm = useCallback(() => {
-    setIsOpenRequest(!isOpenRequest);
-  }, [isOpenRequest]);
-
-  useEffect(() => {
-    fetchOrder();
-  }, []);
+  const handleRejectRenegotiation = async () => {
+    try {
+      setIsLoading(true);
+      await updateRequest(item.hash, {
+        status: RequestStatus.REJECTED,
+      });
+    } catch (error) {
+      console.log(error);
+      toast.error('An error has occured!');
+    } finally {
+      setIsLoading(false);
+      onClose();
+    }
+  };
 
   return (
     <div className={styles['form-container']}>
@@ -53,79 +56,97 @@ export default function OfferView({ item, onClose, action }) {
             <ReactLoading type="bars" color="#fff" height={100} width={120} />
           </div>
         ) : (
-          <div className={styles.row}>
-            <div className={styles.section}>
-              <img src={data.order.metadata.image} alt="NFT Image" />
-            </div>
-            <div className={styles.section}>
-              <div className={styles.info}>
-                <div className={styles.label}>Name:</div>
-                <div className={styles.value}>
-                  <span>{data.order.metadata.name}</span>
-                  {!data.lender && (
-                    <Link to={`/assets/${data.order.hash}`} target="_blank">
-                      <Icon icon="uil:edit" />
-                    </Link>
-                  )}
-                </div>
+          <>
+            <div className={styles.title}>Renegotiation Loan</div>
+            <div className={styles.row}>
+              <div className={styles.section}>
+                <img src={item.order.metadata.image} alt="NFT Image" />
               </div>
-              <div className={styles.info}>
-                <div className={styles.label}>Lender: </div>
-                <div className={styles.value}>
-                  <span>{data.lender ? 'Lending Pool' : sliceAddress(data.creator)}</span>
-                  {!data.lender && (
-                    <Link to={`${data.lender ? 'lending-pool' : CVC_SCAN}/address/${data.creator}`} target="_blank">
-                      <Icon icon="uil:edit" />
-                    </Link>
-                  )}
-                </div>
-              </div>
-              <div className={styles.info}>
-                <div className={styles.label}>Borrower: </div>
-                <div className={styles.value}>
-                  <span>{sliceAddress(data.order.creator)}</span>
-                  <Link to={`${CVC_SCAN}/address/${data.order.creator}`} target="_blank">
-                    <Icon icon="uil:edit" />
-                  </Link>
-                </div>
-              </div>
-              <div className={styles.info}>
-                <div className={styles.label}>Amount: </div>
-                <div className={styles.value}>
-                  {data.offer} {currency}
-                </div>
-              </div>
-              <div className={styles.info}>
-                <div className={styles.label}>Duration: </div>
-                <div className={styles.value}>{data.duration} days</div>
-              </div>
-              <div className={styles.info}>
-                <div className={styles.label}>Repayment: </div>
-                <div className={styles.value}>
-                  {calculateRepayment(data.offer, data.rate, data.duration)} {currency}
-                </div>
-              </div>
-              <div className={styles.info}>
-                <div className={styles.label}>APR: </div>
-                <div className={styles.value}>{data.rate}%</div>
-              </div>
-              <div className={styles.info}>
-                <div className={styles.label}>Float price: </div>
-                <div className={styles.value}>
-                  {data.floorPrice} {currency}
-                </div>
-              </div>
-              {action && (
+              <div className={styles.section}>
                 <div className={styles.info}>
-                  <button onClick={() => handleOpenRequestForm()}>Renegotiate</button>
-                  <button onClick={() => action.handle(data)}>{action.text}</button>
+                  <div className={styles.label}>Name:</div>
+                  <div className={styles.value}>
+                    <span>{item.order.metadata.name}</span>
+                    {!data.lender && (
+                      <Link to={`/assets/${item.order.hash}`} target="_blank">
+                        <Icon icon="uil:edit" />
+                      </Link>
+                    )}
+                  </div>
                 </div>
-              )}
+                <div className={styles.info}>
+                  <div className={styles.label}>Lender: </div>
+                  <div className={styles.value}>
+                    <span>{item.order.lender ? 'Lending Pool' : sliceAddress(item.order.creator)}</span>
+                    {!item.order.lender && (
+                      <Link
+                        to={`${data.lender ? 'lending-pool' : CVC_SCAN}/address/${item.order.creator}`}
+                        target="_blank"
+                      >
+                        <Icon icon="uil:edit" />
+                      </Link>
+                    )}
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Borrower: </div>
+                  <div className={styles.value}>
+                    <span>{sliceAddress(item.order.creator)}</span>
+                    <Link to={`${CVC_SCAN}/address/${item.order.creator}`} target="_blank">
+                      <Icon icon="uil:edit" />
+                    </Link>
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Amount: </div>
+                  <div className={styles.value}>
+                    {item.order.offer} {currency}
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Duration: </div>
+                  <div className={styles.value}>
+                    <span>{item.order.duration} day(s)</span>
+                    <Icon icon={'uil:arrow-right'} />
+                    <span style={{ marginLeft: '12px' }}>
+                      <b>
+                        <u>{item.loanDuration} day(s)</u>
+                      </b>
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Repayment: </div>
+                  <div className={styles.value}>
+                    {calculateRepayment(item.order.offer, item.order.rate, item.order.duration)} {currency}
+                  </div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>APR: </div>
+                  <div className={styles.value}>{item.order.rate}%</div>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Float price: </div>
+                  <div className={styles.value}>
+                    {item.order.floorPrice} {currency}
+                  </div>
+                </div>
+                {item.status === RequestStatus.OPENING && (
+                  <div className={styles.info}>
+                    <button onClick={() => handleRejectRenegotiation()}>Reject</button>
+                    <button onClick={() => handleAcceptRenegotiation()}>Accept</button>
+                  </div>
+                )}
+                <div className={styles.info}>
+                  <div className={styles.label}>Reason: </div>
+                  <div className={styles.value}>{item.reason}</div>
+                </div>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
-      {isOpenRequest && <RequestForm item={data} onClose={handleOpenRequestForm} />}
+      {/* {isOpenRequest && <RequestForm item={data} onClose={handleOpenRequestForm} />} */}
     </div>
   );
 }

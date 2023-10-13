@@ -24,6 +24,7 @@ import { DacsService } from '../dacs/dacs.service';
 import { OfferStatus } from '../offers/dto/offer.enum';
 import { OrdersService } from '../orders/orders.service';
 import { OrderStatus } from '../orders/dto/order.enum';
+import { UpdateRequestDto } from './dto/update-request.dto';
 // import * as FACTORY_ABI from './abi/LOAN.json';
 
 @Injectable()
@@ -108,5 +109,9 @@ export class RequestsService implements OnModuleInit {
     const order = await this.ordersService.findById(request.loanId);
 
     return { ...request, order };
+  }
+
+  async update(id: string, dto: UpdateRequestDto) {
+    await this.request.update(id, { ...dto });
   }
 }

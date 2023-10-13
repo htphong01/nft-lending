@@ -3,6 +3,7 @@ import { WXCR_ADDRESS } from '@src/constants';
 import { ethers } from 'ethers';
 import { ONE_DAY } from '@src/constants';
 import { calculateRepayment } from './apr';
+import { RequestStatus } from '../constants/enum';
 
 export const sliceAddress = (address) => {
   return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
@@ -30,6 +31,10 @@ export const getOfferStatusText = (status) => {
 
 export const getOrderStatusText = (status) => {
   return Object.fromEntries(Object.entries(OrderStatus).map((a) => a.reverse()))[status];
+};
+
+export const getRequestStatusText = (status) => {
+  return Object.fromEntries(Object.entries(RequestStatus).map((a) => a.reverse()))[status];
 };
 
 export const convertOfferDataToSign = (offer) => {

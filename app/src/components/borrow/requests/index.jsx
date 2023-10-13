@@ -12,6 +12,7 @@ import RequestView from '../../common/request-view';
 import Table from '@src/components/common/request-table';
 import styles from './styles.module.scss';
 import { getRequests } from '../../../api/request.api';
+import RequestPopup from '../../common/request-popup';
 
 export default function Requests() {
   const account = useSelector((state) => state.account);
@@ -65,6 +66,11 @@ export default function Requests() {
     }
   };
 
+  const onClose = async () => {
+    setSelectedRequest(null);
+    await fetchRequests();
+  };
+
   useEffect(() => {
     fetchRequests();
   }, [account.address]);
@@ -78,13 +84,7 @@ export default function Requests() {
       )}
       <Toaster position="top-center" reverseOrder={false} />
 
-      {selectedRequest && (
-        <RequestView
-          item={selectedRequest}
-          onClose={setSelectedRequest}
-          action={{ text: 'Accept', handle: handleAcceptOffer }}
-        />
-      )}
+      {selectedRequest && <RequestPopup item={selectedRequest} onClose={onClose} />}
       {isLoading ? (
         <div className="react-loading-item">
           <ReactLoading type="bars" color="#fff" height={100} width={120} />

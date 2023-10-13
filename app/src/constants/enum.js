@@ -19,3 +19,9 @@ export const FormType = {
   VIEW: 'View',
   EDIT: 'Edit',
 };
+
+export const RequestStatus = {
+  OPENING: 0,
+  FILLED: 1,
+  REJECTED: 2,
+};
