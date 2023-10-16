@@ -2,50 +2,45 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import ReactLoading from 'react-loading';
-import { getOffers } from '@src/api/offer.api';
-import { OfferStatus } from '@src/constants/enum';
-import OfferView from '@src/components/common/offer-view';
 import Table from '@src/components/common/request-table';
 import styles from './styles.module.scss';
 import { getRequests } from '../../../api/request.api';
+import RequestPopup from '../../common/request-popup';
 
 export default function Requests() {
   const account = useSelector((state) => state.account);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [offerList, setOfferList] = useState([]);
   const [requests, setRequests] = useState([]);
-  const [selectedRequest, setSelectedRequest] = useState([]);
-  const [selectedOffer, setSelectedOffer] = useState();
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
-  const handleCancelOffer = () => {};
-
-  const fetchOffers = async () => {
+  const fetchRequests = async () => {
     try {
-      console.log('address: ', account.address);
-      const { data } = await getOffers({ creator: account.address, status: OfferStatus.OPENING });
       const { data: requests } = await getRequests({ creator: account.address });
-      console.log('Requests: ', requests);
-      setOfferList(data);
       setRequests(requests);
-      setIsLoading(false);
     } catch (error) {
-      setIsLoading(false);
       console.log('error', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchOffers();
+    fetchRequests();
   }, [account.address]);
+
+  const onClose = async () => {
+    setSelectedRequest(null);
+    await fetchRequests();
+  };
 
   return (
     <div className={styles.container}>
-      {selectedOffer && (
-        <OfferView
-          item={selectedOffer}
-          onClose={setSelectedOffer}
-          action={{ text: 'Cancel', handle: handleCancelOffer }}
+      {selectedRequest && (
+        <RequestPopup
+          item={selectedRequest}
+          onClose={onClose}
+          // action={{ text: 'Cancel', handle: handleCancelOffer }}
         />
       )}
       {isLoading ? (
@@ -53,7 +48,7 @@ export default function Requests() {
           <ReactLoading type="bars" color="#fff" height={100} width={120} />
         </div>
       ) : (
-        <Table title="Offers sent" data={requests} action={{ text: 'View', handle: setSelectedRequest }} />
+        <Table title="Requests sent" data={requests} action={{ text: 'View', handle: setSelectedRequest }} />
       )}
     </div>
   );

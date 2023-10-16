@@ -27,10 +27,10 @@ export default function RequestForm({ item, onClose, type }) {
 
   const [data, setData] = useState({
     duration: 0,
-    value: 0,
     fee: 0,
     expiry: 0,
     currency: account.currency,
+    reason: '',
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -67,14 +67,14 @@ export default function RequestForm({ item, onClose, type }) {
       setIsLoading(true);
       const request = {
         creator: account.address,
-        loanId: item.hash,
+        loanId: item.order.hash,
         loanDuration: data.duration,
-        maxRepaymentAmount: data.value,
         renegotiateFee: data.fee,
         expiration: data.expiry,
         loanContract: LOAN_ADDRESS,
         chainId: CHAIN_ID,
-        borrower: item.borrower,
+        lender: item.creator,
+        reason: data.reason,
         // signature: {
         //   signer: account.address,
         //   nonce,
@@ -82,8 +82,9 @@ export default function RequestForm({ item, onClose, type }) {
         //   signature,
         // },
       };
-      const { signatureData } = convertRequestDataToSign(request);
-      const signature = await generateRequestSignature(request, signatureData);
+      console.log('Submit: ', request);
+      const { requestData, signatureData } = convertRequestDataToSign(request);
+      const signature = await generateRequestSignature(requestData, signatureData);
       request.signature = {
         ...signatureData,
         signature,
@@ -104,7 +105,7 @@ export default function RequestForm({ item, onClose, type }) {
   // }, []);
 
   useEffect(() => {
-    console.log('Hash: ', item.hash);
+    console.log('Hash: ', item.order.hash);
   }, []);
 
   const handleSubmit = () => {};
@@ -138,7 +139,7 @@ export default function RequestForm({ item, onClose, type }) {
             </span>
           </div>
           <div className={styles.details}>
-            <div className={styles.label}>What repayment value do you want to renegotiate?</div>
+            {/* <div className={styles.label}>What repayment value do you want to renegotiate?</div>
             <label className={styles.input}>
               <input
                 type="number"
@@ -148,7 +149,7 @@ export default function RequestForm({ item, onClose, type }) {
                 checked={true}
                 readOnly={type === 'view'}
               />
-            </label>
+            </label> */}
           </div>
         </div>
         <div className={styles.section}>
@@ -240,10 +241,10 @@ export default function RequestForm({ item, onClose, type }) {
         </div> */}
         <div className={styles.section}>
           <div className={styles.head}>
-            Lender: <span>{item.lender === 'user' ? 'User' : 'Lending Pool'}</span>
+            Lender: <span>{item.order.lender === 'user' ? 'User' : 'Lending Pool'}</span>
           </div>
-          <div className={styles.details}>
-            {/* <div className={styles.label}>Where do you want to borrow from ?</div>
+          {/* <div className={styles.details}>
+            <div className={styles.label}>Where do you want to borrow from ?</div>
             <div className={styles.select}>
               <label className={styles.input}>
                 <input
@@ -267,8 +268,8 @@ export default function RequestForm({ item, onClose, type }) {
                 />
                 <span>Lending Pool</span>
               </label>
-            </div> */}
-          </div>
+            </div>
+          </div> */}
         </div>
         {/* {type === COLLATERAL_FORM_TYPE.VIEW && item.lender === 'pool' && (
           <div className={styles.section}>
@@ -285,6 +286,12 @@ export default function RequestForm({ item, onClose, type }) {
             </div>
           </div>
         )} */}
+        <div className={styles.section}>
+          <div className={styles.details}>
+            <div className={styles.label}>Reason:</div>
+            <textarea value={data.reason} onChange={handleChange} name="reason" />
+          </div>
+        </div>
         <div className={styles['button-wrap']}>
           <button type="button" onClick={() => handleCreateRenegotiation()}>
             Submit

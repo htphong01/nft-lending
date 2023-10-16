@@ -95,11 +95,11 @@ export const generateRequestSignature = async (
   loanContract = LOAN_ADDRESS,
   chainId = CHAIN_ID
 ) => {
-  const { loanId, loanDuration, maxRepaymentAmount, renegotiateFee } = requestData;
+  const { loanId, loanDuration, renegotiateFee } = requestData;
 
   const encodedRequest = ethers.utils.solidityPack(
     ['bytes', 'uint32', 'uint256'],
-    [loanId, loanDuration, ethers.utils.parseUnits(renegotiateFee, 18)]
+    [loanId, loanDuration, renegotiateFee]
   );
 
   const { signer: signerAddress, nonce, expiry } = signatureData;

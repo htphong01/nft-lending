@@ -37,9 +37,13 @@ export default function RequestView({ item, onClose, action }) {
     }
   };
 
-  const handleOpenRequestForm = useCallback(() => {
+  // const handleOpenRequestForm = useCallback(() => {
+  //   setIsOpenRequest(!isOpenRequest);
+  // }, [isOpenRequest]);
+
+  const handleOpenRequestForm = () => {
     setIsOpenRequest(!isOpenRequest);
-  }, [isOpenRequest]);
+  };
 
   useEffect(() => {
     fetchOrder();

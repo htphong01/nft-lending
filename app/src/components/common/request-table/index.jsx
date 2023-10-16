@@ -29,7 +29,7 @@ export default function Table({ title, data, action }) {
           <div className={styles['table-list']} key={index}>
             <div className={styles['table-list-item']}>{sliceAddress(item.order.hash)}</div>
             <div className={styles['table-list-item']}>{sliceAddress(item.creator)}</div>
-            <div className={styles['table-list-item']}>{sliceAddress(item.borrower)}</div>
+            <div className={styles['table-list-item']}>{sliceAddress(item.lender || item.borrower)}</div>
             <div className={styles['table-list-item']}>
               {item.order.offer} {account.currency}
             </div>

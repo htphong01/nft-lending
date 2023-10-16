@@ -60,16 +60,17 @@ export const convertOfferDataToSign = (offer) => {
 };
 
 export const convertRequestDataToSign = (request) => {
+  console.log('request: ', request);
   const requestData = {
     loanId: request.loanId,
-    loanDuration: request.duration,
+    loanDuration: request.loanDuration,
     renegotiateFee: ethers.utils.parseUnits(request.renegotiateFee, 18),
   };
 
   const signatureData = {
     signer: request.creator,
     nonce: getRandomInt(),
-    expiry: Math.floor(new Date().getTime() / 1000) + 24 * 60 * 60 * request.expiration,
+    expiry: Math.floor(new Date().getTime() / 1000) + 24 * 60 * 60 * +request.expiration,
   };
 
   return { requestData, signatureData };

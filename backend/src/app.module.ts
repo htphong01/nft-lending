@@ -11,6 +11,7 @@ import { LendingPoolModule } from './modules/lending-pool/lending-pool.module';
 import { SchedulesModule } from './modules/schedules/schedules.module';
 import { TokenBoundAccountsModule } from './modules/token-bound-accounts/token-bound-accounts.module';
 import { PermittedNFTsModule } from './modules/permitted-nfts/permitted-nfts.module';
+import { ItemModule } from './modules/item/item.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PermittedNFTsModule } from './modules/permitted-nfts/permitted-nfts.mod
     TokenBoundAccountsModule,
     PermittedNFTsModule,
     RequestsModule,
+    ItemModule,
   ],
   providers: [ConnectionsModule],
 })

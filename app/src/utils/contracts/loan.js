@@ -31,23 +31,7 @@ export const acceptOfferLendingPool = (loanId, offer, signatures) => {
   return contract.acceptOfferLendingPool(loanId, offer, signatures);
 };
 
-export const renegotiateLoan = (
-  loanId,
-  loanDuration,
-  maxRepayAmount,
-  renegotiateFee,
-  lenderNonce,
-  expiry,
-  lenderSignature
-) => {
+export const renegotiateLoan = (loanId, loanDuration, renegotiateFee, lenderNonce, expiry, lenderSignature) => {
   const contract = loanContract(signer);
-  return contract.renegotiateLoan(
-    loanId,
-    loanDuration,
-    maxRepayAmount,
-    renegotiateFee,
-    lenderNonce,
-    expiry,
-    lenderSignature
-  );
+  return contract.renegotiateLoan(loanId, loanDuration, renegotiateFee, lenderNonce, expiry, lenderSignature);
 };

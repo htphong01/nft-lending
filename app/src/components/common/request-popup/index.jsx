@@ -10,10 +10,14 @@ import { calculateRepayment, sliceAddress } from '@src/utils';
 import { getOrderByHash } from '@src/api/order.api';
 import styles from './styles.module.scss';
 import RequestForm from '../request-form';
-import { useCallback } from 'react';
 import { updateRequest } from '../../../api/request.api';
-import { toast } from 'react-hot-toast';
-import { RequestStatus } from '../../../constants/enum';
+import { toast, Toaster } from 'react-hot-toast';
+import { OfferStatus, RequestStatus } from '../../../constants/enum';
+import { renegotiateLoan } from '../../../utils/contracts/loan';
+import { parseMetamaskError } from '../../../utils/convert';
+import { ethers } from 'ethers';
+import { convertRequestDataToSign } from '../../../utils/misc';
+import { generateRequestSignature } from '../../../utils/ethers';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
@@ -24,12 +28,50 @@ export default function RequestPopup({ item, onClose }) {
 
   const [data, setData] = useState(item);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCommitLoading, setIsCommitLoading] = useState(false);
 
   // useOnClickOutside(ref, () => onClose());
 
   const handleAcceptRenegotiation = async () => {
-    // @TODO: Call renegotiateLoan() contract
-    console.log('Ahihi');
+    try {
+      setIsCommitLoading(true);
+
+      const offer = item.offers.find((o) => o.status === OfferStatus.FILLED);
+      console.log('offer: ', offer);
+
+      const { requestData, signatureData } = convertRequestDataToSign({ ...item, loanId: offer.hash });
+      console.log('Request data: ', requestData);
+      console.log('Signature data: ', signatureData);
+
+      const signature = await generateRequestSignature(requestData, signatureData);
+      console.log('Signature: ', signature);
+
+      console.log(
+        requestData.loanId,
+        requestData.loanDuration,
+        requestData.renegotiateFee,
+        signatureData.nonce,
+        signatureData.expiry,
+        signature
+      );
+
+      // @TODO: Call renegotiateLoan() contract
+      const tx = await renegotiateLoan(
+        requestData.loanId,
+        requestData.loanDuration,
+        requestData.renegotiateFee,
+        signatureData.nonce,
+        signatureData.expiry,
+        signature
+      );
+      await tx.wait();
+    } catch (error) {
+      console.log(error);
+      const txError = parseMetamaskError(error);
+      toast.error(txError.context);
+    } finally {
+      setIsCommitLoading(false);
+    }
   };
 
   const handleRejectRenegotiation = async () => {
@@ -47,8 +89,19 @@ export default function RequestPopup({ item, onClose }) {
     }
   };
 
+  useEffect(() => {
+    console.log('request popup: ', item);
+  }, []);
+
   return (
     <div className={styles['form-container']}>
+      {isCommitLoading && (
+        <div className="screen-loading-overlay">
+          <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
+        </div>
+      )}
+      <Toaster position="top-center" reverseOrder={false} />
+
       <div className={styles.form} ref={ref}>
         <Icon icon="material-symbols:close" className={styles['close-btn']} onClick={() => onClose()} />
         {isLoading ? (
@@ -108,7 +161,7 @@ export default function RequestPopup({ item, onClose }) {
                   <div className={styles.value}>
                     <span>{item.order.duration} day(s)</span>
                     <Icon icon={'uil:arrow-right'} />
-                    <span style={{ marginLeft: '12px' }}>
+                    <span style={{ marginLeft: '0px', marginRight: '0px' }}>
                       <b>
                         <u>{item.loanDuration} day(s)</u>
                       </b>
@@ -131,16 +184,17 @@ export default function RequestPopup({ item, onClose }) {
                     {item.order.floorPrice} {currency}
                   </div>
                 </div>
+
+                <div className={styles.info}>
+                  <div className={styles.label}>Reason: </div>
+                  <div className={styles.value}>{item.reason}</div>
+                </div>
                 {item.status === RequestStatus.OPENING && (
                   <div className={styles.info}>
                     <button onClick={() => handleRejectRenegotiation()}>Reject</button>
                     <button onClick={() => handleAcceptRenegotiation()}>Accept</button>
                   </div>
                 )}
-                <div className={styles.info}>
-                  <div className={styles.label}>Reason: </div>
-                  <div className={styles.value}>{item.reason}</div>
-                </div>
               </div>
             </div>
           </>

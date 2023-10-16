@@ -81,7 +81,7 @@ export class RequestsService implements OnModuleInit {
     const newRequest: Record<string, any> = {
       ...dto,
       // floorPrice: (createOfferDto.offer * 1.1).toFixed(2),
-      borrower: offer.creator,
+      lender: offer.creator,
       creator: dto.creator,
       hash: requestHash,
       status: RequestStatus.OPENING,
@@ -97,7 +97,10 @@ export class RequestsService implements OnModuleInit {
 
     for (let request of requests) {
       const order = await this.ordersService.findById(request.loanId);
+      const offers = await this.offerService.findByOrder(order.hash);
+
       request.order = order;
+      request.offers = offers;
     }
 
     return requests;

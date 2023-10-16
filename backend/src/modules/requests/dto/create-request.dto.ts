@@ -7,9 +7,10 @@ type RequestSignature = {
 
 export class CreateRequestDto {
   creator: string;
-  borrower: string;
+  lender: string;
   loanId: string;
   loanDuration: number;
   renegotiateFee: number;
   signature: RequestSignature;
+  reason: string;
 }

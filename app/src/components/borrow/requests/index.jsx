@@ -52,10 +52,10 @@ export default function Requests() {
 
   const fetchRequests = async () => {
     try {
-      const { data } = await getOffers({ borrower: account.address, status: OfferStatus.OPENING });
-      setOfferList(data);
+      // const { data } = await getOffers({ borrower: account.address, status: OfferStatus.OPENING });
+      // setOfferList(data);
 
-      const { data: requests } = await getRequests({ borrower: account.address });
+      const { data: requests } = await getRequests({ lender: account.address });
       console.log('Requests: ', requests);
       setRequests(requests);
 

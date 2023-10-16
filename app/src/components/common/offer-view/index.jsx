@@ -11,6 +11,7 @@ import { getOrderByHash } from '@src/api/order.api';
 import styles from './styles.module.scss';
 import RequestForm from '../request-form';
 import { useCallback } from 'react';
+import { OrderStatus } from '../../../constants/enum';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
@@ -117,7 +118,9 @@ export default function OfferView({ item, onClose, action }) {
               </div>
               {action && (
                 <div className={styles.info}>
-                  <button onClick={() => handleOpenRequestForm()}>Renegotiate</button>
+                  {data.status === OrderStatus.FILLED && (
+                    <button onClick={() => handleOpenRequestForm()}>Renegotiate</button>
+                  )}
                   <button onClick={() => action.handle(data)}>{action.text}</button>
                 </div>
               )}

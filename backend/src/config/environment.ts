@@ -24,6 +24,13 @@ export const Environment = {
   REDIS_REQUEST_FAMILY: Number(process.env.REDIS_REQUEST_FAMILY || 4),
   REDIS_REQUEST_DB: Number(process.env.REDIS_REQUEST_DB || 2),
 
+  // Redis Item config
+  REDIS_ITEM_HOST: process.env.REDIS_ITEM_HOST || 'localhost',
+  REDIS_ITEM_PORT: Number(process.env.REDIS_ITEM_PORT || 6379),
+  REDIS_ITEM_PASS: process.env.REDIS_ITEM_PASS,
+  REDIS_ITEM_FAMILY: Number(process.env.REDIS_ITEM_FAMILY || 4),
+  REDIS_ITEM_DB: Number(process.env.REDIS_ITEM_DB || 1),
+
   // OPERATOR ACCOUNT
   OPERATOR_ACCOUNT_PRIVATE_KEY: process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
 
@@ -32,16 +39,19 @@ export const Environment = {
     process.env.NETWORK_RPC_URL || 'https://rpc-kura.cross.technology/',
   PERMITTED_NFTS_ADDRESS:
     process.env.PERMITTED_NFTS_ADDRESS ||
-    '0xD17Beddb48e6D29A8798845FCCa341566669db13',
+    '0x6b556f1A587ebEa1b3A42Ba9F6275966CA17BCd5',
   WXCR_ADDRESS:
-    process.env.WXCR_ADDRESS || '0x3b3f35c81488c49b370079fd05cfa917c83a38a9',
+    process.env.WXCR_ADDRESS || '0x747ae7Dcf3Ea10D242bd17bA5dfA034ca6102108',
   COLLECTION_ADDRESS:
     process.env.COLLECTION_ADDRESS ||
     '0x25baf69a46923c0db775950b0ef96e6018343a36',
   LENDING_POOL_ADDRESS:
     process.env.LENDING_POOL_ADDRESS ||
-    '0xa01d399346e76bd863f726366c31789b2fc43ad9',
+    '0x603C668FD2DD8477b755f43C9CCAC6A409684717',
   LOAN_ADDRESS:
-    process.env.LOAN_ADDRESS || '0x1f2cd935b0ca5b7e9ee2f98970d1bb78797ba6d8',
+    process.env.LOAN_ADDRESS || '0xc3FaCdeB05CBA22B01114a099693316D73D51d4D',
   CHAIN_ID: process.env.CHAIN_ID || '5555',
+  MARKETPLACE_ADDRESS:
+    process.env.MARKETPLACE_ADDRESS ||
+    '0x0a0736fcB4978f6334c35ca95b002755577E1115',
 };
