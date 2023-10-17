@@ -181,7 +181,6 @@ library NFTfiSigningUtils {
      * following combination of parameters:
      * - _loanId
      * - _newLoanDuration
-     * - _newMaximumRepaymentAmount
      * - _lender
      * - _lenderNonce
      * - _expiry
@@ -227,7 +226,6 @@ library NFTfiSigningUtils {
      * following combination of parameters:
      * - _loanId
      * - _newLoanDuration
-     * - _newMaximumRepaymentAmount
      * - _lender
      * - _lenderNonce
      * - _expiry

@@ -420,7 +420,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * following combination of parameters:
      * - _loanId
      * - _newLoanDuration
-     * - _newMaximumRepaymentAmount
      * - _lender
      * - _expiry
      *  - address of this contract
