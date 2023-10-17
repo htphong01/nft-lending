@@ -1,5 +1,6 @@
 export enum RequestStatus {
   OPENING = 0,
-  FILLED = 1,
+  ACCEPTED = 1,
   REJECTED = 2,
+  FILLED = 3,
 }

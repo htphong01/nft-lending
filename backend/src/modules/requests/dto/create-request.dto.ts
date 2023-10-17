@@ -1,4 +1,4 @@
-type RequestSignature = {
+export type RequestSignature = {
   signer: string;
   nonce: number;
   expiry: number;

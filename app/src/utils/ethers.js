@@ -106,9 +106,14 @@ export const generateRequestSignature = async (
 
   const encodedSignature = ethers.utils.solidityPack(['address', 'uint256', 'uint256'], [signerAddress, nonce, expiry]);
 
+  // const payload = ethers.utils.solidityPack(
+  //   ['bytes', 'bytes', 'address', 'uint256'],
+  //   [encodedRequest, encodedSignature, loanContract, chainId]
+  // );
+
   const payload = ethers.utils.solidityPack(
-    ['bytes', 'bytes', 'address', 'uint256'],
-    [encodedRequest, encodedSignature, loanContract, chainId]
+    ['bytes32', 'uint32', 'uint256', 'bytes', 'address', 'uint256'],
+    [loanId, loanDuration, renegotiateFee, encodedSignature, loanContract, chainId]
   );
 
   const message = ethers.utils.arrayify(ethers.utils.keccak256(payload));

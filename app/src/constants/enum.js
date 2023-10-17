@@ -22,6 +22,7 @@ export const FormType = {
 
 export const RequestStatus = {
   OPENING: 0,
-  FILLED: 1,
+  ACCEPTED: 1,
   REJECTED: 2,
+  FILLED: 3,
 };

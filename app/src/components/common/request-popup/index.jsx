@@ -7,15 +7,12 @@ import { useOnClickOutside } from 'usehooks-ts';
 import ReactLoading from 'react-loading';
 import { Icon } from '@iconify/react';
 import { calculateRepayment, sliceAddress } from '@src/utils';
-import { getOrderByHash } from '@src/api/order.api';
 import styles from './styles.module.scss';
-import RequestForm from '../request-form';
 import { updateRequest } from '../../../api/request.api';
 import { toast, Toaster } from 'react-hot-toast';
 import { OfferStatus, RequestStatus } from '../../../constants/enum';
 import { renegotiateLoan } from '../../../utils/contracts/loan';
 import { parseMetamaskError } from '../../../utils/convert';
-import { ethers } from 'ethers';
 import { convertRequestDataToSign } from '../../../utils/misc';
 import { generateRequestSignature } from '../../../utils/ethers';
 
@@ -25,6 +22,7 @@ export default function RequestPopup({ item, onClose }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
   const currency = useSelector((state) => state.account.currency);
+  const account = useSelector((state) => state.account);
 
   const [data, setData] = useState(item);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +32,7 @@ export default function RequestPopup({ item, onClose }) {
 
   const handleAcceptRenegotiation = async () => {
     try {
-      setIsCommitLoading(true);
+      setIsLoading(true);
 
       const offer = item.offers.find((o) => o.status === OfferStatus.FILLED);
       console.log('offer: ', offer);
@@ -46,31 +44,19 @@ export default function RequestPopup({ item, onClose }) {
       const signature = await generateRequestSignature(requestData, signatureData);
       console.log('Signature: ', signature);
 
-      console.log(
-        requestData.loanId,
-        requestData.loanDuration,
-        requestData.renegotiateFee,
-        signatureData.nonce,
-        signatureData.expiry,
-        signature
-      );
-
-      // @TODO: Call renegotiateLoan() contract
-      const tx = await renegotiateLoan(
-        requestData.loanId,
-        requestData.loanDuration,
-        requestData.renegotiateFee,
-        signatureData.nonce,
-        signatureData.expiry,
-        signature
-      );
-      await tx.wait();
+      await updateRequest(item.hash, {
+        status: RequestStatus.ACCEPTED,
+        lenderSignature: {
+          ...signatureData,
+          signature,
+        },
+      });
+      toast.success('Accept renegotiation loan successfully');
     } catch (error) {
-      console.log(error);
-      const txError = parseMetamaskError(error);
-      toast.error(txError.context);
+      toast.error('An error has occured!');
     } finally {
-      setIsCommitLoading(false);
+      setIsLoading(false);
+      onClose();
     }
   };
 
@@ -86,6 +72,37 @@ export default function RequestPopup({ item, onClose }) {
     } finally {
       setIsLoading(false);
       onClose();
+    }
+  };
+
+  const handleRenegotiateLoan = async () => {
+    try {
+      setIsCommitLoading(true);
+
+      const offer = item.offers.find((o) => o.status === OfferStatus.FILLED);
+      console.log('offer: ', offer);
+
+      const { requestData } = convertRequestDataToSign({ ...item, loanId: offer.hash });
+
+      console.log('lender signature: ', item.lenderSignature);
+      const { nonce, expiry, signature } = item.lenderSignature;
+
+      const tx = await renegotiateLoan(
+        requestData.loanId,
+        requestData.loanDuration,
+        requestData.renegotiateFee,
+        nonce,
+        expiry,
+        signature
+      );
+      await tx.wait();
+    } catch (error) {
+      console.log(error);
+      const txError = parseMetamaskError(error);
+      // toast.error(txError);
+    } finally {
+      setIsLoading(false);
+      // onClose();
     }
   };
 
@@ -189,10 +206,15 @@ export default function RequestPopup({ item, onClose }) {
                   <div className={styles.label}>Reason: </div>
                   <div className={styles.value}>{item.reason}</div>
                 </div>
-                {item.status === RequestStatus.OPENING && (
+                {item.status === RequestStatus.OPENING && item.lender === account.address && (
                   <div className={styles.info}>
                     <button onClick={() => handleRejectRenegotiation()}>Reject</button>
                     <button onClick={() => handleAcceptRenegotiation()}>Accept</button>
+                  </div>
+                )}
+                {item.status === RequestStatus.ACCEPTED && item.creator === account.address && (
+                  <div className={styles.info}>
+                    <button onClick={() => handleRenegotiateLoan()}>Renegotiate</button>
                   </div>
                 )}
               </div>

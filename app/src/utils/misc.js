@@ -68,7 +68,7 @@ export const convertRequestDataToSign = (request) => {
   };
 
   const signatureData = {
-    signer: request.creator,
+    signer: request.lender,
     nonce: getRandomInt(),
     expiry: Math.floor(new Date().getTime() / 1000) + 24 * 60 * 60 * +request.expiration,
   };
