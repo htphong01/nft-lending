@@ -1,13 +1,11 @@
 /* eslint-disable react/prop-types */
-import {
-  parseMetamaskError
-} from '@src/utils';
+import { parseMetamaskError } from '@src/utils';
 import { useRef, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import ReactLoading from 'react-loading';
 import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
-import { importCollection } from '../../../api/nft.api';
+import { importCollection } from '@src/api/nfts.api';
 import styles from './styles.module.scss';
 import { isAddress } from 'ethers/lib/utils';
 
@@ -27,7 +25,7 @@ export default function ERC721Form({ onClose }) {
 
       if (!isAddress(collectionAddress)) throw new Error('Invalid collection address');
 
-      const res = await importCollection({ collectionAddress});
+      const res = await importCollection({ collectionAddress, from: account.address });
 
       toast.success(res.data.message);
       setIsLoading(false);
@@ -58,11 +56,7 @@ export default function ERC721Form({ onClose }) {
           <div className={styles.details}>
             <div className={styles.label}>NFT Collection Address:</div>
             <label className={styles.input}>
-              <input
-                type="text"
-                name="collectionAddress"
-                required
-              />
+              <input type="text" name="collectionAddress" required />
             </label>
           </div>
         </div>

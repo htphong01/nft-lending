@@ -6,7 +6,8 @@ import ERC6551Form from '@src/components/common/erc-6551-form';
 import ERC721Form from '@src/components/common/erc-721-form';
 import ListCollateralForm from '@src/components/common/list-collateral-form';
 import TokenBoundAccountCard from '@src/components/common/token-bound-account-card';
-import { COLLATERAL_FORM_TYPE } from '@src/constants';
+import { COLLATERAL_FORM_TYPE, NFT_CONTRACT_ADDRESS } from '@src/constants';
+import { getPermittedNFTs } from '@src/api/permitted-nfts.api';
 import { ERC721Contract } from '@src/utils';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -38,9 +39,13 @@ export default function Assets() {
 
   const fetchNFTs = async () => {
     try {
+      const response = await getPermittedNFTs({ usage: 'ERC-721' });
+      const nfts = response.data.map((item) => item.collection);
+      nfts.push(NFT_CONTRACT_ADDRESS);
       const { data } = await getNfts({
         owner: account.address,
         isAvailable: true,
+        collectionAddress: nfts.join(','),
       });
       const tbaNFt = await fetchTokenBoundAccount();
       if (tbaNFt) {
@@ -103,10 +108,12 @@ export default function Assets() {
       )}
       {isOpenERC721 && <ERC721Form onClose={handleOnCloseERC721} />}
       {isOpenERC6551 && <ERC6551Form onClose={handleOnCloseERC6551} />}
-      {selectedTokenBoundAccount && <TokenBoundAccountCard item={selectedTokenBoundAccount} onClose={handleOnCloseERC6551} />}
+      {selectedTokenBoundAccount && (
+        <TokenBoundAccountCard item={selectedTokenBoundAccount} onClose={handleOnCloseERC6551} />
+      )}
       <div className={styles.heading}>
         <span>Your assets</span>
-        <div className={styles["button-group"]}>
+        <div className={styles['button-group']}>
           <button onClick={() => setIsOpenERC721(!isOpenERC721)}>Import ERC-721</button>
           <button onClick={() => setIsOpenERC6551(!isOpenERC6551)}>Import ERC-6551</button>
         </div>

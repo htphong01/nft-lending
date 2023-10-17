@@ -18,7 +18,7 @@ export class NftsController {
     return this.nftsService.findAll(conditions);
   }
 
-  @Post("import")
+  @Post('import')
   importCollection(@Body() importCollectionDto: ImportCollectionDto) {
     return this.nftsService.importCollection(importCollectionDto);
   }

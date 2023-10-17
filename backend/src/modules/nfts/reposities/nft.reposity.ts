@@ -34,25 +34,38 @@ export class Nft {
   async find(filters: any): Promise<any[]> {
     const { page = 1, size = 10, ...restFilter } = filters;
 
-    const nfts = await this.redisService.hgetall(
-      `${DATABASE_NAME}:${restFilter.collectionAddress}`,
-    );
-    if (!restFilter || Object.keys(restFilter).length === 0)
-      return Object.values(nfts);
+    const result = [];
 
-    return Object.values(nfts)
-      .map((item) => JSON.parse(item))
-      .filter((item) => {
-        for (let key in restFilter) {
-          if (
-            item[key] === undefined ||
-            !restFilter[key].split(',').includes(item[key].toString())
-          )
-            return false;
-        }
-        return true;
-      })
-      .slice((page - 1) * size, page * size);
+    const collectionAddresses = restFilter.collectionAddress.split(',');
+    for (let i = 0; i < collectionAddresses.length; i++) {
+      const nfts = await this.redisService.hgetall(
+        `${DATABASE_NAME}:${collectionAddresses[i]}`,
+      );
+
+      if (!restFilter || Object.keys(restFilter).length === 0)
+        return Object.values(nfts);
+
+      const collectionNfts = Object.values(nfts)
+        .map((item) => JSON.parse(item))
+        .filter((item) => {
+          for (let key in restFilter) {
+            if (
+              item[key] === undefined ||
+              !restFilter[key]
+                .split(',')
+                .map((k: string) => k.toLowerCase())
+                .includes(item[key].toString())
+            )
+              return false;
+          }
+          return true;
+        })
+        .slice((page - 1) * size, page * size);
+
+      if (collectionNfts.length > 0) result.push(...collectionNfts);
+    }
+
+    return result;
   }
 
   async findCollection(collectionAddress: string) {
@@ -95,10 +108,7 @@ export class Nft {
 
   async addCollection(collectionAddress: string): Promise<boolean> {
     try {
-      await this.redisService.sadd(
-        COLLECTION_SET_NAME,
-        collectionAddress
-      );
+      await this.redisService.sadd(COLLECTION_SET_NAME, collectionAddress);
       return true;
     } catch (error) {
       this.logger.error(error);
