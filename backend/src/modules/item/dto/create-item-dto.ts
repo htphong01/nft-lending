@@ -1,4 +1,5 @@
 export class CreateItemDto {
+  itemId: number;
   nft: string;
   tokenId: number;
   metadata: string;
