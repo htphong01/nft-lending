@@ -46,5 +46,5 @@ export const Environment = {
   CHAIN_ID: process.env.CHAIN_ID || '5555',
   MARKETPLACE_ADDRESS:
     process.env.MARKETPLACE_ADDRESS ||
-    '0x0a0736fcB4978f6334c35ca95b002755577E1115',
+    '0x3f616c8124c478425dC206fD86568662dc4e50aA',
 };
