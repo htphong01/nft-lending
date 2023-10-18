@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
 import { useRef, useEffect } from 'react';
-import { Icon } from '@iconify/react';
+// import { Icon } from '@iconify/react';
 import styles from '../styles.module.scss';
 import jazzicon from '@metamask/jazzicon';
 import { Link } from 'react-router-dom';
+import { formatAddress } from '@src/utils/address';
 
 export default function Account({ account: { address } }) {
   const avatarRef = useRef();
@@ -23,13 +24,11 @@ export default function Account({ account: { address } }) {
 
   return (
     <div className={styles['account-wrap']}>
-      <Link to="/profile/history">
-        <Icon icon="bx:user" fontSize={24} cursor="pointer" />
-      </Link>
-      <div className={styles['account-address']}>
+      {/* <Icon icon="bx:user" fontSize={24} cursor="pointer" /> */}
+      <Link to="/profile/history" className={styles['account-address']}>
         <div ref={avatarRef}></div>
-        <span>{`${address.slice(0, 5)} ... ${address.slice(-4)}`}</span>
-      </div>
+        <span>{formatAddress(address, 5, 4)}</span>
+      </Link>
     </div>
   );
 }

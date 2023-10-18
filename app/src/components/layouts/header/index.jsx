@@ -1,10 +1,12 @@
-import { Link } from 'react-router-dom';
+import { ShoppingCart } from '@src/components/shopping-cart';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useState, useEffect } from 'react';
-import { PermittedNFTsContract } from '@src/utils';
-import Menu from './menu';
+import { Link } from 'react-router-dom';
 import Account from './account';
+import Menu from './menu';
 import styles from './styles.module.scss';
+import CreateLink from '@src/components/marketplace/create/CreateLink';
+import { PermittedNFTsContract } from '@src/utils';
 
 export default function Header({ handleAccountsChanged, requireSwitchNetwork }) {
   const account = useSelector((state) => state.account);
@@ -55,11 +57,13 @@ export default function Header({ handleAccountsChanged, requireSwitchNetwork }) 
       </Link>
       <Menu isAdmin={isAdmin} />
       <div className={styles.account}>
+        <CreateLink />
         {account.address ? (
           <Account account={account} />
         ) : (
           <button onClick={handleConnectWallet}>Connect Wallet</button>
         )}
+        <ShoppingCart />
       </div>
     </div>
   );
