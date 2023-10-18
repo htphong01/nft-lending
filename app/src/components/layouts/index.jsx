@@ -21,14 +21,16 @@ export default function UserLayout() {
     if (accounts.length === 0) {
       console.log('Please connect to MetaMask.');
     } else {
-      const balance = await getBalance(accounts[0]);
-      dispatch(
-        setAccount({
-          address: accounts[0].toLowerCase(),
-          balance: balance,
-          currency: 'wXCR',
-        })
-      );
+      if (network == 5555) {
+        const balance = await getBalance(accounts[0]);
+        dispatch(
+          setAccount({
+            address: accounts[0].toLowerCase(),
+            balance: balance,
+            currency: 'wXCR',
+          })
+        );
+      }
     }
   };
 
