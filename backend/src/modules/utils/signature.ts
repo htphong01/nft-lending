@@ -65,6 +65,33 @@ export const generateOfferMessage = (
   return ethers.keccak256(payload);
 };
 
+export const generateRequestMessage = (
+  requestData: any,
+  signatureData: any,
+  loanContract,
+  chainId,
+) => {
+  const { loanId, loanDuration, renegotiateFee } = requestData;
+
+  const encodedRequest = ethers.solidityPacked(
+    ['bytes', 'uint32', 'uint256'],
+    [loanId, loanDuration, ethers.parseUnits(renegotiateFee, 18)],
+  );
+
+  const { signer, nonce, expiry } = signatureData;
+
+  const encodedSignature = ethers.solidityPacked(
+    ['address', 'uint256', 'uint256'],
+    [signer, nonce, expiry],
+  );
+
+  const payload = ethers.solidityPacked(
+    ['bytes', 'bytes', 'address', 'uint256'],
+    [encodedRequest, encodedSignature, loanContract, chainId],
+  );
+  return ethers.keccak256(payload);
+};
+
 export const generateItemMessage = (
   itemData: any,
   marketplaceContract,

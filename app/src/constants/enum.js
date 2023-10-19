@@ -19,3 +19,10 @@ export const FormType = {
   VIEW: 'View',
   EDIT: 'Edit',
 };
+
+export const RequestStatus = {
+  OPENING: 0,
+  ACCEPTED: 1,
+  REJECTED: 2,
+  FILLED: 3,
+};

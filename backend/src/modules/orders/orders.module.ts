@@ -15,9 +15,9 @@ import { LendingPoolModule } from '../lending-pool/lending-pool.module';
     NftsModule,
     DacsModule,
     LendingPoolModule,
-    TokenBoundAccountsModule
+    TokenBoundAccountsModule,
   ],
-  exports: [ReposityModule],
+  exports: [OrdersService, ReposityModule],
   controllers: [OrdersController],
   providers: [OrdersService],
 })

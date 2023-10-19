@@ -3,6 +3,7 @@ import { WXCR_ADDRESS } from '@src/constants';
 import { ethers } from 'ethers';
 import { ONE_DAY } from '@src/constants';
 import { calculateRepayment } from './apr';
+import { RequestStatus } from '../constants/enum';
 
 export const sliceAddress = (address) => {
   return `${address.slice(0, 5)} ... ${address.slice(-4)}`;
@@ -32,6 +33,10 @@ export const getOrderStatusText = (status) => {
   return Object.fromEntries(Object.entries(OrderStatus).map((a) => a.reverse()))[status];
 };
 
+export const getRequestStatusText = (status) => {
+  return Object.fromEntries(Object.entries(RequestStatus).map((a) => a.reverse()))[status];
+};
+
 export const convertOfferDataToSign = (offer) => {
   const repayment = calculateRepayment(offer.offer, offer.rate, offer.duration);
 
@@ -52,6 +57,23 @@ export const convertOfferDataToSign = (offer) => {
   };
 
   return { offerData, signatureData };
+};
+
+export const convertRequestDataToSign = (request) => {
+  console.log('request: ', request);
+  const requestData = {
+    loanId: request.loanId,
+    loanDuration: request.loanDuration,
+    renegotiateFee: ethers.utils.parseUnits(request.renegotiateFee, 18),
+  };
+
+  const signatureData = {
+    signer: request.lender,
+    nonce: getRandomInt(),
+    expiry: Math.floor(new Date().getTime() / 1000) + 24 * 60 * 60 * +request.expiration,
+  };
+
+  return { requestData, signatureData };
 };
 
 export function mergeRefs(refs) {

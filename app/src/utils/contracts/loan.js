@@ -30,3 +30,8 @@ export const acceptOfferLendingPool = (loanId, offer, signatures) => {
   const contract = loanContract(signer);
   return contract.acceptOfferLendingPool(loanId, offer, signatures);
 };
+
+export const renegotiateLoan = (loanId, loanDuration, renegotiateFee, lenderNonce, expiry, lenderSignature) => {
+  const contract = loanContract(signer);
+  return contract.renegotiateLoan(loanId, loanDuration, renegotiateFee, lenderNonce, expiry, lenderSignature);
+};

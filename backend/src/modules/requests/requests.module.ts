@@ -1,22 +1,22 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { OffersService } from './offers.service';
-import { OrdersController } from './offers.controller';
+import { RequestsService } from './requests.service';
+import { RequestsController } from './requests.controller';
 import { ConnectionsModule } from 'src/connections/connections.module';
 import { ReposityModule } from './reposities/reposity.module';
 import { DacsModule } from '../dacs/dacs.module';
 import { OrdersModule } from '../orders/orders.module';
-import { RequestsModule } from '../requests/requests.module';
+import { OffersModule } from '../offers/offers.module';
 
 @Module({
   imports: [
     ConnectionsModule,
     ReposityModule,
-    OrdersModule,
     DacsModule,
-    forwardRef(() => RequestsModule),
+    forwardRef(() => OffersModule),
+    OrdersModule,
   ],
-  exports: [OffersService],
-  controllers: [OrdersController],
-  providers: [OffersService],
+  exports: [RequestsService, ReposityModule],
+  controllers: [RequestsController],
+  providers: [RequestsService],
 })
-export class OffersModule {}
+export class RequestsModule {}

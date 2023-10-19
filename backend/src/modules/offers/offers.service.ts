@@ -4,6 +4,8 @@ import {
   Injectable,
   UnauthorizedException,
   OnModuleInit,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
@@ -15,6 +17,7 @@ import { Offer } from './reposities/offer.reposity';
 import { Order } from '../orders/reposities/order.reposity';
 import { DacsService } from '../dacs/dacs.service';
 import * as FACTORY_ABI from './abi/LOAN.json';
+import { Request } from '../requests/reposities/request.reposity';
 
 @Injectable()
 export class OffersService implements OnModuleInit {
@@ -24,6 +27,8 @@ export class OffersService implements OnModuleInit {
   constructor(
     private readonly offer: Offer,
     private readonly order: Order,
+    @Inject(forwardRef(() => Request))
+    private readonly request: Request,
     private readonly dacs: DacsService,
   ) {}
 
@@ -149,6 +154,27 @@ export class OffersService implements OnModuleInit {
 
             break;
           }
+
+          case 'LoanRenegotiated':
+            console.log('Args: ', event.args);
+            const {
+              loanId,
+              borrower,
+              lender,
+              newLoanDuration,
+              renegotiationFee,
+              renegotiationAdminFee,
+            } = event.args.loanId;
+
+            const order = await this.order.getByKey(loanId);
+            if (order) {
+              await Promise.all([
+                this.order.update(loanId, {
+                  duration: newLoanDuration,
+                }),
+              ]);
+            }
+
           default: {
             break;
           }
