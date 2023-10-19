@@ -105,7 +105,7 @@ export default function UserLayout() {
   return (
     <Layout>
       <Navbar handleAccountsChanged={handleAccountsChanged} requireSwitchNetwork={requireSwitchNetwork} />
-      <Content style={{ background: 'rgba(25, 28, 31, 0.85)' }}>
+      <Content style={{ background: '#16152d' }}>
         <div className="container">
           {account.address && network == CHAIN_ID ? (
             <Outlet />
