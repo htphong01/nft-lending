@@ -57,7 +57,7 @@ export const ProductMeta = styled(Card)`
     height: 68px;
     -webkit-box-pack: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.04);
+    background: #221630;
     border-radius: 10px;
     display: flex;
     flex-direction: row;

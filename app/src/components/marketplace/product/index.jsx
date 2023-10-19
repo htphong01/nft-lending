@@ -29,7 +29,7 @@ export default function Product({ nftInfo }) {
     <Link to={`/token/${nftInfo.hash}`}>
       <ProductMeta
         ref={ref}
-        style={{ width: '100%', background: '#16152d', color: '#d9d9dd' }}
+        style={{ width: '100%', background: '#362848', color: '#d9d9dd' }}
         cover={
           <WrapperCover onClick={(e) => e.stopPropagation()}>
             <img alt="example" src={nftInfo.image} />
