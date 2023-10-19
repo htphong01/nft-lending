@@ -84,6 +84,8 @@ export default function RequestForm({ item, onClose, type }) {
       };
       console.log('Submit: ', request);
       const { requestData, signatureData } = convertRequestDataToSign(request);
+      signatureData.signer = account.address;
+
       const signature = await generateRequestSignature(requestData, signatureData);
       request.signature = {
         ...signatureData,

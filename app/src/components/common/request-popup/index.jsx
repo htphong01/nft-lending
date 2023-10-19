@@ -15,6 +15,7 @@ import { renegotiateLoan } from '../../../utils/contracts/loan';
 import { parseMetamaskError } from '../../../utils/convert';
 import { convertRequestDataToSign } from '../../../utils/misc';
 import { generateRequestSignature } from '../../../utils/ethers';
+import { ethers } from 'ethers';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
@@ -78,6 +79,13 @@ export default function RequestPopup({ item, onClose }) {
   const handleRenegotiateLoan = async () => {
     try {
       setIsCommitLoading(true);
+
+      // Approve renegotiation fee
+      const renegotiateFee = ethers.utils.parseUnits(item.renegotiateFee, 18);
+      if (!(await checkAllowance(account.address, renegotiateFee))) {
+        const approveTx = await approveERC20(renegotiateFee);
+        await approveTx.wait();
+      }
 
       const offer = item.offers.find((o) => o.status === OfferStatus.FILLED);
       console.log('offer: ', offer);
@@ -217,6 +225,10 @@ export default function RequestPopup({ item, onClose }) {
                     <button onClick={() => handleRenegotiateLoan()}>Renegotiate</button>
                   </div>
                 )}
+                {/* <div className={styles.info}>
+                  <button onClick={() => handleRejectRenegotiation()}>Reject</button>
+                  <button onClick={() => handleAcceptRenegotiation()}>Accept</button>
+                </div> */}
               </div>
             </div>
           </>

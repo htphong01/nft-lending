@@ -6,6 +6,7 @@ import {
   OnModuleInit,
   Inject,
   forwardRef,
+  Logger,
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
@@ -23,6 +24,7 @@ import { Request } from '../requests/reposities/request.reposity';
 export class OffersService implements OnModuleInit {
   private rpcProvider: JsonRpcProvider;
   private nftContract: Contract;
+  private readonly logger: Logger = new Logger(OffersService.name);
 
   constructor(
     private readonly offer: Offer,
@@ -156,6 +158,7 @@ export class OffersService implements OnModuleInit {
           }
 
           case 'LoanRenegotiated':
+            this.logger.log('LoanRenegotiated: ', event.args.loanId);
             console.log('Args: ', event.args);
             const {
               loanId,
@@ -164,12 +167,15 @@ export class OffersService implements OnModuleInit {
               newLoanDuration,
               renegotiationFee,
               renegotiationAdminFee,
-            } = event.args.loanId;
+            } = event.args;
 
-            const order = await this.order.getByKey(loanId);
-            if (order) {
+            const offer = await this.offer.getByKey(loanId);
+            if (offer) {
               await Promise.all([
-                this.order.update(loanId, {
+                this.offer.update(loanId, {
+                  duration: newLoanDuration,
+                }),
+                this.order.update(offer.order, {
                   duration: newLoanDuration,
                 }),
               ]);

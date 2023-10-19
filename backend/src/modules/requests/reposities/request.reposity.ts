@@ -63,11 +63,25 @@ export class Request {
       await this.redisService.hset(
         DATABASE_NAME,
         id,
-        JSON.stringify({ ...JSON.parse(queryData.toString()), ...data }),
+        JSON.stringify({
+          ...JSON.parse(queryData.toString()),
+          ...data,
+          updatedAt: new Date().getTime(),
+        }),
       );
       return true;
     } catch (error) {
       this.logger.error(error);
+      return false;
+    }
+  }
+
+  async remove(id: string) {
+    try {
+      await this.redisService.hdel(DATABASE_NAME, id);
+      return true;
+    } catch (error) {
+      this.logger.error('remove: ', error);
       return false;
     }
   }
