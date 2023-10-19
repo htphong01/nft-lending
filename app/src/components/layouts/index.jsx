@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { ethers } from 'ethers';
 import { setAccount } from '@src/redux/features/accountSlice';
 import { setRate } from '@src/redux/features/rateSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { Toaster } from 'react-hot-toast';
 import { getBalance } from '@src/utils/contracts/erc20';
-import Header from './header';
-import Footer from './footer';
+import { Layout } from 'antd';
+import { ethers } from 'ethers';
+import { useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { Outlet } from 'react-router-dom';
 import ConnectMetamask from './connect-metamask';
+import AppFooter from './footer';
+import Navbar from './header';
+import { CHAIN_ID } from '@src/constants';
+
+const { Content } = Layout;
 
 export default function UserLayout() {
   const rate = useSelector((state) => state.rate);
@@ -22,14 +26,16 @@ export default function UserLayout() {
     if (accounts.length === 0) {
       console.log('Please connect to MetaMask.');
     } else {
-      const balance = await getBalance(accounts[0]);
-      dispatch(
-        setAccount({
-          address: accounts[0].toLowerCase(),
-          balance: balance,
-          currency: 'wXCR',
-        })
-      );
+      if (network == 5555) {
+        const balance = await getBalance(accounts[0]);
+        dispatch(
+          setAccount({
+            address: accounts[0].toLowerCase(),
+            balance: balance,
+            currency: 'wXCR',
+          })
+        );
+      }
     }
   };
 
@@ -96,20 +102,26 @@ export default function UserLayout() {
     } else {
       alert('MetaMask is not installed. Please consider installing it: https://metamask.io/download.html');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [window.ethereum]);
 
   return (
-    <>
+    <Layout>
+      <Navbar handleAccountsChanged={handleAccountsChanged} requireSwitchNetwork={requireSwitchNetwork} />
+      <Content style={{ background: 'rgba(25, 28, 31, 0.85)' }}>
+        <div className="container">
+          {account.address && network == CHAIN_ID ? (
+            <Outlet />
+          ) : (
+            <ConnectMetamask
+              handleAccountsChanged={handleAccountsChanged}
+              requireSwitchNetwork={requireSwitchNetwork}
+            />
+          )}
+        </div>
+      </Content>
+      <AppFooter />
       <Toaster position="top-center" reverseOrder={false} />
-      <Header handleAccountsChanged={handleAccountsChanged} requireSwitchNetwork={requireSwitchNetwork} />
-      <div className="container">
-        {account.address && network == 5555 ? (
-          <Outlet />
-        ) : (
-          <ConnectMetamask handleAccountsChanged={handleAccountsChanged} requireSwitchNetwork={requireSwitchNetwork} />
-        )}
-      </div>
-      <Footer />
-    </>
+    </Layout>
   );
 }

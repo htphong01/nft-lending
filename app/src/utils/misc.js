@@ -75,3 +75,35 @@ export const convertRequestDataToSign = (request) => {
 
   return { requestData, signatureData };
 };
+
+export function mergeRefs(refs) {
+  return (value) => {
+    refs.forEach((ref) => {
+      if (typeof ref === 'function') {
+        ref(value);
+        // eslint-disable-next-line eqeqeq
+      } else if (ref != null) {
+        ref.current = value;
+      }
+    });
+  };
+}
+
+export const replaceIPFS = (
+  link,
+  search = ['ipfs://ipfs/', 'ipfs://', 'https://ipfs.moralis.io:2053/ipfs/'],
+  gateway = ''
+) => {
+  if (link) {
+    for (const s of search) {
+      if (link.includes(s)) {
+        return link.replace(s, gateway);
+      }
+    }
+    return link;
+  }
+  return '';
+};
+
+export const compareString = (str1 = '', str2 = '') =>
+  typeof str1 === 'string' && typeof str2 === 'string' && str1.toLowerCase() === str2.toLowerCase();

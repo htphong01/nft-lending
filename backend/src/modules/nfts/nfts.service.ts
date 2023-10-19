@@ -6,12 +6,16 @@ import config from 'src/config';
 import { SyncNftDto } from './dto/sync-nft.dto';
 import { ERC721, ERC721__factory } from './typechain';
 import { ImportCollectionDto } from './dto/import-collection.dto';
+import { PermittedNFTsService } from '../permitted-nfts/permitted-nfts.service';
 
 @Injectable()
 export class NftsService {
   private rpcProvider: JsonRpcProvider;
 
-  constructor(private readonly nft: Nft) {
+  constructor(
+    private readonly nft: Nft,
+    private readonly permittedNFTService: PermittedNFTsService,
+  ) {
     this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
 
     this.attachCollectionListeners();
@@ -92,19 +96,6 @@ export class NftsService {
           isAvailable: true,
         };
 
-        // const existedNft = await this.findAll({
-        //   tokenId: tokenId.toString(),
-        //   collectionAddress: event.address.toLowerCase(),
-        // });
-
-        // if (existedNft.length > 0) {
-        //   nftData = {
-        //     ...existedNft[0],
-        //     isAvailable: true,
-        //     owner: event.args.to.toLowerCase(),
-        //   };
-        // }
-
         await this.syncNft(nftData);
       }
     } catch (error) {
@@ -134,7 +125,7 @@ export class NftsService {
     const { data } = await axios.get(await nftContract.tokenURI(tokenId));
 
     const nftData = {
-      owner: owner,
+      owner: owner.toLowerCase(),
       tokenId: tokenId,
       tokenURI: await nftContract.tokenURI(tokenId),
       collectionName: await nftContract.name(),
@@ -151,7 +142,10 @@ export class NftsService {
     return await this.nft.find(conditions);
   }
 
-  async importCollection({ collectionAddress }: ImportCollectionDto) {
+  async importCollection({
+    collectionAddress,
+    from = '',
+  }: ImportCollectionDto) {
     const existedCollection = await this.nft.findCollection(collectionAddress);
     if (existedCollection)
       throw new HttpException(
@@ -159,10 +153,22 @@ export class NftsService {
         HttpStatus.BAD_REQUEST,
       );
 
-    await this.registerCollectionTransferEvent(collectionAddress)
+    const isPermittedNFT = await this.permittedNFTService.findById(
+      collectionAddress,
+    );
+
+    if (!isPermittedNFT) {
+      this.permittedNFTService.create({
+        collection: collectionAddress,
+        from: from,
+        usage: 'ERC-721',
+      });
+    }
+
+    await this.registerCollectionTransferEvent(collectionAddress);
 
     this.nft.addCollection(collectionAddress);
 
-    return { message: `Collection ${collectionAddress} imported successfully` };
+    return { message: `Imported collection successfully` };
   }
 }

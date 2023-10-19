@@ -18,6 +18,10 @@ import LendingPoolRequestsPage from '@src/pages/lending-pool/requests';
 import ExchangePage from '@src/pages/market/exchange';
 import AdminCollectionsPage from '@src/pages/admin/collections';
 import { BORROW_TABS, LEND_TABS, LENDING_POOL_TABS, PROFILE_TABS, ADMIN_TABS } from '@src/constants';
+import Marketplace from '@src/components/marketplace';
+import TokenDetail from '@src/components/marketplace/token';
+import { Create } from '@src/components/marketplace/create';
+import TokenDetailProvider from '@src/components/marketplace/token/provider';
 
 export const userRoutes = [
   {
@@ -140,6 +144,27 @@ export const userRoutes = [
             element: <AdminCollectionsPage />,
           },
         ],
+      },
+      {
+        path: '/marketplace',
+        children: [
+          {
+            path: '',
+            element: <Marketplace />,
+          },
+          {
+            path: 'create',
+            element: <Create />,
+          },
+        ],
+      },
+      {
+        path: '/token/:hash',
+        element: (
+          <TokenDetailProvider>
+            <TokenDetail />
+          </TokenDetailProvider>
+        ),
       },
     ],
   },

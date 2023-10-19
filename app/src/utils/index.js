@@ -9,3 +9,4 @@ export * from './contracts/lending-pool';
 export * from './contracts/loan';
 export * from './contracts/token-bound-account';
 export * from './contracts/permitted-nfts';
+export * from './contracts/marketplace';

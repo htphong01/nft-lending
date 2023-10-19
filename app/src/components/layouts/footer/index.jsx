@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom';
 import styles from './styles.module.scss';
 import Menu from './menu';
+import { Layout } from 'antd';
+
+const { Footer: AFooter } = Layout;
 
 export default function Footer() {
   return (
-    <div className={styles.footer}>
+    <AFooter className={styles.footer}>
       <div className={styles.introduction}>
         <Link to="/" className={styles.logo}>
           AvengersFI
@@ -16,6 +19,6 @@ export default function Footer() {
         </div>
       </div>
       <Menu />
-    </div>
+    </AFooter>
   );
 }
