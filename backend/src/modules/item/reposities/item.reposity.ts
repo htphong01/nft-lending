@@ -26,14 +26,14 @@ export class Item {
     return JSON.parse(item.toString());
   }
 
-  async find(filters: any): Promise<any[]> {
+  async find(filters: any): Promise<any> {
     const { page = 1, size = 10, ...restFilter } = filters;
 
     const items = await this.redisService.hgetall(DATABASE_NAME);
 
     if (!restFilter || !Object.keys(restFilter)) return Object.values(items);
 
-    return Object.values(items)
+    const itemsFiltered = Object.values(items)
       .map((item) => JSON.parse(item))
       .filter((item) => {
         for (const key in restFilter) {
@@ -44,8 +44,11 @@ export class Item {
             return false;
         }
         return true;
-      })
+      });
+    const pagination = itemsFiltered
+      .sort((x, y) => y.createdAt - x.createdAt)
       .slice((page - 1) * size, page * size);
+    return { itemsFiltered: pagination, total: itemsFiltered.length };
   }
 
   async updateStatus(key: string, status: ItemStatus): Promise<any> {

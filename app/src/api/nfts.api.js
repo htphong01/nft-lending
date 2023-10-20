@@ -25,8 +25,9 @@ export const createNft = ({ nft, tokenId, price, creator, metadata, itemId }) =>
   });
 };
 
-export const getSales = (status = 0) => {
-  return axios.get(`/item/status/${status}`);
+export const getSales = (params) => {
+  const { page, status } = params;
+  return axios.get(`/item/?status=${status}&page=${page}`);
 };
 
 export const getSale = async (hash) => {
