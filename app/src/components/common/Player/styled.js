@@ -11,8 +11,8 @@ export const ImageWrapper = styled.div`
   justify-content: center;
 
   .ant-image {
-    width: auto;
-    height: auto;
+    width: 50%;
+    height: 50%;
     object-fit: contain;
 
     margin: 0 auto;
@@ -24,8 +24,8 @@ export const ImageWrapper = styled.div`
 `;
 
 export const StyledImage = styled(Image)`
-  width: 100%;
-  height: 100%;
+  width: 50%;
+  height: 50%;
   object-fit: contain;
   border-radius: 14px;
 `;
