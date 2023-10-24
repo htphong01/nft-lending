@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import ReactLoading from 'react-loading';
 import { Icon } from '@iconify/react';
-import { calculateRepayment, sliceAddress } from '@src/utils';
+import { calculateRepayment, checkAllowance, sliceAddress } from '@src/utils';
 import styles from './styles.module.scss';
 import { updateRequest } from '../../../api/request.api';
 import { toast, Toaster } from 'react-hot-toast';
@@ -83,6 +83,7 @@ export default function RequestPopup({ item, onClose }) {
       // Approve renegotiation fee
       const renegotiateFee = ethers.utils.parseUnits(item.renegotiateFee, 18);
       if (!(await checkAllowance(account.address, renegotiateFee))) {
+        console.log('chua approve');
         const approveTx = await approveERC20(renegotiateFee);
         await approveTx.wait();
       }
@@ -91,6 +92,7 @@ export default function RequestPopup({ item, onClose }) {
       console.log('offer: ', offer);
 
       const { requestData } = convertRequestDataToSign({ ...item, loanId: offer.hash });
+      console.log('requestData: ', requestData);
 
       console.log('lender signature: ', item.lenderSignature);
       const { nonce, expiry, signature } = item.lenderSignature;
@@ -103,6 +105,7 @@ export default function RequestPopup({ item, onClose }) {
         expiry,
         signature
       );
+      console.log(tx);
       await tx.wait();
     } catch (error) {
       console.log(error);

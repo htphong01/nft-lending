@@ -55,6 +55,7 @@ export class RequestsService implements OnModuleInit {
     if (order.status !== OrderStatus.FILLED) {
       throw new BadRequestException('invalid_status');
     }
+    console.log(dto);
 
     const requestHash = generateRequestMessage(
       dto,
@@ -62,10 +63,12 @@ export class RequestsService implements OnModuleInit {
       config.ENV.LOAN_ADDRESS,
       config.ENV.CHAIN_ID,
     );
+    console.log('message: ', requestHash);
     if (
       !verifySignature(
         dto.creator,
         ethers.getBytes(requestHash),
+        // requestHash,
         dto.signature.signature,
       )
     ) {

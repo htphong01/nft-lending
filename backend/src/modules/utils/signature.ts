@@ -15,6 +15,8 @@ const getSignerAddress = (msg: string, signature: string) => {
 const verifySignature = (signer: string, msg: any, signature: string) => {
   try {
     const signerAddress = getSignerAddress(msg, signature);
+    console.log('recover: ', signerAddress);
+    console.log('signer: ', signer);
     return signerAddress.toLocaleLowerCase() === signer.toLocaleLowerCase();
   } catch (e) {
     return false;
@@ -89,12 +91,14 @@ export const generateRequestMessage = (
   //   ['bytes', 'bytes', 'address', 'uint256'],
   //   [encodedRequest, encodedSignature, loanContract, chainId],
   // );
+  console.log(ethers.parseUnits(renegotiateFee, 18).toString());
+  console.log(loanDuration * ONE_DAY);
   const payload = ethers.solidityPacked(
     ['bytes32', 'uint32', 'uint256', 'bytes', 'address', 'uint256'],
     [
       loanId,
-      loanDuration,
-      ethers.parseUnits(renegotiateFee, 18),
+      loanDuration * ONE_DAY,
+      ethers.parseUnits(renegotiateFee, 18).toString(),
       encodedSignature,
       loanContract,
       chainId,

@@ -68,6 +68,7 @@ export default function RequestForm({ item, onClose, type }) {
       const request = {
         creator: account.address,
         loanId: item.order.hash,
+        offer: item.hash,
         loanDuration: data.duration,
         renegotiateFee: data.fee,
         expiration: data.expiry,
@@ -108,6 +109,7 @@ export default function RequestForm({ item, onClose, type }) {
 
   useEffect(() => {
     console.log('Hash: ', item.order.hash);
+    console.log('ahihi: ', item);
   }, []);
 
   const handleSubmit = () => {};
