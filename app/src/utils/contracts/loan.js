@@ -31,17 +31,11 @@ export const acceptOfferLendingPool = (loanId, offer, signatures) => {
   return contract.acceptOfferLendingPool(loanId, offer, signatures);
 };
 
-export const renegotiateLoan = (loanId, loanDuration, renegotiateFee, lenderNonce, expiry, lenderSignature) => {
+export const renegotiateLoan = async (loanId, loanDuration, renegotiateFee, lenderNonce, expiry, lenderSignature) => {
+  const gasPrice = await provider.gasPrice();
   const contract = loanContract(signer);
-  return contract.estimateGas.renegotiateLoan(
-    loanId,
-    loanDuration,
-    renegotiateFee,
-    lenderNonce,
-    expiry,
-    lenderSignature,
-    {
-      gasLimit: 250000,
-    }
-  );
+  return contract.renegotiateLoan(loanId, loanDuration, renegotiateFee, lenderNonce, expiry, lenderSignature, {
+    gasLimit: 50000,
+    gasPrice,
+  });
 };

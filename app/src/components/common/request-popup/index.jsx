@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import ReactLoading from 'react-loading';
 import { Icon } from '@iconify/react';
-import { calculateRepayment, checkAllowance, sliceAddress } from '@src/utils';
+import { approveERC20, calculateRepayment, checkAllowance, sliceAddress } from '@src/utils';
 import styles from './styles.module.scss';
 import { updateRequest } from '../../../api/request.api';
 import { toast, Toaster } from 'react-hot-toast';
@@ -35,10 +35,10 @@ export default function RequestPopup({ item, onClose }) {
     try {
       setIsLoading(true);
 
-      const offer = item.offers.find((o) => o.status === OfferStatus.FILLED);
-      console.log('offer: ', offer);
+      // const offer = item.offers.find((o) => o.status === OfferStatus.FILLED);
+      // console.log('offer: ', offer);
 
-      const { requestData, signatureData } = convertRequestDataToSign({ ...item, loanId: offer.hash });
+      const { requestData, signatureData } = convertRequestDataToSign(item);
       console.log('Request data: ', requestData);
       console.log('Signature data: ', signatureData);
 

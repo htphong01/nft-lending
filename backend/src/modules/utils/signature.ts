@@ -73,7 +73,7 @@ export const generateRequestMessage = (
   loanContract,
   chainId,
 ) => {
-  const { loanId, loanDuration, renegotiateFee } = requestData;
+  const { offer, loanDuration, renegotiateFee } = requestData;
 
   // const encodedRequest = ethers.solidityPacked(
   //   ['bytes', 'uint32', 'uint256'],
@@ -96,7 +96,7 @@ export const generateRequestMessage = (
   const payload = ethers.solidityPacked(
     ['bytes32', 'uint32', 'uint256', 'bytes', 'address', 'uint256'],
     [
-      loanId,
+      offer,
       loanDuration * ONE_DAY,
       ethers.parseUnits(renegotiateFee, 18).toString(),
       encodedSignature,

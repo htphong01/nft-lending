@@ -9,6 +9,7 @@ export class CreateRequestDto {
   creator: string;
   lender: string;
   loanId: string;
+  offer: string;
   loanDuration: number;
   renegotiateFee: number;
   signature: RequestSignature;

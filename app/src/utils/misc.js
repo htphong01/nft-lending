@@ -62,7 +62,7 @@ export const convertOfferDataToSign = (offer) => {
 export const convertRequestDataToSign = (request) => {
   console.log('request: ', request);
   const requestData = {
-    loanId: request.loanId,
+    loanId: request.offer,
     loanDuration: request.loanDuration * ONE_DAY,
     renegotiateFee: ethers.utils.parseUnits(request.renegotiateFee, 18).toString(),
   };
