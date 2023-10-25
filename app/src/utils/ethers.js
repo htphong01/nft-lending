@@ -95,24 +95,10 @@ export const generateRequestSignature = async (
   loanContract = LOAN_ADDRESS,
   chainId = CHAIN_ID
 ) => {
-  console.log('request: ', requestData);
-  console.log('signature: ', signatureData);
-
   const { loanId, loanDuration, renegotiateFee } = requestData;
-
-  // const encodedRequest = ethers.utils.solidityPack(
-  //   ['bytes', 'uint32', 'uint256'],
-  //   [loanId, loanDuration, renegotiateFee]
-  // );
-
   const { signer: signerAddress, nonce, expiry } = signatureData;
 
   const encodedSignature = ethers.utils.solidityPack(['address', 'uint256', 'uint256'], [signerAddress, nonce, expiry]);
-
-  // const payload = ethers.utils.solidityPack(
-  //   ['bytes', 'bytes', 'address', 'uint256'],
-  //   [encodedRequest, encodedSignature, loanContract, chainId]
-  // );
 
   const payload = ethers.utils.solidityPack(
     ['bytes32', 'uint32', 'uint256', 'bytes', 'address', 'uint256'],
@@ -120,7 +106,6 @@ export const generateRequestSignature = async (
   );
 
   const message = ethers.utils.arrayify(ethers.utils.keccak256(payload));
-  // const message = ethers.utils.keccak256(payload);
 
   const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
   const account = (await provider.listAccounts())[0];

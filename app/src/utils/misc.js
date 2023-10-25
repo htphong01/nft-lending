@@ -60,7 +60,6 @@ export const convertOfferDataToSign = (offer) => {
 };
 
 export const convertRequestDataToSign = (request) => {
-  console.log('request: ', request);
   const requestData = {
     loanId: request.offer,
     loanDuration: request.loanDuration * ONE_DAY,

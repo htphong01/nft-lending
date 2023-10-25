@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
@@ -10,7 +10,7 @@ import { approveERC20, calculateRepayment, checkAllowance, sliceAddress } from '
 import styles from './styles.module.scss';
 import { updateRequest } from '../../../api/request.api';
 import { toast, Toaster } from 'react-hot-toast';
-import { OfferStatus, RequestStatus } from '../../../constants/enum';
+import { RequestStatus } from '../../../constants/enum';
 import { renegotiateLoan } from '../../../utils/contracts/loan';
 import { parseMetamaskError } from '../../../utils/convert';
 import { convertRequestDataToSign } from '../../../utils/misc';
@@ -35,15 +35,9 @@ export default function RequestPopup({ item, onClose }) {
     try {
       setIsLoading(true);
 
-      // const offer = item.offers.find((o) => o.status === OfferStatus.FILLED);
-      // console.log('offer: ', offer);
-
       const { requestData, signatureData } = convertRequestDataToSign(item);
-      console.log('Request data: ', requestData);
-      console.log('Signature data: ', signatureData);
 
       const signature = await generateRequestSignature(requestData, signatureData);
-      console.log('Signature: ', signature);
 
       await updateRequest(item.hash, {
         status: RequestStatus.ACCEPTED,
@@ -83,18 +77,12 @@ export default function RequestPopup({ item, onClose }) {
       // Approve renegotiation fee
       const renegotiateFee = ethers.utils.parseUnits(item.renegotiateFee, 18);
       if (!(await checkAllowance(account.address, renegotiateFee))) {
-        console.log('chua approve');
         const approveTx = await approveERC20(renegotiateFee);
         await approveTx.wait();
       }
 
-      const offer = item.offers.find((o) => o.status === OfferStatus.FILLED);
-      console.log('offer: ', offer);
+      const { requestData } = convertRequestDataToSign({ ...item, loanId: item.offer });
 
-      const { requestData } = convertRequestDataToSign({ ...item, loanId: offer.hash });
-      console.log('requestData: ', requestData);
-
-      console.log('lender signature: ', item.lenderSignature);
       const { nonce, expiry, signature } = item.lenderSignature;
 
       const tx = await renegotiateLoan(
@@ -105,21 +93,16 @@ export default function RequestPopup({ item, onClose }) {
         expiry,
         signature
       );
-      console.log(tx);
       await tx.wait();
     } catch (error) {
-      console.log(error);
       const txError = parseMetamaskError(error);
-      // toast.error(txError);
+      toast.error(txError);
     } finally {
       setIsLoading(false);
-      // onClose();
+      setIsCommitLoading(false);
+      onClose();
     }
   };
-
-  useEffect(() => {
-    console.log('request popup: ', item);
-  }, []);
 
   return (
     <div className={styles['form-container']}>
@@ -212,6 +195,12 @@ export default function RequestPopup({ item, onClose }) {
                     {item.order.floorPrice} {currency}
                   </div>
                 </div>
+                <div className={styles.info}>
+                  <div className={styles.label}>Received fee: </div>
+                  <div className={styles.value}>
+                    {item.renegotiateFee} {currency}
+                  </div>
+                </div>
 
                 <div className={styles.info}>
                   <div className={styles.label}>Reason: </div>
@@ -228,16 +217,11 @@ export default function RequestPopup({ item, onClose }) {
                     <button onClick={() => handleRenegotiateLoan()}>Renegotiate</button>
                   </div>
                 )}
-                {/* <div className={styles.info}>
-                  <button onClick={() => handleRejectRenegotiation()}>Reject</button>
-                  <button onClick={() => handleAcceptRenegotiation()}>Accept</button>
-                </div> */}
               </div>
             </div>
           </>
         )}
       </div>
-      {/* {isOpenRequest && <RequestForm item={data} onClose={handleOpenRequestForm} />} */}
     </div>
   );
 }

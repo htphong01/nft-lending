@@ -45,20 +45,15 @@ export class Request {
       await this.redisService.hset(DATABASE_NAME, hash, JSON.stringify(data));
       return true;
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('create: ', error);
       return false;
     }
   }
 
   async update(id: string, data: any): Promise<boolean> {
     try {
-      console.log(data);
       const queryData = await this.redisService.hget(DATABASE_NAME, id);
       if (!queryData) return;
-
-      console.log(
-        JSON.stringify({ ...JSON.parse(queryData.toString()), ...data }),
-      );
 
       await this.redisService.hset(
         DATABASE_NAME,
@@ -82,6 +77,21 @@ export class Request {
       return true;
     } catch (error) {
       this.logger.error('remove: ', error);
+      return false;
+    }
+  }
+
+  async deleteAllByOffer(offer: string): Promise<boolean> {
+    try {
+      const requests = await this.find({ offer });
+
+      for (let request of requests) {
+        await this.redisService.hdel(DATABASE_NAME, request.hash);
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.error('deleteAllByOffer: ', error);
       return false;
     }
   }

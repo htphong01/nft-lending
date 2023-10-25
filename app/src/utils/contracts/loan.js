@@ -32,10 +32,6 @@ export const acceptOfferLendingPool = (loanId, offer, signatures) => {
 };
 
 export const renegotiateLoan = async (loanId, loanDuration, renegotiateFee, lenderNonce, expiry, lenderSignature) => {
-  const gasPrice = await provider.gasPrice();
   const contract = loanContract(signer);
-  return contract.renegotiateLoan(loanId, loanDuration, renegotiateFee, lenderNonce, expiry, lenderSignature, {
-    gasLimit: 50000,
-    gasPrice,
-  });
+  return contract.renegotiateLoan(loanId, loanDuration, renegotiateFee, lenderNonce, expiry, lenderSignature);
 };

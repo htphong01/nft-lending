@@ -19,6 +19,7 @@ import { Order } from '../orders/reposities/order.reposity';
 import { DacsService } from '../dacs/dacs.service';
 import * as FACTORY_ABI from './abi/LOAN.json';
 import { Request } from '../requests/reposities/request.reposity';
+import { ONE_DAY, WXCR_DECIMALS } from '../utils/constants';
 
 @Injectable()
 export class OffersService implements OnModuleInit {
@@ -159,25 +160,32 @@ export class OffersService implements OnModuleInit {
 
           case 'LoanRenegotiated':
             this.logger.log('LoanRenegotiated: ', event.args.loanId);
-            console.log('Args: ', event.args);
             const {
-              loanId,
-              borrower,
-              lender,
+              loanId: offerId,
               newLoanDuration,
               renegotiationFee,
               renegotiationAdminFee,
             } = event.args;
 
-            const offer = await this.offer.getByKey(loanId);
+            const loanDuration = newLoanDuration.toString() / ONE_DAY;
+            const fee = ethers.formatUnits(
+              renegotiationFee.toString(),
+              WXCR_DECIMALS,
+            );
+            const adminFee = ethers.formatUnits(
+              renegotiationAdminFee.toString(),
+              WXCR_DECIMALS,
+            );
+
+            const offer = await this.offer.getByKey(offerId);
             if (offer) {
               await Promise.all([
-                this.offer.update(loanId, {
-                  duration: newLoanDuration,
-                }),
                 this.order.update(offer.order, {
-                  duration: newLoanDuration,
+                  duration: loanDuration,
+                  renegotiationFee: fee,
+                  renegotiationAdminFee: adminFee,
                 }),
+                this.request.deleteAllByOffer(offerId),
               ]);
             }
 
