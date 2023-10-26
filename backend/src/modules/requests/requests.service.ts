@@ -117,4 +117,16 @@ export class RequestsService implements OnModuleInit {
   async update(id: string, dto: UpdateRequestDto) {
     await this.request.update(id, { ...dto });
   }
+
+  async remove(id: string) {
+    await this.request.remove(id);
+  }
+
+  async repaid(order: string) {
+    const requests = await this.findAll({ order });
+
+    for (let request of requests) {
+      await this.remove(request.hash);
+    }
+  }
 }

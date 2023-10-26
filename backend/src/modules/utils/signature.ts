@@ -71,13 +71,7 @@ export const generateRequestMessage = (
   loanContract,
   chainId,
 ) => {
-  const { loanId, loanDuration, renegotiateFee } = requestData;
-
-  const encodedRequest = ethers.solidityPacked(
-    ['bytes', 'uint32', 'uint256'],
-    [loanId, loanDuration, ethers.parseUnits(renegotiateFee, 18)],
-  );
-
+  const { offer, loanDuration, renegotiateFee } = requestData;
   const { signer, nonce, expiry } = signatureData;
 
   const encodedSignature = ethers.solidityPacked(
@@ -86,8 +80,15 @@ export const generateRequestMessage = (
   );
 
   const payload = ethers.solidityPacked(
-    ['bytes', 'bytes', 'address', 'uint256'],
-    [encodedRequest, encodedSignature, loanContract, chainId],
+    ['bytes32', 'uint32', 'uint256', 'bytes', 'address', 'uint256'],
+    [
+      offer,
+      loanDuration * ONE_DAY,
+      ethers.parseUnits(renegotiateFee, 18).toString(),
+      encodedSignature,
+      loanContract,
+      chainId,
+    ],
   );
   return ethers.keccak256(payload);
 };

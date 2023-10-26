@@ -60,17 +60,16 @@ export const convertOfferDataToSign = (offer) => {
 };
 
 export const convertRequestDataToSign = (request) => {
-  console.log('request: ', request);
   const requestData = {
-    loanId: request.loanId,
-    loanDuration: request.loanDuration,
-    renegotiateFee: ethers.utils.parseUnits(request.renegotiateFee, 18),
+    loanId: request.offer,
+    loanDuration: request.loanDuration * ONE_DAY,
+    renegotiateFee: ethers.utils.parseUnits(request.renegotiateFee, 18).toString(),
   };
 
   const signatureData = {
     signer: request.lender,
     nonce: getRandomInt(),
-    expiry: Math.floor(new Date().getTime() / 1000) + 24 * 60 * 60 * +request.expiration,
+    expiry: getTimestamp() + ONE_DAY * request.expiration,
   };
 
   return { requestData, signatureData };
@@ -107,3 +106,7 @@ export const replaceIPFS = (
 
 export const compareString = (str1 = '', str2 = '') =>
   typeof str1 === 'string' && typeof str2 === 'string' && str1.toLowerCase() === str2.toLowerCase();
+
+export const getTimestamp = () => {
+  return Math.floor(new Date().getTime() / 1000);
+};

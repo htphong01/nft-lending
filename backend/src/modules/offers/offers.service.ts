@@ -6,6 +6,7 @@ import {
   OnModuleInit,
   Inject,
   forwardRef,
+  Logger,
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
@@ -18,11 +19,13 @@ import { Order } from '../orders/reposities/order.reposity';
 import { DacsService } from '../dacs/dacs.service';
 import * as FACTORY_ABI from './abi/LOAN.json';
 import { Request } from '../requests/reposities/request.reposity';
+import { ONE_DAY, WXCR_DECIMALS } from '../utils/constants';
 
 @Injectable()
 export class OffersService implements OnModuleInit {
   private rpcProvider: JsonRpcProvider;
   private nftContract: Contract;
+  private readonly logger: Logger = new Logger(OffersService.name);
 
   constructor(
     private readonly offer: Offer,
@@ -156,22 +159,33 @@ export class OffersService implements OnModuleInit {
           }
 
           case 'LoanRenegotiated':
-            console.log('Args: ', event.args);
+            this.logger.log('LoanRenegotiated: ', event.args.loanId);
             const {
-              loanId,
-              borrower,
-              lender,
+              loanId: offerId,
               newLoanDuration,
               renegotiationFee,
               renegotiationAdminFee,
-            } = event.args.loanId;
+            } = event.args;
 
-            const order = await this.order.getByKey(loanId);
-            if (order) {
+            const loanDuration = newLoanDuration.toString() / ONE_DAY;
+            const fee = ethers.formatUnits(
+              renegotiationFee.toString(),
+              WXCR_DECIMALS,
+            );
+            const adminFee = ethers.formatUnits(
+              renegotiationAdminFee.toString(),
+              WXCR_DECIMALS,
+            );
+
+            const offer = await this.offer.getByKey(offerId);
+            if (offer) {
               await Promise.all([
-                this.order.update(loanId, {
-                  duration: newLoanDuration,
+                this.order.update(offer.order, {
+                  duration: loanDuration,
+                  renegotiationFee: fee,
+                  renegotiationAdminFee: adminFee,
                 }),
+                this.request.deleteAllByOffer(offerId),
               ]);
             }
 
