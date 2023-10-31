@@ -9,10 +9,9 @@ const ItemStatus = {
 
 describe("NFTMarketplace", function () {
 
-    let NFT;
     let nft;
-    let Marketplace;
     let marketplace
+    let liquidateNFTPool;
     let deployer;
     let addr1;
     let addr2;
@@ -21,13 +20,20 @@ describe("NFTMarketplace", function () {
 
     beforeEach(async function () {
         // Get the ContractFactories and Signers here.
-        NFT = await ethers.getContractFactory("MockERC721");
-        Marketplace = await ethers.getContractFactory("Marketplace");
-        [deployer, addr1, addr2, ...addrs] = await ethers.getSigners();
+        const NFT = await ethers.getContractFactory("MockERC721");
+        const WXCR = await ethers.getContractFactory("WXCR");
+        const LiquidateNFTPool = await ethers.getContractFactory("LiquidateNFTPool");
+        const Marketplace = await ethers.getContractFactory("Marketplace");
+        [deployer, addr1, addr2, loan, ...addrs] = await ethers.getSigners();
 
         // To deploy our contracts
         nft = await NFT.deploy();
-        marketplace = await Marketplace.deploy(feePercent);
+        wXCR = await WXCR.deploy();
+        liquidateNFTPool = await LiquidateNFTPool.deploy(deployer.address, loan.address);
+        marketplace = await Marketplace.deploy(wXCR.address, feePercent);
+
+        await liquidateNFTPool.setMarketplace(marketplace.address);
+        await marketplace.setLiquidateNFTPool(liquidateNFTPool.address);
     });
 
     describe("Deployment", function () {
@@ -126,6 +132,54 @@ describe("NFTMarketplace", function () {
                 marketplace.connect(addr3).purchaseItems(itemIds, { value: payable })
             ).to.be.revertedWith("item already sold");
         });
+    })
+
+    describe("Purchasing items from seller and loan", () => {
+        let price = 1
+        const itemIds = [1, 2, 3, 4]
+        beforeEach(async function () {
+            // addr1 mints an nft
+            await nft.connect(addr1).mint(addr1.address)
+            await nft.connect(addr1).mint(addr1.address)
+            // loan mints an nft
+            await nft.connect(loan).mint(loan.address)
+            await nft.connect(loan).mint(loan.address)
+            // addr1 approves marketplace to spend tokens
+            await nft.connect(addr1).setApprovalForAll(marketplace.address, true)
+            // loan approves liquidateNFTPool to spend tokens
+            await nft.connect(loan).setApprovalForAll(liquidateNFTPool.address, true)
+            // addr1 makes their nft a marketplace item.
+            await marketplace.connect(addr1).makeItem(nft.address, 1, parseEther(price.toString()))
+            await marketplace.connect(addr1).makeItem(nft.address, 2, parseEther(price.toString()))
+            // loan makes their nft a liquidateNFTPool item.
+            await liquidateNFTPool.connect(loan).liquidateNFT(ethers.utils.formatBytes32String("1"), nft.address, 3, wXCR.address, parseEther(price.toString()))
+            await liquidateNFTPool.connect(loan).liquidateNFT(ethers.utils.formatBytes32String("2"), nft.address, 4, wXCR.address, parseEther(price.toString()))
+        })
+
+        /**
+         * Seller: pool, addr1
+         * addr1 => Items [1, 2] | 1 XCR/item | marketFee is 10%
+         * pool  => Items [3, 4] | 1 XCR/item |
+         * Calculate:
+         * addr2 => purchaseItems([1, 2, 3, 4]) => | addr2:     -4 XCR                         | => transfer nft 1 to addr2 
+         *                                         | marketFee: (2 XCR * 10) / 100 = +0.2 XCR  |    transfer nft 2 to addr2
+         *                                         | addr1:      2 XCR - 0.2 XCR   = +1.8 XCR  |    transfer nft 3 to addr2
+         *                                         | loan:      +2 wXCR                        |    transfer nft 4 to addr2
+         */
+        it("addr2: -4XCR, marketplace: +0.2XCR, add1: +1.8XCR, loan: +2wXCR", async () => {
+            expect(await wXCR.balanceOf(loan.address)).to.eq(0);
+
+            await expect(() => marketplace.connect(addr2).purchaseItems(itemIds, { value: parseEther('4') }))
+                .to
+                .changeEtherBalances([addr1, addr2, deployer, loan], [parseEther("1.8"), parseEther("-4"), parseEther("0.2"), 0])
+
+            expect(await wXCR.balanceOf(loan.address)).to.eq(parseEther("2"));
+
+            expect(await nft.ownerOf(1)).to.equal(addr2.address);
+            expect(await nft.ownerOf(2)).to.equal(addr2.address);
+            expect(await nft.ownerOf(3)).to.equal(addr2.address);
+            expect(await nft.ownerOf(4)).to.equal(addr2.address);
+        })
     })
 })
 
