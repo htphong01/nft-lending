@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import ReactLoading from 'react-loading';
@@ -16,9 +16,16 @@ import {
   liquidateLoan,
   parseMetamaskError,
 } from '@src/utils';
-import { ONE_DAY, OrderStatus, FormType } from '@src/constants';
+import { ONE_DAY, OrderStatus, FormType, MARKETPLACE_ADDRESS } from '@src/constants';
 import { submitVote, getVote } from '@src/api/vote.api';
 import styles from '../styles.module.scss';
+import { ERC721_ABI } from '@src/abi';
+import { Contract, providers } from 'ethers';
+import { resolveIpfsUri } from '@src/hooks';
+import axios from 'axios';
+import { createNft } from '@src/api/nfts.api';
+import { MARKETPLACE_ABI } from '@src/abi/marketPlace';
+import { formatEther } from 'ethers/lib/utils';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
@@ -26,6 +33,7 @@ export default function Form({ item, onClose, type }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
   const account = useSelector((state) => state.account);
+  const provider = useMemo(() => new providers.Web3Provider(window.ethereum, 'any'), []);
 
   const [commitLoading, setCommitLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,10 +75,35 @@ export default function Form({ item, onClose, type }) {
   const handleLiquidate = async () => {
     try {
       setCommitLoading(true);
-      const tx = await liquidateLoan(item.hash);
-      await tx.wait();
-      toast.success('Liquidate loan successfully');
+      let tx = await liquidateLoan(item.hash);
+      tx = await tx.wait();
+
+      let loanLiquidated;
+      if (tx && tx.events) {
+        const event = tx.events.find((event) => event.event === 'LoanLiquidated');
+        loanLiquidated = event.args;
+      }
+
+      const { nftCollateralContract: nft, nftCollateralId: tokenId, principalAmount: price, lender: seller } = loanLiquidated;
+      const marketPlaceContract = new Contract(MARKETPLACE_ADDRESS, MARKETPLACE_ABI, provider);
+      const nftContract = new Contract(nft, ERC721_ABI, provider);
+      const _uri = await nftContract.tokenURI(tokenId);
+      const itemId = await marketPlaceContract.itemCount();
+      const uri = resolveIpfsUri(_uri);
+      const { data: metadata } = await axios.get(uri);
+      const token = { ...metadata, image: resolveIpfsUri(metadata.image) };
+
+      await createNft({
+        nft: nft.toString(),
+        tokenId: tokenId.toString(),
+        price: formatEther(price),
+        creator: seller.toString(),
+        metadata: JSON.stringify(token),
+        itemId: itemId.toString()
+      });
+
       setCommitLoading(false);
+      toast.success('Liquidate loan successfully');
       setTimeout(() => {
         onClose();
       }, 1000);
