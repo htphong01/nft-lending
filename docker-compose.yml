@@ -20,8 +20,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.server
+    ports:
+      - 3000:3000
     env_file:
       - backend/.env
+    environment:
+      - REDIS_ORDER_HOST=redis
+      - REDIS_VOTE_HOST=redis
     depends_on:
       - redis
     restart:

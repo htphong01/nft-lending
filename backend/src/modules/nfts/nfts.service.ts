@@ -23,6 +23,7 @@ export class NftsService {
 
   private async attachCollectionListeners() {
     const collections = await this.nft.getAllCollections();
+    if(!collections) return;
 
     await Promise.all(
       collections.map(async (collectionAddress) =>
