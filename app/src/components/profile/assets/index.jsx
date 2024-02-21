@@ -1,13 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { getNfts } from '@src/api/nfts.api';
+import { getPermittedNFTs } from '@src/api/permitted-nfts.api';
 import { getTokenBoundAccounts } from '@src/api/token-bound-account.api';
 import Card from '@src/components/common/card';
 import ERC6551Form from '@src/components/common/erc-6551-form';
 import ERC721Form from '@src/components/common/erc-721-form';
 import ListCollateralForm from '@src/components/common/list-collateral-form';
 import TokenBoundAccountCard from '@src/components/common/token-bound-account-card';
-import { COLLATERAL_FORM_TYPE, NFT_CONTRACT_ADDRESS } from '@src/constants';
-import { getPermittedNFTs } from '@src/api/permitted-nfts.api';
+import { COLLATERAL_FORM_TYPE } from '@src/constants';
 import { ERC721Contract } from '@src/utils';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -41,7 +41,6 @@ export default function Assets() {
     try {
       const response = await getPermittedNFTs({ usage: 'ERC-721' });
       const nfts = response.data.map((item) => item.collection);
-      nfts.push(NFT_CONTRACT_ADDRESS);
       const { data } = await getNfts({
         owner: account.address,
         isAvailable: true,
