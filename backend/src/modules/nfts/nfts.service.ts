@@ -111,7 +111,6 @@ export class NftsService {
 
   async syncNft(nftInfo: SyncNftDto) {
     try {
-      await this.nft.delete(nftInfo.collectionAddress, nftInfo.tokenId.toString());
       await this.nft.sync(nftInfo);
     } catch (error) {
       throw new HttpException(error.response.data, error.response.status);
