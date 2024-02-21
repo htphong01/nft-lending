@@ -32,7 +32,6 @@ export class RequestsController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateRequestDto) {
-    console.log(dto);
     return this.requestsService.update(id, dto);
   }
 

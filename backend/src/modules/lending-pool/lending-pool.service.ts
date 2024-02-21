@@ -62,7 +62,6 @@ export class LendingPoolService implements OnModuleInit {
         treasury,
         ethers.parseUnits('72', 18),
       );
-      console.log(tx.hash);
     } catch (error) {
       console.log('error', error);
       if (error.response?.data) {

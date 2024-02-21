@@ -26,7 +26,6 @@ export default function RequestView({ item, onClose, action }) {
   // useOnClickOutside(ref, () => onClose());
 
   const fetchOrder = async () => {
-    console.log('item ne: ', item);
     try {
       const { data: order } = await getOrderByHash(item.order);
       setData({ ...data, ...order });

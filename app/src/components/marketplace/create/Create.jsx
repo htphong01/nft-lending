@@ -31,7 +31,6 @@ export const Create = () => {
       const isApproved = await tokenContract.isApprovedForAll(signer.getAddress(), MARKETPLACE_ADDRESS);
 
       if (!isApproved) {
-        console.log('NOT APPROVED ');
         await (await tokenContract.setApprovalForAll(MARKETPLACE_ADDRESS, true)).wait();
       }
       const receipt = await (

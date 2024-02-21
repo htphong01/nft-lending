@@ -32,7 +32,6 @@ const Preview = ({ loading }) => {
       const _uri = await contract.tokenURI(values.tokenId);
       const uri = resolveIpfsUri(_uri);
       const { data: metadata } = await axios.get(uri);
-      // console.log('metadata', metadata);
       return { ...metadata, image: resolveIpfsUri(metadata.image) };
     },
     { enabled: !!address && !!tokenId }

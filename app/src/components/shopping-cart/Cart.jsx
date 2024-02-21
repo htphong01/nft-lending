@@ -23,7 +23,6 @@ const Cart = () => {
       const signer = provider.getSigner(account);
 
       const marketPlace = marketPlaceContract(signer);
-      // console.log('utils.parseEther(totalPrice.toString()) ', totalPrice, utils.parseEther(totalPrice.toString()));
       await (
         await marketPlace.purchaseItems(
           cartItems.map((item) => item.itemId),
