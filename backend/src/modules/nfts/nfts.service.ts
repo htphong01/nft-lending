@@ -23,7 +23,7 @@ export class NftsService {
 
   private async attachCollectionListeners() {
     const collections = await this.nft.getAllCollections();
-    if(!collections) return;
+    if (!collections) return;
 
     await Promise.all(
       collections.map(async (collectionAddress) =>
@@ -111,6 +111,7 @@ export class NftsService {
 
   async syncNft(nftInfo: SyncNftDto) {
     try {
+      await this.nft.delete(nftInfo.collectionAddress, nftInfo.tokenId.toString());
       await this.nft.sync(nftInfo);
     } catch (error) {
       throw new HttpException(error.response.data, error.response.status);

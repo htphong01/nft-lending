@@ -10,7 +10,7 @@ export class ItemRedisService extends RedisService {
       port: config.ENV.REDIS_ITEM_PORT,
       password: config.ENV.REDIS_ITEM_PASS,
       family: config.ENV.REDIS_ITEM_FAMILY,
-      db: config.ENV.REDIS_ITEM_DB,
+      db: config.ENV.REDIS_ITEM_DB
     });
   }
 }
