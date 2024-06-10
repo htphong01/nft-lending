@@ -7,6 +7,7 @@ const DATABASE_NAME = 'Offers';
 @Injectable()
 export class Offer {
   public logger: Logger = new Logger(Offer.name);
+  
   constructor(private readonly redisService: OrderRedisService) {}
 
   async getAll(): Promise<any[]> {
@@ -50,6 +51,7 @@ export class Offer {
         offerHash,
         JSON.stringify(data),
       );
+
       return true;
     } catch (error) {
       this.logger.error(error);
@@ -67,6 +69,7 @@ export class Offer {
         id,
         JSON.stringify({ ...JSON.parse(queryData.toString()), ...data }),
       );
+      
       return true;
     } catch (error) {
       this.logger.error(error);

@@ -108,6 +108,7 @@ export class OffersService implements OnModuleInit {
 
       for (let i = 0; i < events.length; i++) {
         const event: any = events[i];
+
         if (!event) continue;
         if (Object.keys(event).length === 0) continue;
         if (!event.fragment) continue;
@@ -145,6 +146,7 @@ export class OffersService implements OnModuleInit {
           case 'LoanLiquidated': {
             const loanId = event.args.loanId;
             const offer = await this.findById(loanId);
+            
             if (offer) {
               await Promise.all([
                 this.offer.update(loanId, { status: OfferStatus.LIQUIDATED }),
