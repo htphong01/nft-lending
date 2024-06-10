@@ -57,6 +57,7 @@ export class OrdersService {
 
     if (createOrderDto.lender === 'pool') {
       const blockNumber = await this.lendingPool.getBlockNumber();
+      
       newOrder.vote = {
         blockNumber,
         total: await this.lendingPool.getTotalStaked({ blockTag: blockNumber }),
@@ -70,6 +71,7 @@ export class OrdersService {
 
     await Promise.all([
       this.order.create(orderHash, newOrder),
+      
       createOrderDto.metadata.hash
         ? this.tokenBoundAccount.update(createOrderDto.metadata.hash, {
             isAvailable: false,

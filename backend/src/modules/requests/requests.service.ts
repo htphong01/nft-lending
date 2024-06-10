@@ -87,8 +87,10 @@ export class RequestsService implements OnModuleInit {
       status: RequestStatus.OPENING,
       createdAt: new Date().getTime(),
     };
+
     const dacs_cid = await this.dacs.upload(newRequest);
     newRequest.dacs_url = `${config.ENV.SERVER_HOST}:${config.ENV.SERVER_PORT}/dacs/${dacs_cid}`;
+    
     await this.request.create(requestHash, newRequest);
   }
 
@@ -108,7 +110,6 @@ export class RequestsService implements OnModuleInit {
 
   async findById(id: string) {
     const request = await this.request.getByKey(id);
-
     const order = await this.ordersService.findById(request.loanId);
 
     return { ...request, order };

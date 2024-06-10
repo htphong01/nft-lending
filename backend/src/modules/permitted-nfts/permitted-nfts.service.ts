@@ -12,9 +12,7 @@ export class PermittedNFTsService {
 
   async create(createPermittedNFTDto: CreatePermittedNFTDto) {
     const isExisted = await this.findById(createPermittedNFTDto.collection);
-    if (isExisted) {
-      throw new ConflictException('Already existed in list of permitted');
-    }
+    if (isExisted) throw new ConflictException('Already existed in list of permitted');
 
     const rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
     const permittedNFTsContract = new Contract(
