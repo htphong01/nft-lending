@@ -23,6 +23,9 @@ import { ONE_DAY, WXCR_DECIMALS } from '../utils/constants';
 
 @Injectable()
 export class OffersService implements OnModuleInit {
+  update(arg0: number, updateOrderDto: UpdateOrderDto) {
+    throw new Error('Method not implemented.');
+  }
   private rpcProvider: JsonRpcProvider;
   private nftContract: Contract;
   private readonly logger: Logger = new Logger(OffersService.name);

@@ -7,7 +7,6 @@ const DATABASE_NAME = 'Offers';
 @Injectable()
 export class Offer {
   public logger: Logger = new Logger(Offer.name);
-
   constructor(private readonly redisService: OrderRedisService) {}
 
   async getAll(): Promise<any[]> {
@@ -81,12 +80,12 @@ export class Offer {
       if (!queryData) return;
 
       const offer = JSON.parse(queryData.toString());
-
       const listOffers = await this.find({ order: offer.order });
       for (let i = 0; i < listOffers.length; i++) {
         if (listOffers[i].hash != id)
           this.redisService.hdel(DATABASE_NAME, listOffers[i].hash);
       }
+
       return true;
     } catch (error) {
       this.logger.error(error);
@@ -100,12 +99,14 @@ export class Offer {
       for (let i = 0; i < listOffers.length; i++) {
         if (listOffers[i].signature.expiry * 1000 < new Date().getTime())
           this.redisService.hdel(DATABASE_NAME, listOffers[i].hash);
+
         await this.redisService.hset(
           DATABASE_NAME,
           listOffers[i].hash,
           JSON.stringify({ ...listOffers[i], status: OfferStatus.EXPIRED }),
         );
       }
+
       return true;
     } catch (error) {
       this.logger.error(error);
