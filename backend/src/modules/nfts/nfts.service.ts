@@ -43,10 +43,7 @@ export class NftsService {
     await nftContract.on(
       nftContract.getEvent('Transfer'),
       async (from, to, currentTokenId) => {
-        // When burn, remove from database
-        if (to === ZeroAddress)
-          return this.nft.delete(collectionAddress, currentTokenId.toString());
-
+        if (to === ZeroAddress) return this.nft.delete(collectionAddress, currentTokenId.toString());
         await this.saveNft(to, Number(currentTokenId), collectionAddress);
       },
     );
@@ -83,7 +80,6 @@ export class NftsService {
         if (Object.keys(event).length === 0) continue;
 
         const tokenId = Number(BigInt(event.args.tokenId).toString());
-
         const { data } = await axios.get(await nftContract.tokenURI(tokenId));
 
         const nftData = {
@@ -124,7 +120,6 @@ export class NftsService {
     );
 
     const { data } = await axios.get(await nftContract.tokenURI(tokenId));
-
     const nftData = {
       owner: owner.toLowerCase(),
       tokenId: tokenId,
@@ -167,7 +162,6 @@ export class NftsService {
     }
 
     await this.registerCollectionTransferEvent(collectionAddress);
-
     this.nft.addCollection(collectionAddress);
 
     return { message: `Imported collection successfully` };
