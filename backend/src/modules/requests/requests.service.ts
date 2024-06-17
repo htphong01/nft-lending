@@ -100,7 +100,6 @@ export class RequestsService implements OnModuleInit {
     for (let request of requests) {
       const order = await this.ordersService.findById(request.loanId);
       const offers = await this.offerService.findByOrder(order.hash);
-
       request.order = order;
       request.offers = offers;
     }

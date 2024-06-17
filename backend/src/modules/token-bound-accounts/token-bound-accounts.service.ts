@@ -41,9 +41,7 @@ export class TokenBoundAccountsService {
       salt,
     });
 
-    if (isExisted.length > 0) {
-      throw new ConflictException('Already imported');
-    }
+    if (isExisted.length > 0) throw new ConflictException('Already imported');
 
     const nftContract = new Contract(
       createTokenBoundAccountDto.tokenAddress,
@@ -58,10 +56,8 @@ export class TokenBoundAccountsService {
     if (
       ownerOfTokenId.toLowerCase() !==
       createTokenBoundAccountDto.owner.toLowerCase()
-    ) {
-      throw new UnauthorizedException('Caller is not owner of token Id');
-    }
-
+    )  throw new UnauthorizedException('Caller is not owner of token Id');
+    
     const encodedTokenBoundAccount = ethers.solidityPacked(
       ['address', 'address', 'address', 'uint256', 'uint256'],
       [
