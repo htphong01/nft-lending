@@ -173,7 +173,7 @@ contract Marketplace is Permission, ReentrancyGuard, IERC721Receiver {
     /**
      * @notice Withdraw all funds from the contract
      */
-    function withdrawFund() external nonReentrant onlyAdmin {
+    function withdrawFund() external {
         uint256 withdrawable = address(this).balance;
         require(withdrawable > 0, "Amount exceeds balance");
 
