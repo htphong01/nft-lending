@@ -14,25 +14,25 @@ describe("LendingPoolV3", () => {
 
         //** Get Contracts */
         const LendingPoolV3 = await ethers.getContractFactory("LendingPoolV3");
-        const WXCR = await ethers.getContractFactory("WXCR");
+        const WXENE = await ethers.getContractFactory("WXENE");
 
-        wXCR = await WXCR.deploy();
-        await wXCR.mint(user1.address, ONE_ETHER.mul(1000));
-        await wXCR.mint(user2.address, ONE_ETHER.mul(1000));
-        await wXCR.mint(user3.address, ONE_ETHER.mul(1000));
-        await wXCR.mint(treasury.address, ONE_ETHER.mul(1000));
+        wXENE = await WXENE.deploy();
+        await wXENE.mint(user1.address, ONE_ETHER.mul(1000));
+        await wXENE.mint(user2.address, ONE_ETHER.mul(1000));
+        await wXENE.mint(user3.address, ONE_ETHER.mul(1000));
+        await wXENE.mint(treasury.address, ONE_ETHER.mul(1000));
 
         lendingPool = await LendingPoolV3.deploy(
-            wXCR.address,
+            wXENE.address,
             treasury.address,
             rewardPerBlock,
             startBlock
         );
 
-        await wXCR.connect(user1).approve(lendingPool.address, MaxUint256);
-        await wXCR.connect(user2).approve(lendingPool.address, MaxUint256);
-        await wXCR.connect(user3).approve(lendingPool.address, MaxUint256);
-        await wXCR.connect(treasury).approve(lendingPool.address, MaxUint256);
+        await wXENE.connect(user1).approve(lendingPool.address, MaxUint256);
+        await wXENE.connect(user2).approve(lendingPool.address, MaxUint256);
+        await wXENE.connect(user3).approve(lendingPool.address, MaxUint256);
+        await wXENE.connect(treasury).approve(lendingPool.address, MaxUint256);
     });
 
     describe("test share reward", () => {
@@ -47,9 +47,9 @@ describe("LendingPoolV3", () => {
                 console.log("========================================")
                 await lendingPool.connect(user2).deposit(parseEther('100'));
                 if (i === 0) {
-                    const balanceBefore = await wXCR.balanceOf(treasury.address);
+                    const balanceBefore = await wXENE.balanceOf(treasury.address);
                     await lendingPool.connect(user1).claimReward();
-                    const balanceAfter = await wXCR.balanceOf(treasury.address);
+                    const balanceAfter = await wXENE.balanceOf(treasury.address);
 
                     console.log("balanceBefore", balanceBefore.toString());
                     console.log("balanceAfter", balanceAfter.toString());

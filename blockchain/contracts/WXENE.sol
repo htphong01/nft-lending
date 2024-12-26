@@ -2,23 +2,23 @@
 pragma solidity 0.8.18;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract WXCR is ERC20 {
+contract WXENE is ERC20 {
     event Minted(address account, uint256 amount);
     event Burnt(address account, uint256 amount);
 
     /* *********** */
     /* CONSTRUCTOR */
     /* *********** */
-    constructor() ERC20("Wrapped XCR", "wXCR") {}
+    constructor() ERC20("Wrapped XENE", "wXENE") {}
 
     /* ****************** */
     /* EXTERNAL FUNCTIONS */
     /* ****************** */
 
     /**
-     * @notice Mint wXCR to user
+     * @notice Mint wXENE to user
      * @dev Everyone can call this function
-     * 
+     *
      * emit {Minted} event
      */
     function mint() external payable {
@@ -28,9 +28,9 @@ contract WXCR is ERC20 {
     }
 
     /**
-     * @notice Burn wXCR and transfer XCR to user
+     * @notice Burn wXENE and transfer XENE to user
      * @param _amount Amount of token
-     * 
+     *
      * emit {Burnt} event
      */
     function burn(uint256 _amount) external {

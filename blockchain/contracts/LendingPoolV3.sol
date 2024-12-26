@@ -16,16 +16,16 @@ contract LendingPoolV3 is Permission {
 
     // Info of each user.
     struct UserInfo {
-        uint256 amount; // How many wXCR tokens the user has provided.
+        uint256 amount; // How many wXENE tokens the user has provided.
         uint256 rewardDebt; // Reward debt. See explanation below.
         uint256 rewardPending;
         //
-        // We do some fancy math here. Basically, any point in time, the amount of wXCR
+        // We do some fancy math here. Basically, any point in time, the amount of wXENE
         // entitled to a user but is pending to be distributed is:
         //
         //   pending reward = (user.amount * pool.accRewardPerShare) - user.rewardDebt + user.rewardPending
         //
-        // Whenever a user deposits or withdraws wXCR tokens to a pool. Here's what happens:
+        // Whenever a user deposits or withdraws wXENE tokens to a pool. Here's what happens:
         //   1. The pool's `accRewardPerShare` (and `lastRewardBlock`) gets updated.
         //   2. User receives the pending reward sent to his/her address.
         //   3. User's `amount` gets updated.
@@ -41,15 +41,16 @@ contract LendingPoolV3 is Permission {
         uint256 totalPendingReward;
     }
 
-    // The wXCR TOKEN!
-    IERC20 public wXCR;
+    // The wXENE TOKEN!
+    IERC20 public wXENE;
     address public treasury;
     // rewards created per block.
     uint256 public rewardPerBlock;
 
-    // Info.
+    // Pool Info.
     PoolInfo public poolInfo;
-    // Info of each user that stakes wXCR tokens.
+
+    // Info of each user that stakes wXENE tokens.
     mapping(address => UserInfo) public userInfo;
 
     // addresses list
@@ -64,8 +65,8 @@ contract LendingPoolV3 is Permission {
     event EmergencyWithdraw(address indexed user, uint256 amount);
     event SetTreasury(address indexed oldValue, address indexed newValue);
 
-    constructor(IERC20 _wXCR, address _treasury, uint256 _rewardPerBlock, uint256 _startBlock) {
-        wXCR = _wXCR;
+    constructor(IERC20 _wXENE, address _treasury, uint256 _rewardPerBlock, uint256 _startBlock) {
+        wXENE = _wXENE;
         treasury = _treasury;
         rewardPerBlock = _rewardPerBlock;
         startBlock = _startBlock;
@@ -145,8 +146,8 @@ contract LendingPoolV3 is Permission {
         if (block.number <= poolInfo.lastRewardBlock) {
             return;
         }
-        uint256 wXCRSupply = poolInfo.stakedSupply;
-        if (wXCRSupply == 0) {
+        uint256 wXENESupply = poolInfo.stakedSupply;
+        if (wXENESupply == 0) {
             poolInfo.lastRewardBlock = block.number;
             return;
         }
@@ -154,16 +155,18 @@ contract LendingPoolV3 is Permission {
         uint256 tokenReward = multiplier.mul(rewardPerBlock);
 
         poolInfo.totalPendingReward = poolInfo.totalPendingReward.add(tokenReward);
-        poolInfo.accRewardPerShare = poolInfo.accRewardPerShare.add(tokenReward.mul(REWARDS_PRECISION).div(wXCRSupply));
+        poolInfo.accRewardPerShare = poolInfo.accRewardPerShare.add(
+            tokenReward.mul(REWARDS_PRECISION).div(wXENESupply)
+        );
         poolInfo.lastRewardBlock = block.number;
     }
 
-    // Deposit wXCR tokens to Lending Pool for Reward allocation.
+    // Deposit wXENE tokens to Lending Pool for Reward allocation.
     function deposit(uint256 _amount) external {
         require(_amount > 0, "amount zero");
         UserInfo storage user = userInfo[msg.sender];
         updatePool();
-        wXCR.safeTransferFrom(address(msg.sender), address(this), _amount);
+        wXENE.safeTransferFrom(address(msg.sender), address(this), _amount);
         // The deposit behavior before farming will result in duplicate addresses, and thus we will manually remove them when airdropping.
         if (user.amount == 0 && user.rewardPending == 0 && user.rewardDebt == 0) {
             addressList.add(address(msg.sender));
@@ -182,14 +185,14 @@ contract LendingPoolV3 is Permission {
         emit Deposit(msg.sender, _amount);
     }
 
-    // Withdraw staked wXCR tokens from Pool.
+    // Withdraw staked wXENE tokens from Pool.
     function withdraw(uint256 _amount) external {
         require(_amount > 0, "amount zero");
         UserInfo storage user = userInfo[msg.sender];
         require(user.amount >= _amount, "withdraw: not enough");
 
         updatePool();
-        wXCR.safeTransfer(address(msg.sender), _amount);
+        wXENE.safeTransfer(address(msg.sender), _amount);
 
         user.rewardPending = user
             .amount
@@ -221,9 +224,9 @@ contract LendingPoolV3 is Permission {
         uint256 _totalPendingReward = poolInfo.totalPendingReward;
         poolInfo.totalPendingReward = _totalPendingReward.sub(_amount);
 
-        // Exchange point to xCR reward
-        uint256 _claimable = (_amount * wXCR.balanceOf(treasury)) / _totalPendingReward;
-        wXCR.safeTransferFrom(treasury, msg.sender, _claimable);
+        // Exchange point to XENE reward
+        uint256 _claimable = (_amount * wXENE.balanceOf(treasury)) / _totalPendingReward;
+        wXENE.safeTransferFrom(treasury, msg.sender, _claimable);
 
         emit ClaimReward(msg.sender, _amount);
     }
@@ -231,7 +234,7 @@ contract LendingPoolV3 is Permission {
     // Withdraw without caring about rewards. EMERGENCY ONLY.
     function emergencyWithdraw() external {
         UserInfo storage user = userInfo[msg.sender];
-        wXCR.safeTransfer(address(msg.sender), user.amount);
+        wXENE.safeTransfer(address(msg.sender), user.amount);
         emit EmergencyWithdraw(msg.sender, user.amount);
         user.amount = 0;
         user.rewardDebt = 0;
@@ -239,6 +242,6 @@ contract LendingPoolV3 is Permission {
     }
 
     function approve(address _spender, uint256 _amount) external onlyOwner {
-        wXCR.approve(_spender, _amount);
+        wXENE.approve(_spender, _amount);
     }
 }
