@@ -21,16 +21,16 @@ describe("NFTMarketplace", function () {
     beforeEach(async function () {
         // Get the ContractFactories and Signers here.
         const NFT = await ethers.getContractFactory("MockERC721");
-        const WXCR = await ethers.getContractFactory("WXCR");
+        const WXENE = await ethers.getContractFactory("WXENE");
         const LiquidateNFTPool = await ethers.getContractFactory("LiquidateNFTPool");
         const Marketplace = await ethers.getContractFactory("Marketplace");
         [deployer, addr1, addr2, loan, ...addrs] = await ethers.getSigners();
 
         // To deploy our contracts
         nft = await NFT.deploy();
-        wXCR = await WXCR.deploy();
+        wXENE = await WXENE.deploy();
         liquidateNFTPool = await LiquidateNFTPool.deploy(deployer.address, loan.address);
-        marketplace = await Marketplace.deploy(wXCR.address, feePercent);
+        marketplace = await Marketplace.deploy(wXENE.address, feePercent);
 
         await liquidateNFTPool.setMarketplace(marketplace.address);
         await marketplace.setLiquidateNFTPool(liquidateNFTPool.address);
@@ -152,28 +152,28 @@ describe("NFTMarketplace", function () {
             await marketplace.connect(addr1).makeItem(nft.address, 1, parseEther(price.toString()))
             await marketplace.connect(addr1).makeItem(nft.address, 2, parseEther(price.toString()))
             // loan makes their nft a liquidateNFTPool item.
-            await liquidateNFTPool.connect(loan).liquidateNFT(ethers.utils.formatBytes32String("1"), nft.address, 3, wXCR.address, parseEther(price.toString()))
-            await liquidateNFTPool.connect(loan).liquidateNFT(ethers.utils.formatBytes32String("2"), nft.address, 4, wXCR.address, parseEther(price.toString()))
+            await liquidateNFTPool.connect(loan).liquidateNFT(ethers.utils.formatBytes32String("1"), nft.address, 3, wXENE.address, parseEther(price.toString()))
+            await liquidateNFTPool.connect(loan).liquidateNFT(ethers.utils.formatBytes32String("2"), nft.address, 4, wXENE.address, parseEther(price.toString()))
         })
 
         /**
          * Seller: pool, addr1
-         * addr1 => Items [1, 2] | 1 XCR/item | marketFee is 10%
-         * pool  => Items [3, 4] | 1 XCR/item |
+         * addr1 => Items [1, 2] | 1 XENE/item | marketFee is 10%
+         * pool  => Items [3, 4] | 1 XENE/item |
          * Calculate:
-         * addr2 => purchaseItems([1, 2, 3, 4]) => | addr2:     -4 XCR                         | => transfer nft 1 to addr2 
-         *                                         | marketFee: (2 XCR * 10) / 100 = +0.2 XCR  |    transfer nft 2 to addr2
-         *                                         | addr1:      2 XCR - 0.2 XCR   = +1.8 XCR  |    transfer nft 3 to addr2
-         *                                         | loan:      +2 wXCR                        |    transfer nft 4 to addr2
+         * addr2 => purchaseItems([1, 2, 3, 4]) => | addr2:     -4 XENE                         | => transfer nft 1 to addr2 
+         *                                         | marketFee: (2 XENE * 10) / 100 = +0.2 XENE  |    transfer nft 2 to addr2
+         *                                         | addr1:      2 XENE - 0.2 XENE   = +1.8 XENE  |    transfer nft 3 to addr2
+         *                                         | loan:      +2 wXENE                        |    transfer nft 4 to addr2
          */
-        it("addr2: -4XCR, marketplace: +0.2XCR, add1: +1.8XCR, loan: +2wXCR", async () => {
-            expect(await wXCR.balanceOf(loan.address)).to.eq(0);
+        it("addr2: -4XENE, marketplace: +0.2XENE, add1: +1.8XENE, loan: +2wXENE", async () => {
+            expect(await wXENE.balanceOf(loan.address)).to.eq(0);
 
             await expect(() => marketplace.connect(addr2).purchaseItems(itemIds, { value: parseEther('4') }))
                 .to
                 .changeEtherBalances([addr1, addr2, deployer, loan], [parseEther("1.8"), parseEther("-4"), parseEther("0.2"), 0])
 
-            expect(await wXCR.balanceOf(loan.address)).to.eq(parseEther("2"));
+            expect(await wXENE.balanceOf(loan.address)).to.eq(parseEther("2"));
 
             expect(await nft.ownerOf(1)).to.equal(addr2.address);
             expect(await nft.ownerOf(2)).to.equal(addr2.address);
