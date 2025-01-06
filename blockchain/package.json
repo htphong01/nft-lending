@@ -43,10 +43,16 @@
         "mocha-multi-reporters": "1.5.1"
     },
     "devDependencies": {
+        "@types/chai": "^4.3.20",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "^22.10.2",
+        "chai": "^4.5.0",
         "csv-writer": "1.6.0",
         "hardhat-gas-reporter": "1.0.9",
         "hardhat-ignore-warnings": "0.2.8",
         "prettier": "2.7.1",
-        "solidity-coverage": "0.8.2"
+        "solidity-coverage": "0.8.2",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.7.2"
     }
 }

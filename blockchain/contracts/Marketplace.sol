@@ -3,127 +3,88 @@ pragma solidity 0.8.18;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./WXENE.sol";
 import "./libraries/Helper.sol";
-import "./loans/direct/loanTypes/IDirectLoanBase.sol";
-import "./interfaces/ILiquidateNFTPool.sol";
 import "./utils/Permission.sol";
+import "./interfaces/IMarketplace.sol";
 
-enum ItemStatus {
-    OPENING,
-    SOLD,
-    CLOSED
-}
-
-contract Marketplace is Permission, ReentrancyGuard, IERC721Receiver {
+contract Marketplace is IMarketplace, Permission, ReentrancyGuard, ERC721Holder {
     using SafeERC20 for IERC20;
 
-    address public wXENE;
-    address public liquidateNFTPool;
     address public feeReceiver;
     uint256 public feePercent;
     uint256 public itemCount;
+
+    // Permitted payments token for marketplace
+    mapping(address => bool) paymentToken;
 
     struct Item {
         uint256 itemId;
         address nft;
         uint256 tokenId;
         uint256 price;
+        address paymentToken;
         address seller;
+        address beneficiary;
         ItemStatus status;
     }
 
     // Market item info mapped by item id
     mapping(uint256 => Item) public items;
 
-    event Offered(uint256 itemId, address indexed nft, uint256 tokenId, uint256 price, address indexed seller);
-    event Bought(
-        uint256 itemId,
-        address indexed nft,
-        uint256 tokenId,
-        uint256 price,
-        address indexed seller,
-        address indexed buyer
-    );
-    event CloseItem(uint256 indexed itemId, address indexed nft, uint256 indexed tokenId);
-    event SetWXENE(address indexed oldValue, address indexed newValue);
-    event SetLiquidateNFTPool(address indexed oldValue, address indexed newValue);
+    event Offered(uint256 itemId, address indexed nft, uint256 tokenId, uint256 price, address paymentToken, address indexed seller, address indexed beneficiary);
+    event Bought(uint256 itemId, address indexed nft, uint256 tokenId, uint256 price, address paymentToken, address indexed seller, address indexed buyer);
+    event ClosedItem(uint256 indexed itemId, address indexed nft, uint256 indexed tokenId);
+    event SetPaymentToken(address indexed token, bool allow);
     event SetFeeReceiver(address indexed oldValue, address indexed newValue);
     event SetFeePercent(uint256 indexed oldValue, uint256 indexed newValue);
     event WithdrawnFund(address indexed serviceFundReceiver, uint256 indexed value);
 
-    constructor(address _wXENE, address _feeReceiver, uint256 _feePercent) {
-        wXENE = _wXENE;
+    constructor(address _feeReceiver, uint256 _feePercent) {
         feeReceiver = _feeReceiver;
         feePercent = _feePercent;
 
         setAdmin(_msgSender(), true);
     }
 
-    // Make item to offer on the marketplace
-    function makeItem(address _nft, uint256 _tokenId, uint256 _price) external {
+    function makeItem(address _nft, uint256 _tokenId, address _paymentToken, uint256 _price, address _beneficiary) external {
+        require(_nft != address(0), "Invalid nft address");
+        require(paymentToken[_paymentToken], "Not allowed payment token");
         require(_price > 0, "Price must be greater than zero");
-        // add new item to items mapping
-        _makeItem(_nft, _tokenId, _price);
-        // transfer nft
-        IERC721(_nft).transferFrom(_msgSender(), address(this), _tokenId);
-    }
+        require(_beneficiary != address(0), "Invalid beneficiary address");
 
-    function liquidate(address _nft, uint256 _tokenId, uint256 _price) external {
-        require(_msgSender() == liquidateNFTPool, "caller is not liquidateNFTPool");
-        require(_price > 0, "Price must be greater than zero");
-        // add new item to items mapping
-        _makeItem(_nft, _tokenId, _price);
-    }
-
-    function _makeItem(address _nft, uint256 _tokenId, uint256 _price) private notZeroAddress(_nft) {
         itemCount++;
-        // add new item to items mapping
-        items[itemCount] = Item(itemCount, _nft, _tokenId, _price, _msgSender(), ItemStatus.OPENING);
+        items[itemCount] = Item(itemCount, _nft, _tokenId, _price, _paymentToken, _msgSender(), _beneficiary, ItemStatus.OPENING);
 
-        emit Offered(itemCount, _nft, _tokenId, _price, _msgSender());
+        IERC721(_nft).transferFrom(_msgSender(), address(this), _tokenId);
+
+        emit Offered(itemCount, _nft, _tokenId, _price, _paymentToken, _msgSender(), _beneficiary);
     }
 
-    function purchaseItems(uint256[] memory _itemIds) external payable nonReentrant {
-        uint256 totalPayment = msg.value;
-        uint256 _totalMarketFee = 0;
-        for (uint256 i = 0; i < _itemIds.length; ++i) {
-            Item storage item = items[_itemIds[i]];
-            require(item.itemId > 0, "item doesn't exist");
-            require(item.status == ItemStatus.OPENING, "item not opening");
-            require(totalPayment >= item.price, "not enough ether to paid");
+    function purchaseItem(uint256 _itemId) external payable nonReentrant {
+        Item storage item = items[_itemId];
+        require(item.itemId > 0, "item is not exist");
+        require(item.status == ItemStatus.OPENING, "item is not opening");
 
-            // update item to sold
-            item.status = ItemStatus.SOLD;
-            totalPayment -= item.price;
+        item.status = ItemStatus.SOLD;
 
-            // pay seller
-            if (item.seller == liquidateNFTPool) {
-                address loan = ILiquidateNFTPool(liquidateNFTPool).loan();
-
-                // Wrap XENE to wXENE
-                WXENE(wXENE).mint{value: item.price}();
-
-                // transfer wXENE to lendingPool
-                WXENE(wXENE).transfer(IDirectLoanBase(loan).lendingPool(), item.price);
-            } else {
-                uint256 marketFee = (item.price * feePercent) / 10000;
-                _totalMarketFee += marketFee;
-                Helper.safeTransferNative(item.seller, item.price - marketFee);
-            }
-
-            // transfer nft to buyer
-            IERC721(item.nft).transferFrom(address(this), _msgSender(), item.tokenId);
-
-            emit Bought(item.itemId, item.nft, item.tokenId, item.price, item.seller, _msgSender());
+        // transfer sold token to beneficiary address
+        uint256 marketFee = (item.price * feePercent) / 10000;
+        uint256 receivedAmount = item.price - marketFee;
+        if (item.paymentToken == address(0)) {
+            require(msg.value == item.price, "not enough balance");
+            Helper.safeTransferNative(item.beneficiary, receivedAmount);
+            Helper.safeTransferNative(feeReceiver, marketFee);
+        } else {
+            IERC20(item.paymentToken).safeTransferFrom(_msgSender(), item.beneficiary, receivedAmount);
+            IERC20(item.paymentToken).safeTransferFrom(_msgSender(), feeReceiver, marketFee);
         }
 
-        // transfer fee
-        if (_totalMarketFee + totalPayment > 0) {
-            Helper.safeTransferNative(feeReceiver, _totalMarketFee + totalPayment);
-        }
+        // transfer nft to buyer
+        IERC721(item.nft).transferFrom(address(this), _msgSender(), item.tokenId);
+
+        emit Bought(item.itemId, item.nft, item.tokenId, item.price, item.paymentToken, item.seller, _msgSender());
     }
 
     function closeItem(uint256 _itemId) external {
@@ -137,22 +98,17 @@ contract Marketplace is Permission, ReentrancyGuard, IERC721Receiver {
         // transfer nft to buyer
         IERC721(item.nft).transferFrom(address(this), _msgSender(), item.tokenId);
 
-        emit CloseItem(_itemId, address(item.nft), item.tokenId);
+        emit ClosedItem(_itemId, address(item.nft), item.tokenId);
     }
 
-    function setWXENE(address _newValue) external notZeroAddress(_newValue) onlyAdmin {
-        address oldValue = wXENE;
-        wXENE = _newValue;
-        emit SetWXENE(oldValue, _newValue);
+    function setPaymentToken(address _token, bool allow) external onlyAdmin {
+        paymentToken[_token] = true;
+        emit SetPaymentToken(_token, allow);
     }
 
-    function setLiquidateNFTPool(address _newValue) external notZeroAddress(_newValue) onlyAdmin {
-        address oldValue = liquidateNFTPool;
-        liquidateNFTPool = _newValue;
-        emit SetLiquidateNFTPool(oldValue, _newValue);
-    }
+    function setFeeReceiver(address _newValue) external onlyAdmin {
+        require(_newValue != address(0), "Invalid address");
 
-    function setFeeReceiver(address _newValue) external notZeroAddress(_newValue) onlyAdmin {
         address oldValue = feeReceiver;
         feeReceiver = _newValue;
         emit SetFeeReceiver(oldValue, _newValue);
@@ -164,20 +120,5 @@ contract Marketplace is Permission, ReentrancyGuard, IERC721Receiver {
         uint256 oldValue = feePercent;
         feePercent = _newValue;
         emit SetFeePercent(oldValue, _newValue);
-    }
-
-    function onERC721Received(address, address, uint256, bytes calldata) external pure override returns (bytes4) {
-        return IERC721Receiver.onERC721Received.selector;
-    }
-
-    /**
-     * @notice Withdraw all funds from the contract
-     */
-    function withdrawFund() external {
-        uint256 withdrawable = address(this).balance;
-        require(withdrawable > 0, "Amount exceeds balance");
-
-        Helper.safeTransferNative(feeReceiver, withdrawable);
-        emit WithdrawnFund(feeReceiver, withdrawable);
     }
 }

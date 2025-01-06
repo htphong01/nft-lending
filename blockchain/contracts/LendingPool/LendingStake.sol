@@ -5,9 +5,10 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "./utils/Permission.sol";
+import "../utils/Permission.sol";
+import "../interfaces/ILendingPool.sol";
 
-contract LendingPoolV3 is Permission {
+contract LendingStake is Permission {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -41,9 +42,9 @@ contract LendingPoolV3 is Permission {
         uint256 totalPendingReward;
     }
 
-    // The wXENE TOKEN!
     IERC20 public wXENE;
-    address public treasury;
+    address public lendingPool;
+
     // rewards created per block.
     uint256 public rewardPerBlock;
 
@@ -63,28 +64,20 @@ contract LendingPoolV3 is Permission {
     event Withdraw(address indexed user, uint256 amount);
     event ClaimReward(address indexed user, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 amount);
-    event SetTreasury(address indexed oldValue, address indexed newValue);
 
-    constructor(IERC20 _wXENE, address _treasury, uint256 _rewardPerBlock, uint256 _startBlock) {
+    constructor(IERC20 _wXENE, address _lendingPool, uint256 _rewardPerBlock, uint256 _startBlock) {
         wXENE = _wXENE;
-        treasury = _treasury;
+        lendingPool = _lendingPool;
         rewardPerBlock = _rewardPerBlock;
         startBlock = _startBlock;
 
-        // staking pool
+        // Initial staking pool information
         poolInfo = PoolInfo({
             lastRewardBlock: startBlock,
             accRewardPerShare: 0,
             stakedSupply: 0,
             totalPendingReward: 0
         });
-    }
-
-    function setTreasury(address _treasury) external notZeroAddress(_treasury) onlyOwner {
-        address _oldValue = treasury;
-        treasury = _treasury;
-
-        emit SetTreasury(_oldValue, treasury);
     }
 
     function addressLength() external view returns (uint256) {
@@ -225,8 +218,10 @@ contract LendingPoolV3 is Permission {
         poolInfo.totalPendingReward = _totalPendingReward.sub(_amount);
 
         // Exchange point to XENE reward
-        uint256 _claimable = (_amount * wXENE.balanceOf(treasury)) / _totalPendingReward;
-        wXENE.safeTransferFrom(treasury, msg.sender, _claimable);
+        uint256 _claimable = (_amount * wXENE.balanceOf(lendingPool)) / _totalPendingReward;
+
+        ILendingPool(lendingPool).approveToPayRewards(address(wXENE), _claimable);
+        wXENE.safeTransferFrom(lendingPool, msg.sender, _claimable);
 
         emit ClaimReward(msg.sender, _amount);
     }
@@ -241,7 +236,7 @@ contract LendingPoolV3 is Permission {
         user.rewardPending = 0;
     }
 
-    function approve(address _spender, uint256 _amount) external onlyOwner {
-        wXENE.approve(_spender, _amount);
+    function approve(uint256 _amount) external permittedTo(lendingPool) {
+        wXENE.approve(lendingPool, _amount);
     }
 }

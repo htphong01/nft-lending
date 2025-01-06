@@ -37,7 +37,8 @@ interface LoanData {
      * taken as a fee by the contract admins when the loan is repaid. The fee is stored in the loan struct to prevent an
      * attack where the contract admins could adjust the fee right before a loan is repaid, and take all of the interest
      * earned.
-     * @param borrower Address of borrower
+     * @param lender - Address of lender
+     * @param useLendingPool - If true, lender is a contract
      */
     struct LoanTerms {
         uint256 principalAmount;
@@ -50,6 +51,7 @@ interface LoanData {
         address nftCollateralContract;
         address borrower;
         address lender;
+        bool useLendingPool;
         LoanStatus status;
     }
 
@@ -75,6 +77,8 @@ interface LoanData {
      * taken as a fee by the contract admins when the loan is repaid. The fee is stored in the loan struct to prevent an
      * attack where the contract admins could adjust the fee right before a loan is repaid, and take all of the interest
      * earned.
+     * @param lendingPool - Lending pool address is contract that will disburse loan, signature signer must
+     * be admin of contract If lender is a wallet, this address must be ZERO address
      */
     struct Offer {
         uint256 principalAmount;
@@ -84,6 +88,7 @@ interface LoanData {
         uint32 duration;
         uint16 adminFeeInBasisPoints;
         address erc20Denomination;
+        address lendingPool;
     }
 
     /**
@@ -125,6 +130,8 @@ interface LoanData {
      *   - Offer.nftCollateralId
      *   - Offer.duration
      *   - Offer.adminFeeInBasisPoints
+     *   - Offer.useLendingPool
+     *   - Offer.lendingPool
      *   - Signature.signer,
      *   - Signature.nonce,
      *   - Signature.expiry,

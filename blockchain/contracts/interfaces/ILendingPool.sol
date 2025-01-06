@@ -6,5 +6,8 @@ pragma solidity 0.8.18;
  *
  */
 interface ILendingPool {
-    function treasury() external view returns (address);
+    function informDisburse(address _token, address _to, uint256 _amount) external;
+    function informPayBack(address _token, uint256 _principal) external;
+    function approveToPayRewards(address _token, uint256 _amount) external;
+    function isAdmin(address _account) external view returns (bool);
 }

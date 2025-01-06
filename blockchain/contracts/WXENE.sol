@@ -28,6 +28,18 @@ contract WXENE is ERC20 {
     }
 
     /**
+     * @notice Mint wXENE to a specific user
+     * @dev Everyone can call this function
+     *
+     * emit {Minted} event
+     */
+    function mintTo(address _receiver) external payable {
+        _mint(_receiver, msg.value);
+
+        emit Minted(_receiver, msg.value);
+    }
+
+    /**
      * @notice Burn wXENE and transfer XENE to user
      * @param _amount Amount of token
      *

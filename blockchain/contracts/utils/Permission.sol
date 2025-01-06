@@ -43,24 +43,6 @@ abstract contract Permission is Ownable {
     }
 
     /**
-     * Throw exception if _addr is zero address
-     * @param _addr Address will be checked
-     */
-    modifier notZeroAddress(address _addr) {
-        require(_addr != address(0), "Invalid address");
-        _;
-    }
-
-    /**
-     * Throw exception if _amount if zero
-     * @param _amount Nubmer will be checked
-     */
-    modifier notZeroAmount(uint256 _amount) {
-        require(_amount > 0, "Invalid amount");
-        _;
-    }
-
-    /**
      * Throw exception if _account is not permitted
      * @param _account Account will be checked
      */
@@ -108,7 +90,8 @@ abstract contract Permission is Ownable {
      * 
      * emit {SetAdmin} event
      */
-    function _setAdmin(address _user, bool _allow) internal virtual notZeroAddress(_user) {
+    function _setAdmin(address _user, bool _allow) internal virtual {
+        require(_user != address(0), "Invalid address");
         admins[_user] = _allow;
         emit SetAdmin(_user, _allow);
     }

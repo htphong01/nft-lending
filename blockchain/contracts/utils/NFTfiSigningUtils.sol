@@ -3,6 +3,7 @@
 pragma solidity 0.8.18;
 
 import "../loans/direct/loanTypes/LoanData.sol";
+import "../interfaces/ILendingPool.sol";
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 
 /**
@@ -144,6 +145,10 @@ library NFTfiSigningUtils {
         if (_signature.signer == address(0)) {
             return false;
         } else {
+            if (_offer.lendingPool != address(0)) {
+                require(ILendingPool(_offer.lendingPool).isAdmin(_signature.signer), "Signature signer is not admin");
+            }
+
             bytes32 message = keccak256(
                 abi.encodePacked(getEncodedOffer(_offer), getEncodedSignature(_signature), _loanContract, getChainID())
             );

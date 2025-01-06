@@ -34,7 +34,7 @@ library LoanChecksAndCalculations {
         require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
 
         // Fetch loan details from storage, but store them in memory for the sake of saving gas.
-        (, , , , uint32 duration, , uint64 loanStartTime, , , , ) = IDirectLoanBase(address(this)).loanIdToLoan(
+        (, , , , uint32 duration, , uint64 loanStartTime, , , , , ) = IDirectLoanBase(address(this)).loanIdToLoan(
             _loanId
         );
 
