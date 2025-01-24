@@ -37,10 +37,9 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard {
      */
     constructor(address _admin) {
         _transferOwnership(_admin);
-        _setAdmin(_admin, true);
     }
 
-    function setLoan(address _loan) external onlyAdmin {
+    function setLoan(address _loan) external onlyOwner() {
         require(_loan != address(0), "Invalid address");
 
         address _oldValue = loan;
@@ -48,7 +47,7 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard {
         emit SetLoan(_oldValue, loan);
     }
 
-    function setLendingStake(address _lendingStake) external onlyAdmin {
+    function setLendingStake(address _lendingStake) external onlyOwner {
         require(_lendingStake != address(0), "Invalid address");
 
         address _oldValue = lendingStake;
@@ -56,7 +55,7 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard {
         emit SetLendingStake(_oldValue, lendingStake);
     }
 
-    function setMarketplace(address _marketplace) external onlyAdmin {
+    function setMarketplace(address _marketplace) external onlyOwner {
         require(_marketplace != address(0), "Invalid address");
 
         address _oldValue = marketplace;
