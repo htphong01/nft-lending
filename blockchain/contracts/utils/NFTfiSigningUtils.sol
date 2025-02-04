@@ -334,7 +334,8 @@ library NFTfiSigningUtils {
                 _offer.nftCollateralContract,
                 _offer.nftCollateralId,
                 _offer.duration,
-                _offer.adminFeeInBasisPoints
+                _offer.adminFeeInBasisPoints,
+                _offer.lendingPool
             );
     }
 
