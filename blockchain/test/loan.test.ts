@@ -25,6 +25,7 @@ let lender: SignerWithAddress;
 let borrower: SignerWithAddress;
 let accounts: SignerWithAddress[];
 let treasury: SignerWithAddress;
+let lendingPoolAdmin: SignerWithAddress;
 let lendingPool: Contract;
 let lendingStake: Contract;
 
@@ -41,7 +42,7 @@ const LoanStatus = {
   LIQUIDATED: 2,
 };
 
-const createOffer = (): Offer => {
+const createOffer = (lendingPool: string = ZERO_ADDRESS): Offer => {
   return {
     adminFeeInBasisPoints: 25,
     duration: 10,
@@ -50,22 +51,22 @@ const createOffer = (): Offer => {
     nftCollateralContract: chonkSociety.address,
     nftCollateralId: 1,
     principalAmount: TOKEN_1.mul(15),
-    lendingPool: ZERO_ADDRESS,
+    lendingPool,
   };
 };
 
-const createSignature = async (): Promise<Signature> => {
+const createSignature = async (signer: string = lender.address): Promise<Signature> => {
   return {
     nonce: Math.floor(Math.random() * 100000),
     expiry: (await getTimestamp()) + ONE_DAY,
-    signer: lender.address,
+    signer,
     signature: "",
   };
 };
 
 describe("Loan", () => {
   beforeEach(async () => {
-    [deployer, lender, borrower, treasury, ...accounts] = await ethers.getSigners();
+    [deployer, lender, borrower, treasury, lendingPoolAdmin, ...accounts] = await ethers.getSigners();
 
     const PermittedNFTs = await ethers.getContractFactory("PermittedNFTs");
     const LoanChecksAndCalculations = await ethers.getContractFactory("LoanChecksAndCalculations");
@@ -87,12 +88,20 @@ describe("Loan", () => {
     permittedNFTs = await PermittedNFTs.deploy(deployer.address);
 
     wXENE = await WXENE.deploy();
-
-    lendingPool = await LendingPool.deploy(deployer.address);
-
-    lendingStake = await LendingStake.deploy(wXENE.address, lendingPool.address, "10000000000000000000", 0);
+    await wXENE.deployed();
 
     directLoanFixedOffer = await DirectLoanFixedOffer.deploy(deployer.address, permittedNFTs.address, [wXENE.address]);
+    await directLoanFixedOffer.deployed();
+
+    lendingPool = await LendingPool.deploy(deployer.address);
+    await lendingPool.deployed();
+    await lendingPool.connect(deployer).setAdmin(lendingPoolAdmin.address, true);
+    await lendingPool.connect(deployer).setLoan(directLoanFixedOffer.address);
+
+    lendingStake = await LendingStake.deploy(wXENE.address, lendingPool.address, "10000000000000000000", 0);
+    await lendingStake.deployed();
+
+    await lendingPool.connect(deployer).setLendingStake(lendingStake.address);
 
     const ChonkSociety = await ethers.getContractFactory("ChonkSociety");
     chonkSociety = await ChonkSociety.deploy("https://chonksociety.s3.us-east-2.amazonaws.com/metadata/");
@@ -104,6 +113,11 @@ describe("Loan", () => {
     await wXENE.mintTo(lender.address, { value: TOKEN_1.mul(100) });
     await wXENE.mintTo(borrower.address, { value: TOKEN_1.mul(100) });
     await wXENE.mintTo(lendingPool.address, { value: TOKEN_1.mul(100) });
+    await wXENE.mintTo(lendingStake.address, { value: TOKEN_1.mul(100) });
+
+    // await wXENE.connect(lender).approve(borrower.address, TOKEN_1.mul(12))
+    // await expect(wXENE.connect(lender).transfer(borrower.address, TOKEN_1.mul(12)))
+    // .to.changeTokenBalances(wXENE, [lender.address, borrower.address], [TOKEN_1.mul(-1), TOKEN_1.mul(1)]);
   });
 
   describe("acceptOffer", () => {
@@ -443,6 +457,87 @@ describe("Loan", () => {
     });
   });
 
+  describe("acceptOffer with Lending Pool", () => {
+    beforeEach(async () => {
+      offer = createOffer(lendingPool.address);
+
+      signature = await createSignature(lendingPoolAdmin.address);
+
+      loanId = ethers.utils.formatBytes32String("1");
+    });
+
+    it("should revert with Signature signer is not admin", async () => {
+      signature = await createSignature(lender.address);
+      signature.signature = await getOfferSignature(offer, signature, lendingPoolAdmin, directLoanFixedOffer.address);
+
+      await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
+        "Signature signer is not admin"
+      );
+    });
+
+    it("should revert with Lender signature is invalid", async () => {
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+
+      await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
+        "Lender signature is invalid"
+      );
+    });
+
+    it("should revert with transfer amount exceeds lending stake balance", async () => {
+      const LendingPool = await ethers.getContractFactory("LendingPool");
+      const LendingStake = await ethers.getContractFactory("LendingStake");
+
+      lendingPool = await LendingPool.deploy(deployer.address);
+      await lendingPool.deployed();
+      await lendingPool.connect(deployer).setAdmin(lendingPoolAdmin.address, true);
+      await lendingPool.connect(deployer).setLoan(directLoanFixedOffer.address);
+
+      lendingStake = await LendingStake.deploy(wXENE.address, lendingPool.address, "10000000000000000000", 0);
+      await lendingStake.deployed();
+
+      await lendingPool.connect(deployer).setLendingStake(lendingStake.address);
+
+      offer = createOffer(lendingPool.address);
+
+      signature = await createSignature(lendingPoolAdmin.address);
+      signature.signature = await getOfferSignature(offer, signature, lendingPoolAdmin, directLoanFixedOffer.address);
+
+      loanId = ethers.utils.formatBytes32String("1");
+
+      await chonkSociety.connect(borrower).approve(directLoanFixedOffer.address, 1);
+
+      await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
+        "ERC20: transfer amount exceeds balance"
+      );
+    })
+
+    it("should accept offer successfully", async () => {
+      await chonkSociety.connect(borrower).approve(directLoanFixedOffer.address, 1);
+      signature.signature = await getOfferSignature(offer, signature, lendingPoolAdmin, directLoanFixedOffer.address);
+
+      await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature))
+        .to.emit(directLoanFixedOffer, "LoanStarted")
+        .changeTokenBalances(wXENE, [lendingStake.address, borrower.address], [TOKEN_1.mul(-15), TOKEN_1.mul(15)])
+        .changeTokenBalances(chonkSociety, [directLoanFixedOffer.address, borrower.address], [1, -1]);
+
+      expect(await chonkSociety.ownerOf(1)).to.equal(directLoanFixedOffer.address);
+
+      const loan = await directLoanFixedOffer.loanIdToLoan(loanId);
+      expect(loan.principalAmount).to.equal(TOKEN_1.mul(15));
+      expect(loan.maximumRepaymentAmount).to.equal(TOKEN_1.mul(18));
+      expect(loan.nftCollateralId).to.equal(1);
+      expect(loan.erc20Denomination).to.equal(wXENE.address);
+      expect(loan.duration).to.equal(10);
+      expect(loan.adminFeeInBasisPoints).to.equal(25);
+      expect(loan.loanStartTime).to.closeTo(await getTimestamp(), 10);
+      expect(loan.nftCollateralContract).to.equal(chonkSociety.address);
+      expect(loan.borrower).to.equal(borrower.address);
+      expect(loan.lender).to.equal(lendingPool.address);
+      expect(loan.useLendingPool).to.equal(true);
+      expect(loan.status).to.equal(LoanStatus.ACTIVE);
+    });
+  });
+
   describe("payBackLoan", () => {
     beforeEach(async () => {
       loanId = ethers.utils.formatBytes32String("1");
@@ -526,6 +621,34 @@ describe("Loan", () => {
         .to.changeTokenBalances(chonkSociety, [directLoanFixedOffer.address, borrower.address], [-1, 1]);
     });
   });
+
+  describe("payBackLoan with Lending Pool", () => {
+    beforeEach(async () => {
+      loanId = ethers.utils.formatBytes32String("1");
+      offer = createOffer(lendingPool.address);
+      signature = await createSignature(lendingPoolAdmin.address);
+      signature.signature = await getOfferSignature(offer, signature, lendingPoolAdmin, directLoanFixedOffer.address);
+      await chonkSociety.connect(borrower).approve(directLoanFixedOffer.address, 1);
+      await wXENE.connect(lender).approve(directLoanFixedOffer.address, MAX_UINT256);
+      await directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature);
+    });
+
+    it("should payBackLoan successfully", async () => {
+      await wXENE.connect(borrower).approve(directLoanFixedOffer.address, MAX_UINT256);
+
+      const royaltyFee = TOKEN_1.mul(18).mul(25).div(10000);
+      const lenderFee = TOKEN_1.mul(18).sub(royaltyFee);
+
+      await expect(directLoanFixedOffer.connect(borrower).payBackLoan(loanId))
+        .to.emit(directLoanFixedOffer, "LoanRepaid")
+        .to.changeTokenBalances(
+          wXENE,
+          [deployer.address, lendingStake.address, borrower.address],
+          [royaltyFee, lenderFee, TOKEN_1.mul(18)]
+        )
+        .to.changeTokenBalances(chonkSociety, [directLoanFixedOffer.address, borrower.address], [-1, 1]);
+    });
+  })
 
   // describe("liquidateOverdueLoan", () => {
   //     beforeEach(async () => {

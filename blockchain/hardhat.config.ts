@@ -1,3 +1,5 @@
+import { ethers } from "ethers";
+
 // Loading env configs for deploying and public contract source
 require("dotenv").config();
 
@@ -31,11 +33,12 @@ import "@openzeppelin/hardhat-upgrades";
 import "hardhat-ignore-warnings";
 import { HardhatUserConfig } from "hardhat/types";
 
+
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
-      accounts: { count: 100 },
+      accounts: { count: 100, accountsBalance: ethers.utils.parseEther("100000").toString() },
       allowUnlimitedContractSize: false,
       blockGasLimit: 500e9,
     },

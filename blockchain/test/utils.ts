@@ -1,6 +1,7 @@
 import hre, { ethers } from "hardhat";
 import { Offer, Signature } from "./types";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { Contract } from "ethers";
 
 const { AddressZero: ZERO_ADDRESS, MaxUint256: MAX_UINT256 } = ethers.constants;
 

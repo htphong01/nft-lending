@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 
 import "../utils/Permission.sol";
 import "../interfaces/ILendingPool.sol";
@@ -16,7 +17,7 @@ import "../interfaces/ILendingStake.sol";
  * @title  LendingPool
  * @dev    A main management contract for lending pool.
  */
-contract LendingPool is Permission, Pausable, ReentrancyGuard {
+contract LendingPool is Permission, Pausable, ReentrancyGuard, ERC721Holder {
     using SafeERC20 for IERC20;
 
     address public loan;
@@ -39,7 +40,7 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard {
         _transferOwnership(_admin);
     }
 
-    function setLoan(address _loan) external onlyOwner() {
+    function setLoan(address _loan) external onlyOwner {
         require(_loan != address(0), "Invalid address");
 
         address _oldValue = loan;
@@ -70,7 +71,6 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard {
     function informDisburse(address _token, address _to, uint256 _amount) external nonReentrant whenNotPaused permittedTo(loan) {
         ILendingStake(lendingStake).approve(_amount);
         IERC20(_token).safeTransferFrom(lendingStake, _to, _amount);
-
         emit Disbursed(_token, _to, _amount);
     }
 

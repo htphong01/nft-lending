@@ -5,7 +5,9 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 import "../utils/Permission.sol";
+import "../interfaces/ILendingStake.sol";
 import "../interfaces/ILendingPool.sol";
 
 contract LendingStake is Permission {
