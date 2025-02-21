@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
+pragma solidity 0.8.28;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./libraries/Helper.sol";
@@ -17,7 +17,7 @@ contract Marketplace is IMarketplace, Permission, ReentrancyGuard, ERC721Holder 
     uint256 public itemCount;
 
     // Permitted payments token for marketplace
-    mapping(address => bool) paymentToken;
+    mapping(address => bool) public paymentToken;
 
     struct Item {
         uint256 itemId;
@@ -41,7 +41,7 @@ contract Marketplace is IMarketplace, Permission, ReentrancyGuard, ERC721Holder 
     event SetFeePercent(uint256 indexed oldValue, uint256 indexed newValue);
     event WithdrawnFund(address indexed serviceFundReceiver, uint256 indexed value);
 
-    constructor(address _feeReceiver, uint256 _feePercent) {
+    constructor(address _feeReceiver, uint256 _feePercent) Ownable(_msgSender()) {
         feeReceiver = _feeReceiver;
         feePercent = _feePercent;
 

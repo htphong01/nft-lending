@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.18;
+pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
@@ -36,9 +36,7 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard, ERC721Holder {
      *
      * @param _admin - Initial admin of this contract.
      */
-    constructor(address _admin) {
-        _transferOwnership(_admin);
-    }
+    constructor(address _admin) Ownable(_admin) {}
 
     function setLoan(address _loan) external onlyOwner {
         require(_loan != address(0), "Invalid address");

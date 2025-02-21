@@ -1,17 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
+pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-
-import "../utils/Permission.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "../interfaces/ILendingStake.sol";
 import "../interfaces/ILendingPool.sol";
 
-contract LendingStake is Permission {
-    using SafeMath for uint256;
+contract LendingStake {
+    using Math for uint256;
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -74,12 +72,7 @@ contract LendingStake is Permission {
         startBlock = _startBlock;
 
         // Initial staking pool information
-        poolInfo = PoolInfo({
-            lastRewardBlock: startBlock,
-            accRewardPerShare: 0,
-            stakedSupply: 0,
-            totalPendingReward: 0
-        });
+        poolInfo = PoolInfo({lastRewardBlock: startBlock, accRewardPerShare: 0, stakedSupply: 0, totalPendingReward: 0});
     }
 
     function addressLength() external view returns (uint256) {
@@ -106,7 +99,7 @@ contract LendingStake is Permission {
 
     // Return reward multiplier over the given _from to _to block.
     function getMultiplier(uint256 _from, uint256 _to) internal pure returns (uint256) {
-        return _to.sub(_from);
+        return _to - _from;
     }
 
     // View function to see pending Tokens on frontend.
@@ -117,11 +110,12 @@ contract LendingStake is Permission {
         uint256 stakedSupply = poolInfo.stakedSupply;
         if (block.number > pool.lastRewardBlock && stakedSupply != 0) {
             uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
-            uint256 tokenReward = multiplier.mul(rewardPerBlock);
+            uint256 tokenReward = multiplier * rewardPerBlock;
 
-            accRewardPerShare = accRewardPerShare.add(tokenReward.mul(REWARDS_PRECISION).div(stakedSupply));
+            accRewardPerShare = accRewardPerShare + ((tokenReward * REWARDS_PRECISION) / stakedSupply);
         }
-        return user.amount.mul(accRewardPerShare).div(REWARDS_PRECISION).sub(user.rewardDebt).add(user.rewardPending);
+
+        return ((user.amount * accRewardPerShare) / REWARDS_PRECISION) - user.rewardDebt + user.rewardPending;
     }
 
     function rewardSupply() external view returns (uint256) {
@@ -130,10 +124,10 @@ contract LendingStake is Permission {
         uint256 tokenReward = 0;
         if (block.number > pool.lastRewardBlock && poolInfo.stakedSupply != 0) {
             uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
-            tokenReward = multiplier.mul(rewardPerBlock);
+            tokenReward = multiplier * rewardPerBlock;
         }
 
-        return poolInfo.totalPendingReward.add(tokenReward);
+        return poolInfo.totalPendingReward + tokenReward;
     }
 
     // Update reward variables of the given pool to be up-to-date.
@@ -147,12 +141,10 @@ contract LendingStake is Permission {
             return;
         }
         uint256 multiplier = getMultiplier(poolInfo.lastRewardBlock, block.number);
-        uint256 tokenReward = multiplier.mul(rewardPerBlock);
+        uint256 tokenReward = multiplier * rewardPerBlock;
 
-        poolInfo.totalPendingReward = poolInfo.totalPendingReward.add(tokenReward);
-        poolInfo.accRewardPerShare = poolInfo.accRewardPerShare.add(
-            tokenReward.mul(REWARDS_PRECISION).div(wXENESupply)
-        );
+        poolInfo.totalPendingReward = poolInfo.totalPendingReward + tokenReward;
+        poolInfo.accRewardPerShare = poolInfo.accRewardPerShare + ((tokenReward * REWARDS_PRECISION) / wXENESupply);
         poolInfo.lastRewardBlock = block.number;
     }
 
@@ -166,16 +158,11 @@ contract LendingStake is Permission {
         if (user.amount == 0 && user.rewardPending == 0 && user.rewardDebt == 0) {
             addressList.add(address(msg.sender));
         }
-        user.rewardPending = user
-            .amount
-            .mul(poolInfo.accRewardPerShare)
-            .div(REWARDS_PRECISION)
-            .sub(user.rewardDebt)
-            .add(user.rewardPending);
-        user.amount = user.amount.add(_amount);
-        user.rewardDebt = user.amount.mul(poolInfo.accRewardPerShare).div(REWARDS_PRECISION);
+        user.rewardPending = ((user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION) - user.rewardDebt + user.rewardPending;
+        user.amount = user.amount + _amount;
+        user.rewardDebt = (user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION;
 
-        poolInfo.stakedSupply = poolInfo.stakedSupply.add(_amount);
+        poolInfo.stakedSupply = poolInfo.stakedSupply + _amount;
 
         emit Deposit(msg.sender, _amount);
     }
@@ -189,16 +176,11 @@ contract LendingStake is Permission {
         updatePool();
         wXENE.safeTransfer(address(msg.sender), _amount);
 
-        user.rewardPending = user
-            .amount
-            .mul(poolInfo.accRewardPerShare)
-            .div(REWARDS_PRECISION)
-            .sub(user.rewardDebt)
-            .add(user.rewardPending);
-        user.amount = user.amount.sub(_amount);
-        user.rewardDebt = user.amount.mul(poolInfo.accRewardPerShare).div(REWARDS_PRECISION);
+        user.rewardPending = ((user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION) - user.rewardDebt + user.rewardPending;
+        user.amount = user.amount - _amount;
+        user.rewardDebt = (user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION;
 
-        poolInfo.stakedSupply = poolInfo.stakedSupply.sub(_amount);
+        poolInfo.stakedSupply = poolInfo.stakedSupply - _amount;
         addressList.remove(address(msg.sender));
 
         emit Withdraw(msg.sender, _amount);
@@ -210,14 +192,12 @@ contract LendingStake is Permission {
 
         updatePool();
 
-        uint256 _amount = user.amount.mul(poolInfo.accRewardPerShare).div(REWARDS_PRECISION).sub(user.rewardDebt).add(
-            user.rewardPending
-        );
+        uint256 _amount = ((user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION) - user.rewardDebt + user.rewardPending;
         user.rewardPending = 0;
-        user.rewardDebt = user.amount.mul(poolInfo.accRewardPerShare).div(REWARDS_PRECISION);
+        user.rewardDebt = (user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION;
 
         uint256 _totalPendingReward = poolInfo.totalPendingReward;
-        poolInfo.totalPendingReward = _totalPendingReward.sub(_amount);
+        poolInfo.totalPendingReward = _totalPendingReward - _amount;
 
         // Exchange point to XENE reward
         uint256 _claimable = (_amount * wXENE.balanceOf(lendingPool)) / _totalPendingReward;
@@ -238,7 +218,8 @@ contract LendingStake is Permission {
         user.rewardPending = 0;
     }
 
-    function approve(uint256 _amount) external permittedTo(lendingPool) {
+    function approve(uint256 _amount) external {
+        require(msg.sender == lendingPool, "Only lending pool can call this function");
         wXENE.approve(lendingPool, _amount);
     }
 }

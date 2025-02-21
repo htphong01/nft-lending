@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.18;
+pragma solidity 0.8.28;
 
 import "../loans/direct/loanTypes/LoanData.sol";
 import "../interfaces/ILendingPool.sol";
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 /**
  * @title  NFTfiSigningUtils
@@ -156,7 +157,7 @@ library NFTfiSigningUtils {
             return
                 SignatureChecker.isValidSignatureNow(
                     _signature.signer,
-                    ECDSA.toEthSignedMessageHash(message),
+                    MessageHashUtils.toEthSignedMessageHash(message),
                     _signature.signature
                 );
         }
@@ -279,7 +280,7 @@ library NFTfiSigningUtils {
             return
                 SignatureChecker.isValidSignatureNow(
                     _signature.signer,
-                    ECDSA.toEthSignedMessageHash(message),
+                    MessageHashUtils.toEthSignedMessageHash(message),
                     _signature.signature
                 );
         }

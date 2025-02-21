@@ -1,9 +1,9 @@
 import hre, { ethers } from "hardhat";
 import { Offer, Signature } from "./types";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Contract } from "ethers";
 
-const { AddressZero: ZERO_ADDRESS, MaxUint256: MAX_UINT256 } = ethers.constants;
+const ZERO_ADDRESS = ethers.ZeroAddress;
+const MAX_UINT256 = ethers.MaxUint256;
 
 async function signatureData(taskId, users, rewards, nonce, privateKey) {
   const { chainId } = await ethers.provider.getNetwork();
@@ -20,11 +20,11 @@ async function signatureData(taskId, users, rewards, nonce, privateKey) {
 }
 
 function encodeData(chainId, taskId, users, rewards, nonce) {
-  const payload = ethers.utils.defaultAbiCoder.encode(
+  const payload = ethers.AbiCoder.defaultAbiCoder().encode(
     ["uint256", "uint256", "address[]", "uint256[]", "uint256"],
     [chainId, taskId, users, rewards, nonce]
   );
-  return ethers.utils.keccak256(payload);
+  return ethers.keccak256(payload);
 }
 
 function getEncodeOffer(offer: Offer) {
@@ -38,7 +38,7 @@ function getEncodeOffer(offer: Offer) {
     erc20Denomination,
     lendingPool,
   } = offer;
-  const payload = ethers.utils.solidityPack(
+  const payload = ethers.solidityPacked(
     ["address", "uint256", "uint256", "address", "uint256", "uint32", "uint16", "address"],
     [
       erc20Denomination,
@@ -71,17 +71,17 @@ async function getOfferSignature(
 
 function getEncodedSignature(signature: Signature) {
   const { signer, nonce, expiry } = signature;
-  const payload = ethers.utils.solidityPack(["address", "uint256", "uint256"], [signer, nonce, expiry]);
+  const payload = ethers.solidityPacked(["address", "uint256", "uint256"], [signer, nonce, expiry]);
   return payload;
 }
 
 function getMessage(encodedOffer: string, encodedSignature: string, loanContract: string, chainId: number) {
-  const payload = ethers.utils.solidityPack(
+  const payload = ethers.solidityPacked(
     ["bytes", "bytes", "address", "uint256"],
     [encodedOffer, encodedSignature, loanContract, chainId]
   );
   // return new TextEncoder("utf-8").encode(ethers.utils.keccak256(payload));
-  return ethers.utils.arrayify(ethers.utils.keccak256(payload));
+  return ethers.getBytes(ethers.keccak256(payload));
 }
 
 const getRandomInt = () => {
