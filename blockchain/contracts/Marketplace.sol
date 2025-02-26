@@ -6,7 +6,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Helper} from "./libraries/Helper.sol";
-import {Permission} from "./utils/Permission.sol";
+import {Permission, Ownable} from "./utils/Permission.sol";
 import {IMarketplace} from "./interfaces/IMarketplace.sol";
 
 contract Marketplace is IMarketplace, Permission, ReentrancyGuard, ERC721Holder {
@@ -40,11 +40,9 @@ contract Marketplace is IMarketplace, Permission, ReentrancyGuard, ERC721Holder 
     event SetFeeReceiver(address indexed oldValue, address indexed newValue);
     event SetFeePercent(uint256 indexed oldValue, uint256 indexed newValue);
 
-    constructor(address _feeReceiver, uint256 _feePercent) {
+    constructor(address _initialOwner, address _feeReceiver, uint256 _feePercent) Ownable(_initialOwner) {
         feeReceiver = _feeReceiver;
         feePercent = _feePercent;
-
-        setAdmin(_msgSender(), true);
     }
 
     function makeItem(address _nft, uint256 _tokenId, address _paymentToken, uint256 _price, address _beneficiary) external {

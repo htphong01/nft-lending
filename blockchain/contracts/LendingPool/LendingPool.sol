@@ -2,16 +2,14 @@
 
 pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts/utils/Pausable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-
-import "../utils/Permission.sol";
-import "../interfaces/ILendingPool.sol";
-import "../interfaces/IMarketplace.sol";
-import "../interfaces/ILendingStake.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+import {Permission, Ownable} from "../utils/Permission.sol";
+import {IMarketplace} from "../interfaces/IMarketplace.sol";
+import {ILendingStake} from "../interfaces/ILendingStake.sol";
 
 /**
  * @title  LendingPool
@@ -31,8 +29,12 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard, ERC721Holder {
     event PaidBack(address indexed token, uint256 amount);
     event ListNftToMarket(address indexed nftContract, uint256 indexed nftTokenId, uint256 indexed price);
 
+    error InvalidAddress();
+
+    constructor(address _initialOwner) Ownable(_initialOwner) {}
+
     function setLoan(address _loan) external onlyOwner {
-        require(_loan != address(0), "Invalid address");
+        if (_loan == address(0)) revert InvalidAddress();
 
         address _oldValue = loan;
         loan = _loan;
@@ -40,7 +42,7 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard, ERC721Holder {
     }
 
     function setLendingStake(address _lendingStake) external onlyOwner {
-        require(_lendingStake != address(0), "Invalid address");
+        if (_lendingStake == address(0)) revert InvalidAddress();
 
         address _oldValue = lendingStake;
         lendingStake = _lendingStake;
@@ -48,16 +50,12 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard, ERC721Holder {
     }
 
     function setMarketplace(address _marketplace) external onlyOwner {
-        require(_marketplace != address(0), "Invalid address");
+        if (_marketplace == address(0)) revert InvalidAddress();
 
         address _oldValue = marketplace;
         marketplace = _marketplace;
         emit SetMarketplace(_oldValue, marketplace);
     }
-
-    /* ********* */
-    /* FUNCTIONS */
-    /* ********* */
 
     function informDisburse(address _token, address _to, uint256 _amount) external nonReentrant whenNotPaused permittedTo(loan) {
         ILendingStake(lendingStake).approve(_amount);
@@ -71,10 +69,11 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard, ERC721Holder {
     }
 
     function listNftToMarket(address _nftContract, uint256 _nftTokenId, uint256 _price) external whenNotPaused onlyAdmin {
+        IERC721(_nftContract).approve(marketplace, _nftTokenId);
         IMarketplace(marketplace).makeItem(_nftContract, _nftTokenId, ILendingStake(lendingStake).wXENE(), _price, lendingStake);
     }
 
-    function closeNftFromMarket(uint256 _marketItemId) external whenNotPaused onlyAdmin {
+    function withdrawNftFromMarket(uint256 _marketItemId) external whenNotPaused onlyAdmin {
         IMarketplace(marketplace).closeItem(_marketItemId);
     }
 
@@ -83,26 +82,16 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard, ERC721Holder {
     }
 
     /**
-     * @dev Triggers stopped state.
-     *
-     * Requirements:
-     *
-     * - Only the owner can call this method.
-     * - The contract must not be paused.
+     * @dev called by the owner to pause, triggers stopped state
      */
-    function pause() external onlyOwner {
+    function pause() external onlyOwner whenNotPaused {
         _pause();
     }
 
     /**
-     * @dev Returns to normal state.
-     *
-     * Requirements:
-     *
-     * - Only the owner can call this method.
-     * - The contract must be paused.
+     * @dev called by the owner to unpause, returns to normal state
      */
-    function unpause() external onlyOwner {
+    function unpause() external onlyOwner whenPaused {
         _unpause();
     }
 }

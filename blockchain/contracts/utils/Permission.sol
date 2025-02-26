@@ -24,12 +24,6 @@ abstract contract Permission is Ownable {
 
     event SetAdmin(address indexed user, bool allow);
 
-    /* *********** */
-    /* CONSTRUCTOR */
-    /* *********** */
-
-    constructor() Ownable(_msgSender()) {}
-
     /* ********* */
     /* MODIFIERS */
     /* ********* */
@@ -38,7 +32,7 @@ abstract contract Permission is Ownable {
      * Throw exception of caller is not admin
      */
     modifier onlyAdmin() {
-        require(owner() == _msgSender() || admins[_msgSender()], "Ownable: caller is not an admin");
+        require(owner() == _msgSender() || admins[_msgSender()], "AdminUnauthorizedAccount");
         _;
     }
 
@@ -47,7 +41,7 @@ abstract contract Permission is Ownable {
      * @param _account Account will be checked
      */
     modifier permittedTo(address _account) {
-        require(msg.sender == _account, "Permission: Unauthorized.");
+        require(msg.sender == _account, "PermissionUnauthorizedAccount");
         _;
     }
 
@@ -106,6 +100,6 @@ abstract contract Permission is Ownable {
      * @param _account User's account will be checkedd
      */
     function isAdmin(address _account) external view returns (bool) {
-        return admins[_account];
+        return owner() == _account || admins[_account];
     }
 }

@@ -9,13 +9,13 @@ enum ItemStatus {
   CLOSED,
 }
 
-describe("NFTMarketplace", function () {
+describe("Marketplace", function () {
   async function deployFixture() {
     const [deployer, feeReceiver, user1, user2, beneficiary] = await ethers.getSigners();
 
     const nft = await ethers.deployContract("ChonkSociety", ["test uri"]);
     const wXENE = await ethers.deployContract("WXENE");
-    const marketplace = await ethers.deployContract("Marketplace", [feeReceiver, FEE_PERCENTAGE]);
+    const marketplace = await ethers.deployContract("Marketplace", [deployer, feeReceiver, FEE_PERCENTAGE]);
 
     // mint token to users
     await wXENE.connect(user2).mint({ value: ethers.parseEther("100") });

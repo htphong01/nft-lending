@@ -28,7 +28,6 @@ export interface LendingPoolInterface extends Interface {
     nameOrSignature:
       | "admins"
       | "approveToPayRewards"
-      | "closeNftFromMarket"
       | "informDisburse"
       | "informPayBack"
       | "isAdmin"
@@ -48,6 +47,7 @@ export interface LendingPoolInterface extends Interface {
       | "setMarketplace"
       | "transferOwnership"
       | "unpause"
+      | "withdrawNftFromMarket"
   ): FunctionFragment;
 
   getEvent(
@@ -68,10 +68,6 @@ export interface LendingPoolInterface extends Interface {
   encodeFunctionData(
     functionFragment: "approveToPayRewards",
     values: [AddressLike, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "closeNftFromMarket",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "informDisburse",
@@ -134,14 +130,14 @@ export interface LendingPoolInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "withdrawNftFromMarket",
+    values: [BigNumberish]
+  ): string;
 
   decodeFunctionResult(functionFragment: "admins", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "approveToPayRewards",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "closeNftFromMarket",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -193,6 +189,10 @@ export interface LendingPoolInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawNftFromMarket",
+    data: BytesLike
+  ): Result;
 }
 
 export namespace DisbursedEvent {
@@ -388,12 +388,6 @@ export interface LendingPool extends BaseContract {
     "nonpayable"
   >;
 
-  closeNftFromMarket: TypedContractMethod<
-    [_marketItemId: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
-
   informDisburse: TypedContractMethod<
     [_token: AddressLike, _to: AddressLike, _amount: BigNumberish],
     [void],
@@ -472,6 +466,12 @@ export interface LendingPool extends BaseContract {
 
   unpause: TypedContractMethod<[], [void], "nonpayable">;
 
+  withdrawNftFromMarket: TypedContractMethod<
+    [_marketItemId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
@@ -486,9 +486,6 @@ export interface LendingPool extends BaseContract {
     [void],
     "nonpayable"
   >;
-  getFunction(
-    nameOrSignature: "closeNftFromMarket"
-  ): TypedContractMethod<[_marketItemId: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "informDisburse"
   ): TypedContractMethod<
@@ -574,6 +571,9 @@ export interface LendingPool extends BaseContract {
   getFunction(
     nameOrSignature: "unpause"
   ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "withdrawNftFromMarket"
+  ): TypedContractMethod<[_marketItemId: BigNumberish], [void], "nonpayable">;
 
   getEvent(
     key: "Disbursed"
