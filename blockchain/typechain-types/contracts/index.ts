@@ -9,8 +9,6 @@ import type * as tokenBoundAccount from "./TokenBoundAccount";
 export type { tokenBoundAccount };
 import type * as interfaces from "./interfaces";
 export type { interfaces };
-import type * as libraries from "./libraries";
-export type { libraries };
 import type * as loans from "./loans";
 export type { loans };
 import type * as utils from "./utils";

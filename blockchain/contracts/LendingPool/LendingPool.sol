@@ -31,13 +31,6 @@ contract LendingPool is Permission, Pausable, ReentrancyGuard, ERC721Holder {
     event PaidBack(address indexed token, uint256 amount);
     event ListNftToMarket(address indexed nftContract, uint256 indexed nftTokenId, uint256 indexed price);
 
-    /**
-     * @notice Sets the admin of the contract.
-     *
-     * @param _admin - Initial admin of this contract.
-     */
-    constructor(address _admin) Ownable(_admin) {}
-
     function setLoan(address _loan) external onlyOwner {
         require(_loan != address(0), "Invalid address");
 

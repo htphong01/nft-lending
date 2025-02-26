@@ -23,6 +23,39 @@ import type {
   TypedContractMethod,
 } from "../common";
 
+export declare namespace Marketplace {
+  export type ItemStruct = {
+    itemId: BigNumberish;
+    nft: AddressLike;
+    tokenId: BigNumberish;
+    price: BigNumberish;
+    paymentToken: AddressLike;
+    seller: AddressLike;
+    beneficiary: AddressLike;
+    status: BigNumberish;
+  };
+
+  export type ItemStructOutput = [
+    itemId: bigint,
+    nft: string,
+    tokenId: bigint,
+    price: bigint,
+    paymentToken: string,
+    seller: string,
+    beneficiary: string,
+    status: bigint
+  ] & {
+    itemId: bigint;
+    nft: string;
+    tokenId: bigint;
+    price: bigint;
+    paymentToken: string;
+    seller: string;
+    beneficiary: string;
+    status: bigint;
+  };
+}
+
 export interface MarketplaceInterface extends Interface {
   getFunction(
     nameOrSignature:
@@ -49,15 +82,14 @@ export interface MarketplaceInterface extends Interface {
 
   getEvent(
     nameOrSignatureOrTopic:
-      | "Bought"
+      | "BoughtItem"
       | "ClosedItem"
-      | "Offered"
+      | "MakeItem"
       | "OwnershipTransferred"
       | "SetAdmin"
       | "SetFeePercent"
       | "SetFeeReceiver"
       | "SetPaymentToken"
-      | "WithdrawnFund"
   ): EventFragment;
 
   encodeFunctionData(functionFragment: "admins", values: [AddressLike]): string;
@@ -173,32 +205,11 @@ export interface MarketplaceInterface extends Interface {
   ): Result;
 }
 
-export namespace BoughtEvent {
-  export type InputTuple = [
-    itemId: BigNumberish,
-    nft: AddressLike,
-    tokenId: BigNumberish,
-    price: BigNumberish,
-    paymentToken: AddressLike,
-    seller: AddressLike,
-    buyer: AddressLike
-  ];
-  export type OutputTuple = [
-    itemId: bigint,
-    nft: string,
-    tokenId: bigint,
-    price: bigint,
-    paymentToken: string,
-    seller: string,
-    buyer: string
-  ];
+export namespace BoughtItemEvent {
+  export type InputTuple = [itemId: BigNumberish, buyer: AddressLike];
+  export type OutputTuple = [itemId: bigint, buyer: string];
   export interface OutputObject {
     itemId: bigint;
-    nft: string;
-    tokenId: bigint;
-    price: bigint;
-    paymentToken: string;
-    seller: string;
     buyer: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
@@ -208,16 +219,10 @@ export namespace BoughtEvent {
 }
 
 export namespace ClosedItemEvent {
-  export type InputTuple = [
-    itemId: BigNumberish,
-    nft: AddressLike,
-    tokenId: BigNumberish
-  ];
-  export type OutputTuple = [itemId: bigint, nft: string, tokenId: bigint];
+  export type InputTuple = [itemId: BigNumberish];
+  export type OutputTuple = [itemId: bigint];
   export interface OutputObject {
     itemId: bigint;
-    nft: string;
-    tokenId: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -225,33 +230,15 @@ export namespace ClosedItemEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace OfferedEvent {
-  export type InputTuple = [
-    itemId: BigNumberish,
-    nft: AddressLike,
-    tokenId: BigNumberish,
-    price: BigNumberish,
-    paymentToken: AddressLike,
-    seller: AddressLike,
-    beneficiary: AddressLike
-  ];
+export namespace MakeItemEvent {
+  export type InputTuple = [itemId: BigNumberish, item: Marketplace.ItemStruct];
   export type OutputTuple = [
     itemId: bigint,
-    nft: string,
-    tokenId: bigint,
-    price: bigint,
-    paymentToken: string,
-    seller: string,
-    beneficiary: string
+    item: Marketplace.ItemStructOutput
   ];
   export interface OutputObject {
     itemId: bigint;
-    nft: string;
-    tokenId: bigint;
-    price: bigint;
-    paymentToken: string;
-    seller: string;
-    beneficiary: string;
+    item: Marketplace.ItemStructOutput;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -317,22 +304,6 @@ export namespace SetPaymentTokenEvent {
   export interface OutputObject {
     token: string;
     allow: boolean;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace WithdrawnFundEvent {
-  export type InputTuple = [
-    serviceFundReceiver: AddressLike,
-    value: BigNumberish
-  ];
-  export type OutputTuple = [serviceFundReceiver: string, value: bigint];
-  export interface OutputObject {
-    serviceFundReceiver: string;
-    value: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -457,7 +428,7 @@ export interface Marketplace extends BaseContract {
   >;
 
   setFeeReceiver: TypedContractMethod<
-    [_newValue: AddressLike],
+    [_feeReceiver: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -565,7 +536,7 @@ export interface Marketplace extends BaseContract {
   ): TypedContractMethod<[_newValue: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setFeeReceiver"
-  ): TypedContractMethod<[_newValue: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<[_feeReceiver: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setPaymentToken"
   ): TypedContractMethod<
@@ -578,11 +549,11 @@ export interface Marketplace extends BaseContract {
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
 
   getEvent(
-    key: "Bought"
+    key: "BoughtItem"
   ): TypedContractEvent<
-    BoughtEvent.InputTuple,
-    BoughtEvent.OutputTuple,
-    BoughtEvent.OutputObject
+    BoughtItemEvent.InputTuple,
+    BoughtItemEvent.OutputTuple,
+    BoughtItemEvent.OutputObject
   >;
   getEvent(
     key: "ClosedItem"
@@ -592,11 +563,11 @@ export interface Marketplace extends BaseContract {
     ClosedItemEvent.OutputObject
   >;
   getEvent(
-    key: "Offered"
+    key: "MakeItem"
   ): TypedContractEvent<
-    OfferedEvent.InputTuple,
-    OfferedEvent.OutputTuple,
-    OfferedEvent.OutputObject
+    MakeItemEvent.InputTuple,
+    MakeItemEvent.OutputTuple,
+    MakeItemEvent.OutputObject
   >;
   getEvent(
     key: "OwnershipTransferred"
@@ -633,27 +604,20 @@ export interface Marketplace extends BaseContract {
     SetPaymentTokenEvent.OutputTuple,
     SetPaymentTokenEvent.OutputObject
   >;
-  getEvent(
-    key: "WithdrawnFund"
-  ): TypedContractEvent<
-    WithdrawnFundEvent.InputTuple,
-    WithdrawnFundEvent.OutputTuple,
-    WithdrawnFundEvent.OutputObject
-  >;
 
   filters: {
-    "Bought(uint256,address,uint256,uint256,address,address,address)": TypedContractEvent<
-      BoughtEvent.InputTuple,
-      BoughtEvent.OutputTuple,
-      BoughtEvent.OutputObject
+    "BoughtItem(uint256,address)": TypedContractEvent<
+      BoughtItemEvent.InputTuple,
+      BoughtItemEvent.OutputTuple,
+      BoughtItemEvent.OutputObject
     >;
-    Bought: TypedContractEvent<
-      BoughtEvent.InputTuple,
-      BoughtEvent.OutputTuple,
-      BoughtEvent.OutputObject
+    BoughtItem: TypedContractEvent<
+      BoughtItemEvent.InputTuple,
+      BoughtItemEvent.OutputTuple,
+      BoughtItemEvent.OutputObject
     >;
 
-    "ClosedItem(uint256,address,uint256)": TypedContractEvent<
+    "ClosedItem(uint256)": TypedContractEvent<
       ClosedItemEvent.InputTuple,
       ClosedItemEvent.OutputTuple,
       ClosedItemEvent.OutputObject
@@ -664,15 +628,15 @@ export interface Marketplace extends BaseContract {
       ClosedItemEvent.OutputObject
     >;
 
-    "Offered(uint256,address,uint256,uint256,address,address,address)": TypedContractEvent<
-      OfferedEvent.InputTuple,
-      OfferedEvent.OutputTuple,
-      OfferedEvent.OutputObject
+    "MakeItem(uint256,tuple)": TypedContractEvent<
+      MakeItemEvent.InputTuple,
+      MakeItemEvent.OutputTuple,
+      MakeItemEvent.OutputObject
     >;
-    Offered: TypedContractEvent<
-      OfferedEvent.InputTuple,
-      OfferedEvent.OutputTuple,
-      OfferedEvent.OutputObject
+    MakeItem: TypedContractEvent<
+      MakeItemEvent.InputTuple,
+      MakeItemEvent.OutputTuple,
+      MakeItemEvent.OutputObject
     >;
 
     "OwnershipTransferred(address,address)": TypedContractEvent<
@@ -728,17 +692,6 @@ export interface Marketplace extends BaseContract {
       SetPaymentTokenEvent.InputTuple,
       SetPaymentTokenEvent.OutputTuple,
       SetPaymentTokenEvent.OutputObject
-    >;
-
-    "WithdrawnFund(address,uint256)": TypedContractEvent<
-      WithdrawnFundEvent.InputTuple,
-      WithdrawnFundEvent.OutputTuple,
-      WithdrawnFundEvent.OutputObject
-    >;
-    WithdrawnFund: TypedContractEvent<
-      WithdrawnFundEvent.InputTuple,
-      WithdrawnFundEvent.OutputTuple,
-      WithdrawnFundEvent.OutputObject
     >;
   };
 }

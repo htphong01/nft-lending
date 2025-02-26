@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  *  @title  Permission
@@ -28,7 +28,7 @@ abstract contract Permission is Ownable {
     /* CONSTRUCTOR */
     /* *********** */
 
-    constructor() {}
+    constructor() Ownable(_msgSender()) {}
 
     /* ********* */
     /* MODIFIERS */
@@ -87,7 +87,7 @@ abstract contract Permission is Ownable {
      * @dev    Only owner can call this function.
      * @param _user User address
      * @param _allow Specific user will be set as admin or not
-     * 
+     *
      * emit {SetAdmin} event
      */
     function _setAdmin(address _user, bool _allow) internal virtual {
