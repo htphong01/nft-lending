@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "../interfaces/ILendingStake.sol";
-import "../interfaces/ILendingPool.sol";
+import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {ILendingPool} from "../interfaces/ILendingPool.sol";
 
-contract LendingStake {
+contract LendingStake is ReentrancyGuard {
     using Math for uint256;
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -48,22 +47,24 @@ contract LendingStake {
     // rewards created per block.
     uint256 public rewardPerBlock;
 
-    // Pool Info.
+    // Pool Info
     PoolInfo public poolInfo;
 
-    // Info of each user that stakes wXENE tokens.
+    // Info of each user that stakes wXENE tokens
     mapping(address => UserInfo) public userInfo;
 
     // addresses list
     EnumerableSet.AddressSet private addressList;
 
-    // The block number when mining starts.
+    // The block number when mining starts
     uint256 public startBlock;
 
     event Deposit(address indexed user, uint256 amount);
     event Withdraw(address indexed user, uint256 amount);
     event ClaimReward(address indexed user, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 amount);
+
+    error RewardBalanceTooSmall();
 
     constructor(IERC20 _wXENE, address _lendingPool, uint256 _rewardPerBlock, uint256 _startBlock) {
         wXENE = _wXENE;
@@ -112,10 +113,10 @@ contract LendingStake {
             uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
             uint256 tokenReward = multiplier * rewardPerBlock;
 
-            accRewardPerShare = accRewardPerShare + ((tokenReward * REWARDS_PRECISION) / stakedSupply);
+            accRewardPerShare = accRewardPerShare + tokenReward.mulDiv(REWARDS_PRECISION, stakedSupply);
         }
 
-        return ((user.amount * accRewardPerShare) / REWARDS_PRECISION) - user.rewardDebt + user.rewardPending;
+        return user.amount.mulDiv(accRewardPerShare, REWARDS_PRECISION) - user.rewardDebt + user.rewardPending;
     }
 
     function rewardSupply() external view returns (uint256) {
@@ -144,7 +145,7 @@ contract LendingStake {
         uint256 tokenReward = multiplier * rewardPerBlock;
 
         poolInfo.totalPendingReward = poolInfo.totalPendingReward + tokenReward;
-        poolInfo.accRewardPerShare = poolInfo.accRewardPerShare + ((tokenReward * REWARDS_PRECISION) / wXENESupply);
+        poolInfo.accRewardPerShare = poolInfo.accRewardPerShare + tokenReward.mulDiv(REWARDS_PRECISION, wXENESupply);
         poolInfo.lastRewardBlock = block.number;
     }
 
@@ -158,9 +159,10 @@ contract LendingStake {
         if (user.amount == 0 && user.rewardPending == 0 && user.rewardDebt == 0) {
             addressList.add(address(msg.sender));
         }
-        user.rewardPending = ((user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION) - user.rewardDebt + user.rewardPending;
+
+        user.rewardPending = user.amount.mulDiv(poolInfo.accRewardPerShare, REWARDS_PRECISION) - user.rewardDebt + user.rewardPending;
         user.amount = user.amount + _amount;
-        user.rewardDebt = (user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION;
+        user.rewardDebt = user.amount.mulDiv(poolInfo.accRewardPerShare, REWARDS_PRECISION);
 
         poolInfo.stakedSupply = poolInfo.stakedSupply + _amount;
 
@@ -168,7 +170,7 @@ contract LendingStake {
     }
 
     // Withdraw staked wXENE tokens from Pool.
-    function withdraw(uint256 _amount) external {
+    function withdraw(uint256 _amount) external nonReentrant {
         require(_amount > 0, "amount zero");
         UserInfo storage user = userInfo[msg.sender];
         require(user.amount >= _amount, "withdraw: not enough");
@@ -176,34 +178,39 @@ contract LendingStake {
         updatePool();
         wXENE.safeTransfer(address(msg.sender), _amount);
 
-        user.rewardPending = ((user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION) - user.rewardDebt + user.rewardPending;
+        user.rewardPending = user.amount.mulDiv(poolInfo.accRewardPerShare, REWARDS_PRECISION) - user.rewardDebt + user.rewardPending;
         user.amount = user.amount - _amount;
-        user.rewardDebt = (user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION;
+        user.rewardDebt = user.amount.mulDiv(poolInfo.accRewardPerShare, REWARDS_PRECISION);
 
         poolInfo.stakedSupply = poolInfo.stakedSupply - _amount;
-        addressList.remove(address(msg.sender));
+
+        if (user.amount == 0) {
+            addressList.remove(address(msg.sender));
+        }
 
         emit Withdraw(msg.sender, _amount);
     }
 
     // Claim reward from Pool.
-    function claimReward() public {
+    function claimReward() external nonReentrant {
         UserInfo storage user = userInfo[msg.sender];
 
         updatePool();
 
-        uint256 _amount = ((user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION) - user.rewardDebt + user.rewardPending;
+        uint256 _currentRewardDebt = user.amount.mulDiv(poolInfo.accRewardPerShare, REWARDS_PRECISION);
+        uint256 _amount = _currentRewardDebt - user.rewardDebt + user.rewardPending;
+        if (_amount > wXENE.balanceOf(lendingPool)) {
+            revert RewardBalanceTooSmall();
+        }
+
         user.rewardPending = 0;
-        user.rewardDebt = (user.amount * poolInfo.accRewardPerShare) / REWARDS_PRECISION;
+        user.rewardDebt = _currentRewardDebt;
 
         uint256 _totalPendingReward = poolInfo.totalPendingReward;
         poolInfo.totalPendingReward = _totalPendingReward - _amount;
 
-        // Exchange point to XENE reward
-        uint256 _claimable = (_amount * wXENE.balanceOf(lendingPool)) / _totalPendingReward;
-
-        ILendingPool(lendingPool).approveToPayRewards(address(wXENE), _claimable);
-        wXENE.safeTransferFrom(lendingPool, msg.sender, _claimable);
+        ILendingPool(lendingPool).approveToPayRewards(address(wXENE), _amount);
+        wXENE.safeTransferFrom(lendingPool, msg.sender, _amount);
 
         emit ClaimReward(msg.sender, _amount);
     }
@@ -216,6 +223,7 @@ contract LendingStake {
         user.amount = 0;
         user.rewardDebt = 0;
         user.rewardPending = 0;
+        addressList.remove(address(msg.sender));
     }
 
     function approve(uint256 _amount) external {
