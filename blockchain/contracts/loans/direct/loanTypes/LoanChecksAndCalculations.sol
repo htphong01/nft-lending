@@ -4,9 +4,6 @@ pragma solidity 0.8.28;
 
 import "./IDirectLoanBase.sol";
 import "./LoanData.sol";
-import "../../../interfaces/IPermittedERC20s.sol";
-
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 /**
  * @title  LoanChecksAndCalculations

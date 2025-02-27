@@ -1,6 +1,6 @@
 import hre, { ethers } from "hardhat";
-import { Offer, Signature } from "./types";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { Addressable, Signer } from "ethers";
+import { LoanData } from "../typechain-types/contracts/loans/direct/loanTypes/DirectLoanFixedOffer";
 
 const ZERO_ADDRESS = ethers.ZeroAddress;
 const MAX_UINT256 = ethers.MaxUint256;
@@ -27,7 +27,7 @@ function encodeData(chainId, taskId, users, rewards, nonce) {
   return ethers.keccak256(payload);
 }
 
-function getEncodeOffer(offer: Offer) {
+function getEncodeOffer(offer: LoanData.OfferStruct) {
   const {
     principalAmount,
     maximumRepaymentAmount,
@@ -55,10 +55,10 @@ function getEncodeOffer(offer: Offer) {
 }
 
 async function getOfferSignature(
-  offer: Offer,
-  signature: Signature,
-  signer: SignerWithAddress,
-  loanAddress: string,
+  offer: LoanData.OfferStruct,
+  signature: LoanData.SignatureStruct,
+  signer: Signer,
+  loanAddress: string | Addressable,
   chainId = 31337
 ) {
   const encodedOffer = getEncodeOffer(offer);
@@ -69,13 +69,13 @@ async function getOfferSignature(
   return sig;
 }
 
-function getEncodedSignature(signature: Signature) {
+function getEncodedSignature(signature: LoanData.SignatureStruct) {
   const { signer, nonce, expiry } = signature;
   const payload = ethers.solidityPacked(["address", "uint256", "uint256"], [signer, nonce, expiry]);
   return payload;
 }
 
-function getMessage(encodedOffer: string, encodedSignature: string, loanContract: string, chainId: number) {
+function getMessage(encodedOffer: string, encodedSignature: string, loanContract: string | Addressable, chainId: number) {
   const payload = ethers.solidityPacked(
     ["bytes", "bytes", "address", "uint256"],
     [encodedOffer, encodedSignature, loanContract, chainId]
@@ -89,8 +89,8 @@ const getRandomInt = () => {
 };
 
 const getCurrentBlock = async () => {
-  const latestBlock = await hre.ethers.provider.getBlock("latest");
-  return latestBlock.number;
+  const latestBlock = await ethers.provider.getBlock("latest");
+  return latestBlock?.number;
 };
 
 const skipBlock = async (blockNumber: number) => {
@@ -101,7 +101,7 @@ const skipBlock = async (blockNumber: number) => {
 
 async function getTimestamp() {
   const latestBlock = await ethers.provider.getBlock("latest");
-  return latestBlock.timestamp;
+  return latestBlock? latestBlock.timestamp : 0;
 }
 
 async function skipTime(seconds: number) {

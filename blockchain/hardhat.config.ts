@@ -19,7 +19,7 @@ const config: HardhatUserConfig = {
     },
     cvc_testnet: {
       url: process.env.CVC_RPC,
-      accounts: [process.env.SYSTEM_PRIVATE_KEY ?? ""],
+      accounts: process.env.SYSTEM_PRIVATE_KEY ? [process.env.SYSTEM_PRIVATE_KEY] : [],
     },
   },
   etherscan: {

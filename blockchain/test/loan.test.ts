@@ -1,56 +1,37 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { Addressable, AddressLike } from "ethers";
+import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { getRandomInt, getTimestamp, skipTime, ZERO_ADDRESS, MAX_UINT256, getOfferSignature } from "./utils";
-import { Signer } from "ethers";
-import { Offer, Signature } from "./types";
-import {
-  ChonkSociety,
-  DirectLoanFixedOffer,
-  LendingPool,
-  LendingStake,
-  PermittedNFTs,
-  WXENE,
-} from "../typechain-types";
-
-let directLoanFixedOffer: DirectLoanFixedOffer;
-let chonkSociety: ChonkSociety;
-let permittedNFTs: PermittedNFTs;
-let wXENE: WXENE;
-let deployer: Signer;
-let lender: Signer;
-let borrower: Signer;
-let accounts: Signer[];
-let lendingPoolAdmin: Signer;
-let lendingPool: LendingPool;
-let lendingStake: LendingStake;
-
-let offer: Offer;
-let signature: Signature;
-let loanId: string;
+import { LoanData } from "../typechain-types/contracts/loans/direct/loanTypes/DirectLoanFixedOffer";
 
 const TOKEN_1 = ethers.parseUnits("1", 18);
-let ONE_DAY = 24 * 60 * 60;
+const ONE_DAY = 24 * 60 * 60;
 
-const LoanStatus = {
-  ACTIVE: 0,
-  REPAID: 1,
-  LIQUIDATED: 2,
-};
+enum LoanStatus {
+  ACTIVE,
+  REPAID,
+  LIQUIDATED,
+}
 
-const createOffer = async (lendingPool: string = ZERO_ADDRESS): Promise<Offer> => {
+const createOffer = async (
+  token: string | Addressable,
+  nft: string | Addressable,
+  lendingPool: string | Addressable = ethers.ZeroAddress
+): Promise<LoanData.OfferStruct> => {
   return {
     adminFeeInBasisPoints: 25,
     duration: 10,
-    erc20Denomination: await wXENE.getAddress(),
+    erc20Denomination: token,
     maximumRepaymentAmount: TOKEN_1 * 18n,
-    nftCollateralContract: await chonkSociety.getAddress(),
+    nftCollateralContract: nft,
     nftCollateralId: 1,
     principalAmount: TOKEN_1 * 15n,
     lendingPool,
   };
 };
 
-const createSignature = async (signer: string = lender.address): Promise<Signature> => {
+const createSignature = async (signer: string | Addressable): Promise<LoanData.SignatureStruct> => {
   return {
     nonce: Math.floor(Math.random() * 100000),
     expiry: (await getTimestamp()) + ONE_DAY,
@@ -59,90 +40,98 @@ const createSignature = async (signer: string = lender.address): Promise<Signatu
   };
 };
 
+async function createTestData(
+  signer: string | Addressable,
+  token: string | Addressable,
+  nft: string | Addressable,
+  lendingPool: string | Addressable = ethers.ZeroAddress
+) {
+  const offer = await createOffer(token, nft);
+  const signature = await createSignature(signer);
+  const loanId = ethers.encodeBytes32String("1");
+
+  return { offer, signature, loanId };
+}
+
 describe("Loan", () => {
-  beforeEach(async () => {
-    [deployer, lender, borrower, lendingPoolAdmin, ...accounts] = await ethers.getSigners();
+  async function deployFixture() {
+    const [deployer, lender, borrower, lendingPoolAdmin, ...accounts] = await ethers.getSigners();
 
-    const PermittedNFTs = await ethers.getContractFactory("PermittedNFTs");
-    const LoanChecksAndCalculations = await ethers.getContractFactory("LoanChecksAndCalculations");
-    const NFTfiSigningUtils = await ethers.getContractFactory("NFTfiSigningUtils");
-    const LendingPool = await ethers.getContractFactory("LendingPool");
-    const LendingStake = await ethers.getContractFactory("LendingStake");
-    const WXENE = await ethers.getContractFactory("WXENE");
-
-    let loanChecksAndCalculations = await LoanChecksAndCalculations.deploy();
-    let nftfiSigningUtils = await NFTfiSigningUtils.deploy();
-
-    const DirectLoanFixedOffer = await ethers.getContractFactory("DirectLoanFixedOffer", {
-      libraries: {
-        LoanChecksAndCalculations: loanChecksAndCalculations,
-        NFTfiSigningUtils: nftfiSigningUtils,
-      },
-    });
-
-    permittedNFTs = await PermittedNFTs.deploy(deployer);
-    wXENE = await WXENE.deploy();
-
-    directLoanFixedOffer = await DirectLoanFixedOffer.deploy(deployer, permittedNFTs, [wXENE]);
-
-    lendingPool = await LendingPool.deploy(deployer);
+    const loanChecksAndCalculations = await ethers.deployContract("LoanChecksAndCalculations");
+    const nftfiSigningUtils = await ethers.deployContract("NFTfiSigningUtils");
+    const permittedNFTs = await ethers.deployContract("PermittedNFTs", [deployer]);
+    const wXENE = await ethers.deployContract("WXENE");
+    const directLoanFixedOffer = await ethers.deployContract(
+      "DirectLoanFixedOffer",
+      [deployer, permittedNFTs, [wXENE]],
+      {
+        libraries: {
+          LoanChecksAndCalculations: loanChecksAndCalculations,
+          NFTfiSigningUtils: nftfiSigningUtils,
+        },
+      }
+    );
+    const lendingPool = await ethers.deployContract("LendingPool", [deployer]);
     await lendingPool.setAdmin(lendingPoolAdmin, true);
     await lendingPool.setLoan(directLoanFixedOffer);
 
-    lendingStake = await LendingStake.deploy(wXENE, lendingPool, "10000000000000000000", 0);
+    const lendingStake = await ethers.deployContract("LendingStake", [wXENE, lendingPool, TOKEN_1, 0]);
     await lendingPool.setLendingStake(lendingStake);
-
-    const ChonkSociety = await ethers.getContractFactory("ChonkSociety");
-    chonkSociety = await ChonkSociety.deploy("https://chonksociety.s3.us-east-2.amazonaws.com/metadata/");
-
-    // early transaction
-    await permittedNFTs.setNFTPermit(chonkSociety, true);
-    await chonkSociety.connect(borrower).mint(borrower, 10);
+    const nft = await ethers.deployContract("ChonkSociety", ["test baseURI"]);
+    await permittedNFTs.setNFTPermit(nft, true);
+    await nft.connect(borrower).mint(borrower, 10);
     await wXENE.mintTo(lender, { value: TOKEN_1 * 100n });
     await wXENE.mintTo(borrower, { value: TOKEN_1 * 100n });
     await wXENE.mintTo(lendingPool, { value: TOKEN_1 * 100n });
     await wXENE.mintTo(lendingStake, { value: TOKEN_1 * 100n });
-  });
 
-  describe("acceptOffer", () => {
-    beforeEach(async () => {
-      offer = await createOffer();
+    return {
+      deployer,
+      lender,
+      borrower,
+      lendingPoolAdmin,
+      accounts,
+      permittedNFTs,
+      wXENE,
+      directLoanFixedOffer,
+      lendingPool,
+      lendingStake,
+      nft
+    };
+  }
 
-      signature = await createSignature();
+  describe.only("acceptOffer", () => {
+    it("should revert with currency denomination is not permitted", async () => {
+      const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
+      const { offer, signature, loanId } = await createTestData(lender.address, wXENE.target, nft.target);
 
-      loanId = ethers.encodeBytes32String("1");
-    });
-
-    it.only("should revert with currency denomination is not permitted", async () => {
-      offer.erc20Denomination = ZERO_ADDRESS;
-
-      signature.signature = await getOfferSignature(offer, signature, lender, (await directLoanFixedOffer.getAddress()));
-
+      offer.erc20Denomination = ethers.ZeroAddress;
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.target);
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Currency denomination is not permitted"
       );
 
-      const WXENE = await ethers.getContractFactory("WXENE");
-      const newWXENE = await WXENE.deploy();
-      offer.erc20Denomination = await newWXENE.getAddress();
-
+      const newWXENE = await ethers.deployContract("WXENE");
+      offer.erc20Denomination = newWXENE.target;
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Currency denomination is not permitted"
       );
     });
 
     it("should revert with NFT collateral contract is not permitted", async () => {
-      offer.nftCollateralContract = ZERO_ADDRESS;
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(
+        deployFixture
+      );
+      const { offer, signature, loanId } = await createTestData(lender.address, wXENE.target, nft.target);
 
+      offer.nftCollateralContract = ethers.ZeroAddress;
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.target);
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "NFT collateral contract is not permitted"
       );
 
-      const NewChonkSociety = await ethers.getContractFactory("ChonkSociety");
-      const newChonkSociety = await NewChonkSociety.deploy("https://chonksociety.s3.us-east-2.amazonaws.com/metadata/");
-      await newChonkSociety.deployed();
-      offer.nftCollateralContract = newChonkSociety.address;
+      const newNft = await ethers.deployContract("ChonkSociety", ["base uri"]);
+      offer.nftCollateralContract = newNft.target;
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "NFT collateral contract is not permitted"
       );
@@ -150,7 +139,7 @@ describe("Loan", () => {
 
     it("should revert with loan duration exceeds maximum loan duration", async () => {
       offer.duration = ONE_DAY * 7 * 53 + 1;
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
 
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Loan duration exceeds maximum loan duration"
@@ -159,7 +148,7 @@ describe("Loan", () => {
 
     it("should revert with loan duration cannot be zero", async () => {
       offer.duration = 0;
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
 
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Loan duration cannot be zero"
@@ -168,7 +157,7 @@ describe("Loan", () => {
 
     it("should revert with the admin fee has changed since this order was signed.", async () => {
       offer.adminFeeInBasisPoints = 24;
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
 
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "The admin fee has changed since this order was signed."
@@ -182,14 +171,14 @@ describe("Loan", () => {
 
     it("should revert with negative interest rate loans are not allowed.", async () => {
       offer.maximumRepaymentAmount = offer.principalAmount.sub(1);
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
 
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Negative interest rate loans are not allowed."
       );
 
       offer.principalAmount = offer.maximumRepaymentAmount.add(1);
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
 
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Negative interest rate loans are not allowed."
@@ -197,14 +186,13 @@ describe("Loan", () => {
     });
 
     it("should revert with lender nonce invalid", async () => {
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
 
-      await chonkSociety.connect(borrower).approve(directLoanFixedOffer.address, 1);
-      await wXENE.connect(lender).approve(directLoanFixedOffer.address, TOKEN_1.mul(100));
+      await chonkSociety.connect(borrower).approve(directLoanFixedOffer, 1);
+      await wXENE.connect(lender).approve(directLoanFixedOffer, TOKEN_1 * 100n);
 
       const loanId = "0xebe4fe30af161bb8b26d55867c264d98c256cbfe364c00ea2cb779d1233d67f1";
       await directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature);
-      // await directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature);
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Lender nonce invalid"
       );
@@ -219,58 +207,56 @@ describe("Loan", () => {
       // );
 
       offer.maximumRepaymentAmount = offer.maximumRepaymentAmount.sub(1);
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Lender signature is invalid"
       );
 
       offer.nftCollateralId = 2;
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Lender signature is invalid"
       );
 
       const ChonkSociety = await ethers.getContractFactory("ChonkSociety");
       const chonkSociety = await ChonkSociety.deploy("https://chonksociety.s3.us-east-2.amazonaws.com/metadata/");
-      await chonkSociety.deployed();
-      await permittedNFTs.setNFTPermit(chonkSociety.address, true);
+      await permittedNFTs.setNFTPermit(chonkSociety, true);
 
-      offer.nftCollateralContract = chonkSociety.address;
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      offer.nftCollateralContract = await chonkSociety.getAddress();
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Lender signature is invalid"
       );
 
       offer.duration = 11;
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Lender signature is invalid"
       );
 
       const WXENE = await ethers.getContractFactory("WXENE");
       const newWXENE = await WXENE.deploy();
-      await newWXENE.deployed();
-      offer.erc20Denomination = newWXENE.address;
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
-      await directLoanFixedOffer.setERC20Permit(newWXENE.address, true);
+      offer.erc20Denomination = await newWXENE.getAddress();
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
+      await directLoanFixedOffer.setERC20Permit(newWXENE, true);
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Lender signature is invalid"
       );
 
       signature.nonce = getRandomInt();
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Lender signature is invalid"
       );
 
       signature.expiry = 1689786001;
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Lender signature is invalid"
       );
 
-      signature.signer = accounts[0].address;
-      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+      signature.signer = await accounts[0].getAddress();
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Lender signature is invalid"
       );
@@ -280,7 +266,7 @@ describe("Loan", () => {
       it("Should revert if signature is expired", async () => {
         signature.expiry = (await getTimestamp()) - 1;
 
-        signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.address);
+        signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer);
         await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
           "Lender Signature has expired"
         );
