@@ -186,6 +186,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.LendingStake__factory>;
     getContractFactory(
+      name: "TransferHelper",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.TransferHelper__factory>;
+    getContractFactory(
       name: "BaseLoan",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.BaseLoan__factory>;
@@ -486,6 +490,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.LendingStake>;
     getContractAt(
+      name: "TransferHelper",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.TransferHelper>;
+    getContractAt(
       name: "BaseLoan",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -764,6 +773,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LendingStake>;
     deployContract(
+      name: "TransferHelper",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TransferHelper>;
+    deployContract(
       name: "BaseLoan",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.BaseLoan>;
@@ -1063,6 +1076,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LendingStake>;
+    deployContract(
+      name: "TransferHelper",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TransferHelper>;
     deployContract(
       name: "BaseLoan",
       args: any[],

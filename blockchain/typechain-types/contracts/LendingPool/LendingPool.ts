@@ -40,6 +40,8 @@ export interface LendingPoolInterface extends Interface {
       | "pause"
       | "paused"
       | "renounceOwnership"
+      | "rescueNft"
+      | "rescueToken"
       | "setAdmin"
       | "setAdmins"
       | "setLendingStake"
@@ -104,6 +106,14 @@ export interface LendingPoolInterface extends Interface {
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "rescueNft",
+    values: [AddressLike, BigNumberish, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "rescueToken",
+    values: [AddressLike, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setAdmin",
@@ -171,6 +181,11 @@ export interface LendingPoolInterface extends Interface {
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "rescueNft", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "rescueToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setAdmin", data: BytesLike): Result;
@@ -432,6 +447,18 @@ export interface LendingPool extends BaseContract {
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
+  rescueNft: TypedContractMethod<
+    [_nftContract: AddressLike, _nftTokenId: BigNumberish, _to: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  rescueToken: TypedContractMethod<
+    [_token: AddressLike, _to: AddressLike, _amount: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   setAdmin: TypedContractMethod<
     [_user: AddressLike, _allow: boolean],
     [void],
@@ -542,6 +569,20 @@ export interface LendingPool extends BaseContract {
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "rescueNft"
+  ): TypedContractMethod<
+    [_nftContract: AddressLike, _nftTokenId: BigNumberish, _to: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "rescueToken"
+  ): TypedContractMethod<
+    [_token: AddressLike, _to: AddressLike, _amount: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "setAdmin"
   ): TypedContractMethod<

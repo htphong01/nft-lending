@@ -28,6 +28,7 @@ export interface ILendingPoolInterface extends Interface {
       | "informDisburse"
       | "informPayBack"
       | "isAdmin"
+      | "owner"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -46,6 +47,7 @@ export interface ILendingPoolInterface extends Interface {
     functionFragment: "isAdmin",
     values: [AddressLike]
   ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
 
   decodeFunctionResult(
     functionFragment: "approveToPayRewards",
@@ -60,6 +62,7 @@ export interface ILendingPoolInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "isAdmin", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
 }
 
 export interface ILendingPool extends BaseContract {
@@ -125,6 +128,8 @@ export interface ILendingPool extends BaseContract {
 
   isAdmin: TypedContractMethod<[_account: AddressLike], [boolean], "view">;
 
+  owner: TypedContractMethod<[], [string], "view">;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
@@ -153,6 +158,9 @@ export interface ILendingPool extends BaseContract {
   getFunction(
     nameOrSignature: "isAdmin"
   ): TypedContractMethod<[_account: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "owner"
+  ): TypedContractMethod<[], [string], "view">;
 
   filters: {};
 }

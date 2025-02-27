@@ -41,9 +41,9 @@ describe("Marketplace", function () {
   describe("setPaymentToken", function () {
     it("should throw error when not admin", async function () {
       const { marketplace, user1, wXENE } = await loadFixture(deployFixture);
-      await expect(marketplace.connect(user1).setPaymentToken(wXENE, true)).to.revertedWith(
-        "Ownable: caller is not an admin"
-      );
+      await expect(marketplace.connect(user1).setPaymentToken(wXENE, true))
+        .to.revertedWithCustomError(marketplace, "AdminUnauthorizedAccount")
+        .withArgs(user1.address);
     });
 
     it("should successfully", async function () {
@@ -60,9 +60,9 @@ describe("Marketplace", function () {
   describe("setFeeReceiver", function () {
     it("should throw error when not admin", async function () {
       const { marketplace, user1 } = await loadFixture(deployFixture);
-      await expect(marketplace.connect(user1).setFeeReceiver(user1.address)).to.revertedWith(
-        "Ownable: caller is not an admin"
-      );
+      await expect(marketplace.connect(user1).setFeeReceiver(user1.address))
+        .to.revertedWithCustomError(marketplace, "AdminUnauthorizedAccount")
+        .withArgs(user1.address);
     });
 
     it("should throw error when address is invalid", async function () {
@@ -83,7 +83,9 @@ describe("Marketplace", function () {
   describe("setFeePercent", function () {
     it("should throw error when not admin", async function () {
       const { marketplace, user1 } = await loadFixture(deployFixture);
-      await expect(marketplace.connect(user1).setFeePercent(20)).to.revertedWith("Ownable: caller is not an admin");
+      await expect(marketplace.connect(user1).setFeePercent(20))
+        .to.revertedWithCustomError(marketplace, "AdminUnauthorizedAccount")
+        .withArgs(user1.address);
     });
 
     it("should throw error when fee percent is greater than 10000", async function () {

@@ -30,15 +30,21 @@ export interface LendingStakeInterface extends Interface {
       | "approve"
       | "claimReward"
       | "deposit"
-      | "emergencyWithdraw"
       | "getAddressByIndex"
       | "getAllAddress"
       | "lendingPool"
+      | "pause"
+      | "paused"
       | "pendingReward"
       | "poolInfo"
+      | "rescueToken"
       | "rewardPerBlock"
       | "rewardSupply"
+      | "setLendingPool"
+      | "setRewardPerBlock"
+      | "setStartBlock"
       | "startBlock"
+      | "unpause"
       | "updatePool"
       | "userInfo"
       | "wXENE"
@@ -49,7 +55,8 @@ export interface LendingStakeInterface extends Interface {
     nameOrSignatureOrTopic:
       | "ClaimReward"
       | "Deposit"
-      | "EmergencyWithdraw"
+      | "Paused"
+      | "Unpaused"
       | "Withdraw"
   ): EventFragment;
 
@@ -70,10 +77,6 @@ export interface LendingStakeInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "emergencyWithdraw",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "getAddressByIndex",
     values: [BigNumberish]
   ): string;
@@ -85,11 +88,17 @@ export interface LendingStakeInterface extends Interface {
     functionFragment: "lendingPool",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "pause", values?: undefined): string;
+  encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "pendingReward",
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "poolInfo", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "rescueToken",
+    values: [AddressLike, AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "rewardPerBlock",
     values?: undefined
@@ -99,9 +108,22 @@ export interface LendingStakeInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "setLendingPool",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRewardPerBlock",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setStartBlock",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "startBlock",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "updatePool",
     values?: undefined
@@ -127,10 +149,6 @@ export interface LendingStakeInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "emergencyWithdraw",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getAddressByIndex",
     data: BytesLike
   ): Result;
@@ -142,11 +160,17 @@ export interface LendingStakeInterface extends Interface {
     functionFragment: "lendingPool",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "pendingReward",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "poolInfo", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "rescueToken",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "rewardPerBlock",
     data: BytesLike
@@ -155,7 +179,20 @@ export interface LendingStakeInterface extends Interface {
     functionFragment: "rewardSupply",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "setLendingPool",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setRewardPerBlock",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setStartBlock",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "startBlock", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "updatePool", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "userInfo", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "wXENE", data: BytesLike): Result;
@@ -188,12 +225,23 @@ export namespace DepositEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace EmergencyWithdrawEvent {
-  export type InputTuple = [user: AddressLike, amount: BigNumberish];
-  export type OutputTuple = [user: string, amount: bigint];
+export namespace PausedEvent {
+  export type InputTuple = [account: AddressLike];
+  export type OutputTuple = [account: string];
   export interface OutputObject {
-    user: string;
-    amount: bigint;
+    account: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace UnpausedEvent {
+  export type InputTuple = [account: AddressLike];
+  export type OutputTuple = [account: string];
+  export interface OutputObject {
+    account: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -265,8 +313,6 @@ export interface LendingStake extends BaseContract {
 
   deposit: TypedContractMethod<[_amount: BigNumberish], [void], "nonpayable">;
 
-  emergencyWithdraw: TypedContractMethod<[], [void], "nonpayable">;
-
   getAddressByIndex: TypedContractMethod<
     [_index: BigNumberish],
     [string],
@@ -276,6 +322,10 @@ export interface LendingStake extends BaseContract {
   getAllAddress: TypedContractMethod<[], [string[]], "view">;
 
   lendingPool: TypedContractMethod<[], [string], "view">;
+
+  pause: TypedContractMethod<[], [void], "nonpayable">;
+
+  paused: TypedContractMethod<[], [boolean], "view">;
 
   pendingReward: TypedContractMethod<[_user: AddressLike], [bigint], "view">;
 
@@ -292,11 +342,37 @@ export interface LendingStake extends BaseContract {
     "view"
   >;
 
+  rescueToken: TypedContractMethod<
+    [_token: AddressLike, _to: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   rewardPerBlock: TypedContractMethod<[], [bigint], "view">;
 
   rewardSupply: TypedContractMethod<[], [bigint], "view">;
 
+  setLendingPool: TypedContractMethod<
+    [_lendingPool: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  setRewardPerBlock: TypedContractMethod<
+    [_rewardPerBlock: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  setStartBlock: TypedContractMethod<
+    [_startBlock: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   startBlock: TypedContractMethod<[], [bigint], "view">;
+
+  unpause: TypedContractMethod<[], [void], "nonpayable">;
 
   updatePool: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -333,9 +409,6 @@ export interface LendingStake extends BaseContract {
     nameOrSignature: "deposit"
   ): TypedContractMethod<[_amount: BigNumberish], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "emergencyWithdraw"
-  ): TypedContractMethod<[], [void], "nonpayable">;
-  getFunction(
     nameOrSignature: "getAddressByIndex"
   ): TypedContractMethod<[_index: BigNumberish], [string], "view">;
   getFunction(
@@ -344,6 +417,12 @@ export interface LendingStake extends BaseContract {
   getFunction(
     nameOrSignature: "lendingPool"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "pause"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "paused"
+  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "pendingReward"
   ): TypedContractMethod<[_user: AddressLike], [bigint], "view">;
@@ -362,14 +441,33 @@ export interface LendingStake extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "rescueToken"
+  ): TypedContractMethod<
+    [_token: AddressLike, _to: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "rewardPerBlock"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "rewardSupply"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "setLendingPool"
+  ): TypedContractMethod<[_lendingPool: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setRewardPerBlock"
+  ): TypedContractMethod<[_rewardPerBlock: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setStartBlock"
+  ): TypedContractMethod<[_startBlock: BigNumberish], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "startBlock"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "unpause"
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "updatePool"
   ): TypedContractMethod<[], [void], "nonpayable">;
@@ -408,11 +506,18 @@ export interface LendingStake extends BaseContract {
     DepositEvent.OutputObject
   >;
   getEvent(
-    key: "EmergencyWithdraw"
+    key: "Paused"
   ): TypedContractEvent<
-    EmergencyWithdrawEvent.InputTuple,
-    EmergencyWithdrawEvent.OutputTuple,
-    EmergencyWithdrawEvent.OutputObject
+    PausedEvent.InputTuple,
+    PausedEvent.OutputTuple,
+    PausedEvent.OutputObject
+  >;
+  getEvent(
+    key: "Unpaused"
+  ): TypedContractEvent<
+    UnpausedEvent.InputTuple,
+    UnpausedEvent.OutputTuple,
+    UnpausedEvent.OutputObject
   >;
   getEvent(
     key: "Withdraw"
@@ -445,15 +550,26 @@ export interface LendingStake extends BaseContract {
       DepositEvent.OutputObject
     >;
 
-    "EmergencyWithdraw(address,uint256)": TypedContractEvent<
-      EmergencyWithdrawEvent.InputTuple,
-      EmergencyWithdrawEvent.OutputTuple,
-      EmergencyWithdrawEvent.OutputObject
+    "Paused(address)": TypedContractEvent<
+      PausedEvent.InputTuple,
+      PausedEvent.OutputTuple,
+      PausedEvent.OutputObject
     >;
-    EmergencyWithdraw: TypedContractEvent<
-      EmergencyWithdrawEvent.InputTuple,
-      EmergencyWithdrawEvent.OutputTuple,
-      EmergencyWithdrawEvent.OutputObject
+    Paused: TypedContractEvent<
+      PausedEvent.InputTuple,
+      PausedEvent.OutputTuple,
+      PausedEvent.OutputObject
+    >;
+
+    "Unpaused(address)": TypedContractEvent<
+      UnpausedEvent.InputTuple,
+      UnpausedEvent.OutputTuple,
+      UnpausedEvent.OutputObject
+    >;
+    Unpaused: TypedContractEvent<
+      UnpausedEvent.InputTuple,
+      UnpausedEvent.OutputTuple,
+      UnpausedEvent.OutputObject
     >;
 
     "Withdraw(address,uint256)": TypedContractEvent<

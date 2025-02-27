@@ -92,6 +92,8 @@ export type { LendingPool } from "./contracts/LendingPool/LendingPool";
 export { LendingPool__factory } from "./factories/contracts/LendingPool/LendingPool__factory";
 export type { LendingStake } from "./contracts/LendingPool/LendingStake";
 export { LendingStake__factory } from "./factories/contracts/LendingPool/LendingStake__factory";
+export type { TransferHelper } from "./contracts/libraries/TransferHelper";
+export { TransferHelper__factory } from "./factories/contracts/libraries/TransferHelper__factory";
 export type { BaseLoan } from "./contracts/loans/BaseLoan";
 export { BaseLoan__factory } from "./factories/contracts/loans/BaseLoan__factory";
 export type { DirectLoanBaseMinimal } from "./contracts/loans/direct/loanTypes/DirectLoanBaseMinimal";

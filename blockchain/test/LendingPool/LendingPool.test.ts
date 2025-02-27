@@ -170,9 +170,9 @@ describe("LendingPool", function () {
   describe("informDisburse", function () {
     it("Should throw error when caller is not loan", async function () {
       const { lendingPool, wXENE, user1 } = await loadFixture(deployFixture);
-      await expect(lendingPool.connect(user1).informDisburse(wXENE, user1, ONE)).to.revertedWith(
-        "PermissionUnauthorizedAccount"
-      );
+      await expect(lendingPool.connect(user1).informDisburse(wXENE, user1, ONE))
+        .to.revertedWithCustomError(lendingPool, "PermissionUnauthorizedAccount")
+        .withArgs(user1.address);
     });
 
     it("Should throw error when paused", async function () {
@@ -197,9 +197,9 @@ describe("LendingPool", function () {
   describe("informPayBack", function () {
     it("Should throw error when caller is not loan", async function () {
       const { lendingPool, wXENE, user1 } = await loadFixture(deployFixture);
-      await expect(lendingPool.connect(user1).informPayBack(wXENE, ONE)).to.revertedWith(
-        "PermissionUnauthorizedAccount"
-      );
+      await expect(lendingPool.connect(user1).informPayBack(wXENE, ONE))
+        .to.revertedWithCustomError(lendingPool, "PermissionUnauthorizedAccount")
+        .withArgs(user1.address);
     });
 
     it("Should throw error when paused", async function () {
@@ -225,7 +225,9 @@ describe("LendingPool", function () {
   describe("listNftToMarket", function () {
     it("Should throw error when caller is not admin", async function () {
       const { lendingPool, nft, user1 } = await loadFixture(deployFixture);
-      await expect(lendingPool.connect(user1).listNftToMarket(nft, 1, ONE)).to.revertedWith("AdminUnauthorizedAccount");
+      await expect(lendingPool.connect(user1).listNftToMarket(nft, 1, ONE))
+        .to.revertedWithCustomError(lendingPool, "AdminUnauthorizedAccount")
+        .withArgs(user1.address);
     });
 
     it("Should throw error when paused", async function () {
@@ -255,7 +257,9 @@ describe("LendingPool", function () {
   describe("withdrawNftFromMarket", function () {
     it("Should throw error when caller is not admin", async function () {
       const { lendingPool, user1 } = await loadFixture(deployFixture);
-      await expect(lendingPool.connect(user1).withdrawNftFromMarket(1)).to.revertedWith("AdminUnauthorizedAccount");
+      await expect(lendingPool.connect(user1).withdrawNftFromMarket(1))
+        .to.revertedWithCustomError(lendingPool, "AdminUnauthorizedAccount")
+        .withArgs(user1.address);
     });
 
     it("Should throw error when paused", async function () {
@@ -281,9 +285,9 @@ describe("LendingPool", function () {
   describe("approveToPayRewards", function () {
     it("Should throw error when caller is not lendingStake", async function () {
       const { lendingPool, wXENE, user1 } = await loadFixture(deployFixture);
-      await expect(lendingPool.connect(user1).approveToPayRewards(wXENE, ONE)).to.revertedWith(
-        "PermissionUnauthorizedAccount"
-      );
+      await expect(lendingPool.connect(user1).approveToPayRewards(wXENE, ONE))
+        .to.revertedWithCustomError(lendingPool, "PermissionUnauthorizedAccount")
+        .withArgs(user1.address);
     });
 
     it("Should throw error when paused", async function () {
@@ -300,6 +304,95 @@ describe("LendingPool", function () {
       await lendingPool.setLendingStake(user1);
       await lendingPool.connect(user1).approveToPayRewards(wXENE, ONE);
       expect(await wXENE.allowance(lendingPool, user1)).to.equal(ONE);
+    });
+  });
+
+  describe("rescueToken", function () {
+    it("should revert when caller is not owner", async function () {
+      const { lendingPool, wXENE, user1 } = await loadFixture(deployFixture);
+
+      await expect(lendingPool.connect(user1).rescueToken(wXENE.target, user1, 1))
+        .to.be.revertedWithCustomError(lendingPool, "OwnableUnauthorizedAccount")
+        .withArgs(user1.address);
+    });
+
+    it("should revert when token address is zero address", async function () {
+      const { lendingPool, user1 } = await loadFixture(deployFixture);
+
+      await expect(lendingPool.rescueToken(ethers.ZeroAddress, user1, 1)).to.be.revertedWithCustomError(
+        lendingPool,
+        "SafeERC20FailedOperation"
+      );
+    });
+
+    it("should revert when receiver address is invalid", async function () {
+      const { lendingPool, wXENE } = await loadFixture(deployFixture);
+
+      await expect(lendingPool.rescueToken(wXENE.target, ethers.ZeroAddress, 1)).to.be.revertedWithCustomError(
+        lendingPool,
+        "InvalidAddress"
+      );
+    });
+
+    it("should rescue successfully", async function () {
+      const { lendingPool, wXENE, deployer } = await loadFixture(deployFixture);
+      const amount = ethers.parseEther("100");
+
+      // Send tokens to contract
+      await wXENE.mintTo(lendingPool, { value: amount });
+
+      // Rescue tokens
+      await expect(lendingPool.rescueToken(wXENE, deployer, amount)).to.changeTokenBalances(
+        wXENE,
+        [lendingPool, deployer],
+        [-amount, amount]
+      );
+    });
+  });
+
+  describe("rescueNft", function () {
+    it("should revert when caller is not owner", async function () {
+      const { lendingPool, nft, user1 } = await loadFixture(deployFixture);
+
+      await expect(lendingPool.connect(user1).rescueNft(nft, 1, user1))
+        .to.be.revertedWithCustomError(lendingPool, "OwnableUnauthorizedAccount")
+        .withArgs(user1.address);
+    });
+
+    it("should revert when nft address is zero address", async function () {
+      const { lendingPool, user1 } = await loadFixture(deployFixture);
+
+      await expect(lendingPool.rescueNft(ethers.ZeroAddress, 1, user1)).to.be.revertedWithoutReason();
+    });
+
+    it("should revert when token ID is not existed", async function () {
+      const { lendingPool, nft, user1 } = await loadFixture(deployFixture);
+
+      await expect(lendingPool.rescueNft(nft, 0, user1))
+        .to.be.revertedWithCustomError(nft, "ERC721NonexistentToken")
+        .withArgs(0);
+    });
+
+    it("should revert when receiver address is invalid", async function () {
+      const { lendingPool, nft } = await loadFixture(deployFixture);
+
+      await expect(lendingPool.rescueNft(nft, 1, ethers.ZeroAddress)).to.be.revertedWithCustomError(
+        lendingPool,
+        "InvalidAddress"
+      );
+    });
+
+    it("should rescue successfully", async function () {
+      const { lendingPool, nft, deployer } = await loadFixture(deployFixture);
+
+      // Rescue tokens
+      expect(await nft.ownerOf(1)).to.equal(lendingPool);
+      await expect(lendingPool.rescueNft(nft, 1, deployer)).to.changeTokenBalances(
+        nft,
+        [lendingPool, deployer],
+        [-1, 1]
+      );
+      expect(await nft.ownerOf(1)).to.equal(deployer.address);
     });
   });
 });

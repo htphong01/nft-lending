@@ -5,7 +5,7 @@ import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {Helper} from "./libraries/Helper.sol";
+import {TransferHelper} from "./libraries/TransferHelper.sol";
 import {Permission, Ownable} from "./utils/Permission.sol";
 import {IMarketplace} from "./interfaces/IMarketplace.sol";
 
@@ -72,9 +72,9 @@ contract Marketplace is IMarketplace, Permission, ReentrancyGuard, ERC721Holder 
         if (item.paymentToken == address(0)) {
             if (msg.value != item.price) revert NotEnougnETH();
             if (marketFee > 0) {
-                Helper.safeTransferNative(feeReceiver, marketFee);
+                TransferHelper.safeTransferNative(feeReceiver, marketFee);
             }
-            Helper.safeTransferNative(item.beneficiary, receivedAmount);
+            TransferHelper.safeTransferNative(item.beneficiary, receivedAmount);
         } else {
             if (marketFee > 0) {
                 IERC20(item.paymentToken).safeTransferFrom(_msgSender(), feeReceiver, marketFee);

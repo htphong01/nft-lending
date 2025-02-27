@@ -5,6 +5,7 @@ export * as lendingPool from "./LendingPool";
 export * as mock from "./Mock";
 export * as tokenBoundAccount from "./TokenBoundAccount";
 export * as interfaces from "./interfaces";
+export * as libraries from "./libraries";
 export * as loans from "./loans";
 export * as utils from "./utils";
 export { ChonkSociety__factory } from "./ChonkSociety__factory";
