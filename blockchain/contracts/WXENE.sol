@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract WXENE is ERC20 {
     event Minted(address account, uint256 amount);
     event Burnt(address account, uint256 amount);
+
+    error TransferNativeFailed();
 
     /* *********** */
     /* CONSTRUCTOR */
@@ -48,7 +51,7 @@ contract WXENE is ERC20 {
     function burn(uint256 _amount) external {
         _burn(_msgSender(), _amount);
         (bool success, ) = (_msgSender()).call{value: _amount}("");
-        require(success, "Fail transfer native");
+        if (!success) revert TransferNativeFailed();
 
         emit Burnt(_msgSender(), _amount);
     }

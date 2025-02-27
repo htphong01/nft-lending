@@ -13,6 +13,27 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "AdminUnauthorizedAccount",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidAddress",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidLength",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "owner",
         type: "address",
       },
@@ -29,6 +50,17 @@ const _abi = [
       },
     ],
     name: "OwnableUnauthorizedAccount",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "PermissionUnauthorizedAccount",
     type: "error",
   },
   {

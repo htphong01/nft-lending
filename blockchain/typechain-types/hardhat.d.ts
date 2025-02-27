@@ -46,10 +46,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC4906__factory>;
     getContractFactory(
-      name: "Pausable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Pausable__factory>;
-    getContractFactory(
       name: "ERC1155",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC1155__factory>;
@@ -69,10 +65,6 @@ declare module "hardhat/types/runtime" {
       name: "ERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC20__factory>;
-    getContractFactory(
-      name: "IERC20Permit",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC20Permit__factory>;
     getContractFactory(
       name: "IERC20Metadata",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -194,9 +186,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.LendingStake__factory>;
     getContractFactory(
-      name: "Formula",
+      name: "TransferHelper",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Formula__factory>;
+    ): Promise<Contracts.TransferHelper__factory>;
     getContractFactory(
       name: "BaseLoan",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -323,11 +315,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC4906>;
     getContractAt(
-      name: "Pausable",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Pausable>;
-    getContractAt(
       name: "ERC1155",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -352,11 +339,6 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC20>;
-    getContractAt(
-      name: "IERC20Permit",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC20Permit>;
     getContractAt(
       name: "IERC20Metadata",
       address: string | ethers.Addressable,
@@ -508,10 +490,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.LendingStake>;
     getContractAt(
-      name: "Formula",
+      name: "TransferHelper",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.Formula>;
+    ): Promise<Contracts.TransferHelper>;
     getContractAt(
       name: "BaseLoan",
       address: string | ethers.Addressable,
@@ -651,10 +633,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC4906>;
     deployContract(
-      name: "Pausable",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Pausable>;
-    deployContract(
       name: "ERC1155",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC1155>;
@@ -674,10 +652,6 @@ declare module "hardhat/types/runtime" {
       name: "ERC20",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC20>;
-    deployContract(
-      name: "IERC20Permit",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC20Permit>;
     deployContract(
       name: "IERC20Metadata",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -799,9 +773,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LendingStake>;
     deployContract(
-      name: "Formula",
+      name: "TransferHelper",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Formula>;
+    ): Promise<Contracts.TransferHelper>;
     deployContract(
       name: "BaseLoan",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -928,11 +902,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC4906>;
     deployContract(
-      name: "Pausable",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Pausable>;
-    deployContract(
       name: "ERC1155",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -957,11 +926,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC20>;
-    deployContract(
-      name: "IERC20Permit",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC20Permit>;
     deployContract(
       name: "IERC20Metadata",
       args: any[],
@@ -1113,10 +1077,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LendingStake>;
     deployContract(
-      name: "Formula",
+      name: "TransferHelper",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Formula>;
+    ): Promise<Contracts.TransferHelper>;
     deployContract(
       name: "BaseLoan",
       args: any[],

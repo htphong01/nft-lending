@@ -10,6 +10,56 @@ import type {
 
 const _abi = [
   {
+    inputs: [],
+    name: "InvalidBeneficiary",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidFeePercent",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidFeeReceiver",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidNft",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidPrice",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotEnougnETH",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotExistedItem",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotOpeningItem",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotPermittedToken",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "OnlyItemOwner",
+    type: "error",
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
