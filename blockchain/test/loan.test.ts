@@ -734,21 +734,46 @@ describe("Loan", () => {
   });
 
   describe.only("liquidateOverdueLoan", () => {
-    beforeEach(async () => {
-      await chonkSociety.connect(borrower).approve(directLoanFixedOffer.address, 1);
-      await wXENE.connect(lender).approve(directLoanFixedOffer.address, MAX_UINT256);
-      await directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature);
+    it("should revert with loan already repaid", async () => {
+      const { borrower, directLoanFixedOffer, wXENE, loanId } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+
+      // Payback loan
+      await wXENE.connect(borrower).approve(directLoanFixedOffer, ethers.MaxUint256);
+      await directLoanFixedOffer.connect(borrower).payBackLoan(loanId);
+
+      await expect(directLoanFixedOffer.connect(borrower).liquidateOverdueLoan(loanId)).to.revertedWith(
+        "Loan already repaid/liquidated"
+      );
+    });
+
+    it("should revert with loan already liquidated", async () => {
+      const { lender, borrower, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+
+      await skipTime(ONE_DAY + 1);
+      await directLoanFixedOffer.connect(lender).liquidateOverdueLoan(loanId);
+
+      await expect(directLoanFixedOffer.connect(borrower).liquidateOverdueLoan(loanId)).to.revertedWith(
+        "Loan already repaid/liquidated"
+      );
     });
 
     it("should revert with invalid loan id", async () => {
+      const { lender, borrower, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+
       await expect(directLoanFixedOffer.connect(lender).liquidateOverdueLoan(loanId + 1)).to.be.reverted;
-      await expect(directLoanFixedOffer.connect(lender).liquidateOverdueLoan(1)).to.be.reverted;
+      // await expect(directLoanFixedOffer.connect(lender).liquidateOverdueLoan(1)).to.be.reverted;
 
-      await wXENE.connect(borrower).approve(directLoanFixedOffer.address, MAX_UINT256);
-      await wXENE.connect(borrower).mint(borrower.address, TOKEN_1.mul(3));
-      await directLoanFixedOffer.connect(borrower).payBackLoan(loanId);
+      // await wXENE.connect(borrower).approve(directLoanFixedOffer.address, MAX_UINT256);
+      // await wXENE.connect(borrower).mint(borrower.address, TOKEN_1.mul(3));
+      // await directLoanFixedOffer.connect(borrower).payBackLoan(loanId);
 
-      await expect(directLoanFixedOffer.connect(lender).liquidateOverdueLoan(1)).to.be.reverted;
+      // await expect(directLoanFixedOffer.connect(lender).liquidateOverdueLoan(1)).to.be.reverted;
     });
 
     it("should revert with loan is not overdue yet", async () => {

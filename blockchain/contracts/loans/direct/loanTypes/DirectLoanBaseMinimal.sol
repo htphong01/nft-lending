@@ -274,11 +274,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param  _permittedNFT - PermittedNFT address
      * @param  _permittedErc20s -
      */
-    constructor(
-        address _admin,
-        address _permittedNFT,
-        address[] memory _permittedErc20s
-    ) BaseLoan(_admin) {
+    constructor(address _admin, address _permittedNFT, address[] memory _permittedErc20s) BaseLoan(_admin) {
         permittedNFTs = IPermittedNFTs(_permittedNFT);
         for (uint256 i = 0; i < _permittedErc20s.length; i++) {
             _setERC20Permit(_permittedErc20s[i], true);
@@ -291,7 +287,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * loan struct.
      *
      * @param _newMaximumLoanDuration - The new maximum loan duration, measured in seconds.
-     * 
+     *
      * emit {MaximumLoanDurationUpdated} event
      */
     function updateMaximumLoanDuration(uint256 _newMaximumLoanDuration) external onlyOwner {
@@ -306,7 +302,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      *
      * @param _newAdminFeeInBasisPoints - The new admin fee measured in basis points. This is a percent of the interest
      * paid upon a loan's completion that go to the contract admins.
-     * 
+     *
      * emit {AdminFeeUpdated} event
      */
     function updateAdminFee(uint16 _newAdminFeeInBasisPoints) external onlyOwner {
@@ -409,15 +405,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         uint256 _expiry,
         bytes memory _lenderSignature
     ) external whenNotPaused nonReentrant {
-        _renegotiateLoan(
-            _loanId,
-            _newLoanDuration,
-            _newMaximumRepaymentAmount,
-            _renegotiationFee,
-            _lenderNonce,
-            _expiry,
-            _lenderSignature
-        );
+        _renegotiateLoan(_loanId, _newLoanDuration, _newMaximumRepaymentAmount, _renegotiationFee, _lenderNonce, _expiry, _lenderSignature);
     }
 
     /**
@@ -458,7 +446,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * admin funds.
      *
      * @param _loanId  A unique identifier for this particular loan, sourced from the Loan Coordinator.
-     * 
+     *
      * emit {LoanLiquidated} event
      */
     function liquidateOverdueLoan(bytes32 _loanId) external nonReentrant {
@@ -473,23 +461,16 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         uint256 loanMaturityDate = uint256(loan.loanStartTime) + uint256(loan.duration);
         require(block.timestamp > loanMaturityDate, "Loan is not overdue yet");
 
-        if (!loan.useLendingPool) {
+        if (loan.useLendingPool) {
+            require(ILendingPool(lender).isAdmin(msg.sender), "Only Lending pool admin can liquidate");
+        } else {
             require(msg.sender == lender, "Only lender can liquidate");
         }
 
         _resolveLoan(_loanId, lender, loan);
 
         // Emit an event with all relevant details from this transaction.
-        emit LoanLiquidated(
-            _loanId,
-            borrower,
-            lender,
-            loan.principalAmount,
-            loan.nftCollateralId,
-            loanMaturityDate,
-            block.timestamp,
-            loan.nftCollateralContract
-        );
+        emit LoanLiquidated(_loanId, borrower, lender, loan.principalAmount, loan.nftCollateralId, loanMaturityDate, block.timestamp, loan.nftCollateralContract);
 
         // Delete the loan from storage in order to achieve a substantial gas savings and to lessen the burden of
         // storage on Ethereum nodes, since we will never access this loan's details again, and the details are still
@@ -618,13 +599,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     ) internal {
         LoanTerms storage loan = loanIdToLoan[_loanId];
 
-        (address borrower, address lender) = LoanChecksAndCalculations.renegotiationChecks(
-            loan,
-            _loanId,
-            _newLoanDuration,
-            _newMaximumRepaymentAmount,
-            _lenderNonce
-        );
+        (address borrower, address lender) = LoanChecksAndCalculations.renegotiationChecks(loan, _loanId, _newLoanDuration, _newMaximumRepaymentAmount, _lenderNonce);
 
         _nonceHasBeenUsedForUser[lender][_lenderNonce] = true;
 
@@ -647,16 +622,9 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
          * the pbulic versions
          */
         if (_renegotiationFee > 0) {
-            renegotiationAdminFee = LoanChecksAndCalculations.computeAdminFee(
-                _renegotiationFee,
-                loan.adminFeeInBasisPoints
-            );
+            renegotiationAdminFee = LoanChecksAndCalculations.computeAdminFee(_renegotiationFee, loan.adminFeeInBasisPoints);
             // Transfer principal-plus-interest-minus-fees from the caller (always has to be borrower) to lender
-            IERC20(loan.erc20Denomination).safeTransferFrom(
-                borrower,
-                lender,
-                _renegotiationFee - renegotiationAdminFee
-            );
+            IERC20(loan.erc20Denomination).safeTransferFrom(borrower, lender, _renegotiationFee - renegotiationAdminFee);
             // Transfer fees from the caller (always has to be borrower) to admins
             IERC20(loan.erc20Denomination).safeTransferFrom(borrower, owner(), renegotiationAdminFee);
         }
@@ -664,15 +632,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         loan.duration = _newLoanDuration;
         loan.maximumRepaymentAmount = _newMaximumRepaymentAmount;
 
-        emit LoanRenegotiated(
-            _loanId,
-            borrower,
-            lender,
-            _newLoanDuration,
-            _newMaximumRepaymentAmount,
-            _renegotiationFee,
-            renegotiationAdminFee
-        );
+        emit LoanRenegotiated(_loanId, borrower, lender, _newLoanDuration, _newMaximumRepaymentAmount, _renegotiationFee, renegotiationAdminFee);
     }
 
     /**
@@ -699,12 +659,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param _lender - The address of the lender.
      * that there is no referrer.
      */
-    function _createLoanNoNftTransfer(
-        bytes32 _loanId,
-        LoanTerms memory _loanTerms,
-        address _borrower,
-        address _lender
-    ) internal {
+    function _createLoanNoNftTransfer(bytes32 _loanId, LoanTerms memory _loanTerms, address _borrower, address _lender) internal {
         _escrowTokens[_loanTerms.nftCollateralContract][_loanTerms.nftCollateralId] += 1;
 
         // Transfer principal from lender to borrower.
@@ -740,7 +695,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * contract and hold hostage the NFT's that are still within it.
      *
      * @param _loanId  A unique identifier for this particular loan, sourced from the Loan Coordinator.
-     * 
+     *
      * emit {LoanRepaid} event
      */
     function _payBackLoan(bytes32 _loanId, address _borrower, address _lender, LoanTerms memory _loan) internal {
@@ -749,7 +704,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         // Transfer principal-plus-interest-minus-fees from the caller to lender
         IERC20(_loan.erc20Denomination).safeTransferFrom(msg.sender, _lender, payoffAmount);
         if (_loan.useLendingPool) {
-            ILendingPool(_lender).informPayBack(_loan.erc20Denomination,  _loan.principalAmount);
+            ILendingPool(_lender).informPayBack(_loan.erc20Denomination, _loan.principalAmount);
         }
 
         // Transfer fees from the caller to admins
@@ -807,7 +762,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      *
      * @param _erc20 - The address of the ERC20 currency whose permit list status changed.
      * @param _permit - The new status of whether the currency is permitted or not.
-     * 
+     *
      * emit {ERC20Permit} event
      */
     function _setERC20Permit(address _erc20, bool _permit) internal {
@@ -827,18 +782,13 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         require(permittedNFTs.getNFTPermit(_offer.nftCollateralContract), "NFT collateral contract is not permitted");
         require(uint256(_offer.duration) <= maximumLoanDuration, "Loan duration exceeds maximum loan duration");
         require(uint256(_offer.duration) != 0, "Loan duration cannot be zero");
-        require(
-            _offer.adminFeeInBasisPoints == adminFeeInBasisPoints,
-            "The admin fee has changed since this order was signed."
-        );
+        require(_offer.adminFeeInBasisPoints == adminFeeInBasisPoints, "The admin fee has changed since this order was signed.");
     }
 
     /**
      * @dev reads some variable values of a loan for payback functions, created to reduce code repetition
      */
-    function _getPartiesAndData(
-        bytes32 _loanId
-    ) internal view returns (address borrower, address lender, LoanTerms memory loan) {
+    function _getPartiesAndData(bytes32 _loanId) internal view returns (address borrower, address lender, LoanTerms memory loan) {
         // Fetch loan details from storage, but store them in memory for the sake of saving gas.
         loan = loanIdToLoan[_loanId];
         borrower = loan.borrower;
