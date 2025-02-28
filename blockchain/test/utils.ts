@@ -1,5 +1,5 @@
 import hre, { ethers } from "hardhat";
-import { Addressable, Signer } from "ethers";
+import { Addressable, AddressLike, BaseContract, Signer } from "ethers";
 import { LoanData } from "../typechain-types/contracts/loans/direct/loanTypes/DirectLoanFixedOffer";
 
 const ZERO_ADDRESS = ethers.ZeroAddress;
@@ -58,12 +58,12 @@ async function getOfferSignature(
   offer: LoanData.OfferStruct,
   signature: LoanData.SignatureStruct,
   signer: Signer,
-  loanAddress: string | Addressable,
+  loan: AddressLike,
   chainId = 31337
 ) {
   const encodedOffer = getEncodeOffer(offer);
   const encodedSignature = getEncodedSignature(signature);
-  const message = getMessage(encodedOffer, encodedSignature, loanAddress, chainId);
+  const message = getMessage(encodedOffer, encodedSignature, loan, chainId);
   const sig = await signer.signMessage(message);
 
   return sig;
@@ -75,7 +75,12 @@ function getEncodedSignature(signature: LoanData.SignatureStruct) {
   return payload;
 }
 
-function getMessage(encodedOffer: string, encodedSignature: string, loanContract: string | Addressable, chainId: number) {
+function getMessage(
+  encodedOffer: string,
+  encodedSignature: string,
+  loanContract: AddressLike,
+  chainId: number
+) {
   const payload = ethers.solidityPacked(
     ["bytes", "bytes", "address", "uint256"],
     [encodedOffer, encodedSignature, loanContract, chainId]
@@ -101,7 +106,7 @@ const skipBlock = async (blockNumber: number) => {
 
 async function getTimestamp() {
   const latestBlock = await ethers.provider.getBlock("latest");
-  return latestBlock? latestBlock.timestamp : 0;
+  return latestBlock ? latestBlock.timestamp : 0;
 }
 
 async function skipTime(seconds: number) {
