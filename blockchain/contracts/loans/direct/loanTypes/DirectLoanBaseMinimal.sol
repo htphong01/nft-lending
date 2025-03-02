@@ -16,8 +16,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title  DirectLoanBase
  * @notice Main contract for Loan Direct Loans Type. This contract manages the ability to create NFT-backed

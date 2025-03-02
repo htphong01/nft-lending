@@ -733,7 +733,7 @@ describe("Loan", () => {
     });
   });
 
-  describe.only("liquidateOverdueLoan", () => {
+  describe("liquidateOverdueLoan", () => {
     it("should revert with loan already repaid", async () => {
       const { borrower, directLoanFixedOffer, wXENE, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
@@ -806,5 +806,4 @@ describe("Loan", () => {
       expect(await directLoanFixedOffer.loanRepaidOrLiquidated(loanId)).to.be.true;
     });
   });
-
 });
