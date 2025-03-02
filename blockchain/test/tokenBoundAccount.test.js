@@ -1,7 +1,5 @@
 const { ethers } = require("hardhat");
 const { expect } = require("chai");
-const { parseEther, formatEther } = require("ethers/lib/utils");
-const { MaxUint256 } = require("@ethersproject/constants");
 
 describe("Token Bound Account", () => {
     beforeEach(async () => {

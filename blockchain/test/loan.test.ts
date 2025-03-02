@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Addressable, AddressLike, BaseContract, Contract, Signer } from "ethers";
+import { BaseContract, Signer } from "ethers";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { getRandomInt, getTimestamp, skipTime, ZERO_ADDRESS, MAX_UINT256, getOfferSignature } from "./utils";
+import { getRandomInt, getTimestamp, skipTime, getOfferSignature } from "./utils";
 import { LoanData } from "../typechain-types/contracts/loans/direct/loanTypes/DirectLoanFixedOffer";
 
 const TOKEN_1 = ethers.parseUnits("1", 18);
@@ -761,28 +761,21 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with invalid loan id", async () => {
+    it("should revert with loan is not overdue yet", async () => {
       const { lender, borrower, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
 
-      await expect(directLoanFixedOffer.connect(lender).liquidateOverdueLoan(loanId + 1)).to.be.reverted;
-      // await expect(directLoanFixedOffer.connect(lender).liquidateOverdueLoan(1)).to.be.reverted;
-
-      // await wXENE.connect(borrower).approve(directLoanFixedOffer.address, MAX_UINT256);
-      // await wXENE.connect(borrower).mint(borrower.address, TOKEN_1.mul(3));
-      // await directLoanFixedOffer.connect(borrower).payBackLoan(loanId);
-
-      // await expect(directLoanFixedOffer.connect(lender).liquidateOverdueLoan(1)).to.be.reverted;
-    });
-
-    it("should revert with loan is not overdue yet", async () => {
       await expect(directLoanFixedOffer.connect(lender).liquidateOverdueLoan(loanId)).to.revertedWith(
         "Loan is not overdue yet"
       );
     });
 
     it("should revert with only lender can liquidate", async () => {
+      const { lender, borrower, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+
       await skipTime(ONE_DAY);
       await expect(directLoanFixedOffer.liquidateOverdueLoan(loanId)).to.revertedWith("Only lender can liquidate");
       await expect(directLoanFixedOffer.connect(borrower).liquidateOverdueLoan(loanId)).to.revertedWith(
@@ -790,135 +783,28 @@ describe("Loan", () => {
       );
     });
 
-    it("should liquidateOverdueLoan successfully", async () => {
+    it("should revert with only admin lending pool can liquidate", async () => {
+      const { borrower, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
+        withLendingPool: true,
+      });
+
       await skipTime(ONE_DAY);
-      await expect(directLoanFixedOffer.connect(lender).liquidateOverdueLoan(loanId))
-        .to.emit(directLoanFixedOffer, "LoanLiquidated")
-        .to.changeTokenBalances(chonkSociety, [directLoanFixedOffer.address, lender.address], [-1, 1]);
+      await expect(directLoanFixedOffer.connect(borrower).liquidateOverdueLoan(loanId)).to.revertedWith(
+        "Only Lending pool admin can liquidate"
+      );
+    });
+
+    it("should liquidateOverdueLoan successfully", async () => {
+      const { lender, nft, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+
+      await skipTime(ONE_DAY);
+      const tx = await directLoanFixedOffer.connect(lender).liquidateOverdueLoan(loanId);
+      await expect(tx).to.emit(directLoanFixedOffer, "LoanLiquidated");
+      await expect(tx).to.changeTokenBalances(nft, [directLoanFixedOffer, lender.address], [-1, 1]);
+      expect(await directLoanFixedOffer.loanRepaidOrLiquidated(loanId)).to.be.true;
     });
   });
 
-  //     it("", async () => {
-  //         const loanId = "0xe2156a8c0df2c909cdb8363fe05203381d9b0c9e24dbfc15ee53f741268b0078";
-  //         const offer = {
-  //             principalAmount: {
-  //                 type: "BigNumber",
-  //                 hex: "0x8ac7230489e80000",
-  //             },
-  //             maximumRepaymentAmount: {
-  //                 type: "BigNumber",
-  //                 hex: "0x8ef0f36da2860000",
-  //             },
-  //             nftCollateralId: 4,
-  //             nftCollateralContract: "0xf31a2e258bec65a46fb54cd808294ce215070150",
-  //             duration: 2592000,
-  //             adminFeeInBasisPoints: 25,
-  //             erc20Denomination: "0x3b3f35c81488c49b370079fd05cfa917c83a38a9",
-  //         };
-  //         const signature = [
-  //             {
-  //                 signer: "0xbf4e57ea10b8d19ad436293818469758145ee915",
-  //                 nonce: 8235433715756225,
-  //                 expiry: 53944393777,
-  //                 signature: "0x8fe2e9e2b051e2d01b2596d09c316f4c63caafc5408e9752a4fa58eac9338b25133e81b6265f200196d2c07466c15619a6edad4c12f0aa8deb42e0732a5876941b",
-  //             },
-  //             {
-  //                 signer: "0x601d06fd394b4e74037f51e13b0b6fc9e6a2c7df",
-  //                 nonce: 3098022932000833,
-  //                 expiry: 53944393792,
-  //                 signature: "0xe4c168f37fd389f4ceff3879f699c0a13707488d0a784cbbbe44826ee57a0f567b25b06732963ba094a8353a2d9bf7da2c6d253ff52df235a092dee2fad92e181c",
-  //             },
-  //             {
-  //                 signer: "0x475dadd02b62698b8a3ce58dfbf5b05168a7a1db",
-  //                 nonce: 119440082829873,
-  //                 expiry: 53944393785,
-  //                 signature: "0x5464184b4378c65ea1758cd422af03191072f6c438fa321b1246e6aa3714106f4021214825dd6a6a80fae9863d0df4618eb4a83d93ec17047167a8e68e98f9911c",
-  //             },
-  //         ];
-  //     });
-
-  //     it("test pay back", async () => {
-  //         await chonkSociety.connect(borrower).approve(directLoanFixedOffer.address, 1);
-  //         await wXENE.connect(lender).approve(directLoanFixedOffer.address, TOKEN_1.mul(100));
-
-  //         const offer = {
-  //             principalAmount: TOKEN_1.mul(15),
-  //             maximumRepaymentAmount: TOKEN_1.mul(18),
-  //             nftCollateralId: 1,
-  //             nftCollateralContract: chonkSociety.address,
-  //             duration: ONE_DAY * 30,
-  //             adminFeeInBasisPoints: 25,
-  //             erc20Denomination: wXENE.address,
-  //         };
-
-  //         const encodeOffer = getEncodeOffer(offer);
-
-  //         const signature = {
-  //             nonce: getRandomInt(),
-  //             expiry: 1689699600,
-  //             signer: lender.address,
-  //         };
-
-  //         const encodeSignature = getEncodedSignature(signature);
-
-  //         const message = getMessage(encodeOffer, encodeSignature, directLoanFixedOffer.address, 31337);
-  //         const provider = ethers.provider;
-  //         const signer = provider.getSigner(lender.address);
-  //         // console.log("test message", ethers.utils.hashMessage(message));
-  //         signature.signature = await signer.signMessage(message);
-
-  //         // const signerAddress = ethers.utils.verifyMessage(ethers.utils.hashMessage(message), signature.signature);
-  //         const loanId = "0xebe4fe30af161bb8b26d55867c264d98c256cbfe364c00ea2cb779d1233d67c9";
-  //         await directLoanFixedOffer.connect(borrower).acceptOfferLendingPool(loanId, offer, [signature, signature, signature]);
-
-  //         await wXENE.connect(borrower).approve(directLoanFixedOffer.address, TOKEN_1.mul(100));
-  //         await wXENE.connect(borrower).mint(borrower.address, TOKEN_1.mul(3));
-
-  //         await directLoanFixedOffer.connect(borrower).payBackLoan(loanId);
-  //         console.log(await chonkSociety.ownerOf(1), borrower.address);
-  //     });
-
-  //     // it("test liquidateNFT", async () => {
-  //     //     await chonkSociety.connect(borrower).approve(directLoanFixedOffer.address, 1);
-  //     //     await wXENE.connect(lender).approve(directLoanFixedOffer.address, TOKEN_1.mul(100));
-
-  //     //     const offer = {
-  //     //         principalAmount: TOKEN_1.mul(15),
-  //     //         maximumRepaymentAmount: TOKEN_1.mul(18),
-  //     //         nftCollateralId: 1,
-  //     //         nftCollateralContract: chonkSociety.address,
-  //     //         duration: 60,
-  //     //         adminFeeInBasisPoints: 25,
-  //     //         erc20Denomination: wXENE.address,
-  //     //     };
-
-  //     //     const encodeOffer = getEncodeOffer(offer);
-
-  //     //     const signature = {
-  //     //         nonce: getRandomInt(),
-  //     //         expiry: Number(await getCurrentTimestamp()) + 60,
-  //     //         signer: lender.address,
-  //     //     };
-
-  //     //     const encodeSignature = getEncodedSignature(signature);
-
-  //     //     const message = getMessage(encodeOffer, encodeSignature, directLoanFixedOffer.address, 31337);
-  //     //     const provider = ethers.provider;
-  //     //     const signer = provider.getSigner(lender.address);
-  //     //     // console.log("test message", ethers.utils.hashMessage(message));
-  //     //     signature.signature = await signer.signMessage(message);
-
-  //     //     // const signerAddress = ethers.utils.verifyMessage(ethers.utils.hashMessage(message), signature.signature);
-  //     //     const loanId = "0xebe4fe30af161bb8b26d55867c264d98c256cbfe364c00ea2cb779d1233d67c9";
-  //     //     await directLoanFixedOffer.connect(borrower).acceptOfferLendingPool(loanId, offer, [signature, signature, signature]);
-
-  //     //     await wXENE.connect(borrower).approve(directLoanFixedOffer.address, TOKEN_1.mul(100));
-  //     //     await wXENE.connect(borrower).mint(borrower.address, TOKEN_1.mul(3));
-
-  //     //     await skipTime(60);
-
-  //     //     await directLoanFixedOffer.connect(borrower).liquidateOverdueLoan(loanId);
-  //     //     console.log(await chonkSociety.ownerOf(1), liquidateNFTPool.address);
-  //     // });
-  // });
 });
