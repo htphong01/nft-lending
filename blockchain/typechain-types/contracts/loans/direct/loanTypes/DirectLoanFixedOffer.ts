@@ -137,6 +137,7 @@ export interface DirectLoanFixedOfferInterface extends Interface {
       | "payBackLoan"
       | "permittedNFTs"
       | "renegotiateLoan"
+      | "renounceOwnership"
       | "setERC20Permit"
       | "setERC20Permits"
       | "transferOwnership"
@@ -243,6 +244,10 @@ export interface DirectLoanFixedOfferInterface extends Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "setERC20Permit",
     values: [AddressLike, boolean]
   ): string;
@@ -337,6 +342,10 @@ export interface DirectLoanFixedOfferInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "renegotiateLoan",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -744,6 +753,8 @@ export interface DirectLoanFixedOffer extends BaseContract {
     "nonpayable"
   >;
 
+  renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
+
   setERC20Permit: TypedContractMethod<
     [_erc20: AddressLike, _permit: boolean],
     [void],
@@ -757,7 +768,7 @@ export interface DirectLoanFixedOffer extends BaseContract {
   >;
 
   transferOwnership: TypedContractMethod<
-    [_newOwner: AddressLike],
+    [newOwner: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -916,6 +927,9 @@ export interface DirectLoanFixedOffer extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "renounceOwnership"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "setERC20Permit"
   ): TypedContractMethod<
     [_erc20: AddressLike, _permit: boolean],
@@ -931,7 +945,7 @@ export interface DirectLoanFixedOffer extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "transferOwnership"
-  ): TypedContractMethod<[_newOwner: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "unpause"
   ): TypedContractMethod<[], [void], "nonpayable">;

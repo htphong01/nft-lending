@@ -3,7 +3,7 @@
 pragma solidity 0.8.28;
 
 import "./interfaces/IPermittedNFTs.sol";
-import "./utils/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 

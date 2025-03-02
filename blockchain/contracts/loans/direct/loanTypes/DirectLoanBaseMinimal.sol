@@ -6,12 +6,12 @@ import "./IDirectLoanBase.sol";
 import "./LoanData.sol";
 import "./LoanChecksAndCalculations.sol";
 import "../../BaseLoan.sol";
-import "../../../utils/NftReceiver.sol";
 import "../../../utils/NFTfiSigningUtils.sol";
 import "../../../interfaces/IPermittedNFTs.sol";
 import "../../../interfaces/IPermittedERC20s.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -69,7 +69,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
  * pays the maximumRepaymentAmount regardless of whether they repay early or not.
  *
  */
-abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, BaseLoan, NftReceiver, LoanData {
+abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, BaseLoan, ERC721Holder, LoanData {
     using SafeERC20 for IERC20;
 
     /* ******* */

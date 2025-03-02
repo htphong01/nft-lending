@@ -28,6 +28,7 @@ export interface BaseLoanInterface extends Interface {
       | "owner"
       | "pause"
       | "paused"
+      | "renounceOwnership"
       | "transferOwnership"
       | "unpause"
   ): FunctionFragment;
@@ -40,6 +41,10 @@ export interface BaseLoanInterface extends Interface {
   encodeFunctionData(functionFragment: "pause", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
@@ -48,6 +53,10 @@ export interface BaseLoanInterface extends Interface {
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
@@ -141,8 +150,10 @@ export interface BaseLoan extends BaseContract {
 
   paused: TypedContractMethod<[], [boolean], "view">;
 
+  renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
+
   transferOwnership: TypedContractMethod<
-    [_newOwner: AddressLike],
+    [newOwner: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -163,8 +174,11 @@ export interface BaseLoan extends BaseContract {
     nameOrSignature: "paused"
   ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
+    nameOrSignature: "renounceOwnership"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "transferOwnership"
-  ): TypedContractMethod<[_newOwner: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "unpause"
   ): TypedContractMethod<[], [void], "nonpayable">;

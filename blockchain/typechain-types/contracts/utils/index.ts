@@ -4,5 +4,4 @@
 export type { NFTfiSigningUtils } from "./NFTfiSigningUtils";
 export type { NFTfiSigningUtilsContract } from "./NFTfiSigningUtilsContract";
 export type { NftReceiver } from "./NftReceiver";
-export type { Ownable } from "./Ownable";
 export type { Permission } from "./Permission";

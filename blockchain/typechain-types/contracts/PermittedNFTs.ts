@@ -28,6 +28,7 @@ export interface PermittedNFTsInterface extends Interface {
       | "getNFTPermit"
       | "owner"
       | "paused"
+      | "renounceOwnership"
       | "setNFTPermit"
       | "setNFTPermits"
       | "transferOwnership"
@@ -48,6 +49,10 @@ export interface PermittedNFTsInterface extends Interface {
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "setNFTPermit",
     values: [AddressLike, boolean]
   ): string;
@@ -66,6 +71,10 @@ export interface PermittedNFTsInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "setNFTPermit",
     data: BytesLike
@@ -183,6 +192,8 @@ export interface PermittedNFTs extends BaseContract {
 
   paused: TypedContractMethod<[], [boolean], "view">;
 
+  renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
+
   setNFTPermit: TypedContractMethod<
     [_nftContract: AddressLike, _isPermitted: boolean],
     [void],
@@ -196,7 +207,7 @@ export interface PermittedNFTs extends BaseContract {
   >;
 
   transferOwnership: TypedContractMethod<
-    [_newOwner: AddressLike],
+    [newOwner: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -215,6 +226,9 @@ export interface PermittedNFTs extends BaseContract {
     nameOrSignature: "paused"
   ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
+    nameOrSignature: "renounceOwnership"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "setNFTPermit"
   ): TypedContractMethod<
     [_nftContract: AddressLike, _isPermitted: boolean],
@@ -230,7 +244,7 @@ export interface PermittedNFTs extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "transferOwnership"
-  ): TypedContractMethod<[_newOwner: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
 
   getEvent(
     key: "NFTPermit"

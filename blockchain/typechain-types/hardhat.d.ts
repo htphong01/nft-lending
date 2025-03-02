@@ -262,10 +262,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.NftReceiver__factory>;
     getContractFactory(
-      name: "Ownable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Ownable__factory>;
-    getContractFactory(
       name: "Permission",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Permission__factory>;
@@ -585,11 +581,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.NftReceiver>;
     getContractAt(
-      name: "Ownable",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Ownable>;
-    getContractAt(
       name: "Permission",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -848,10 +839,6 @@ declare module "hardhat/types/runtime" {
       name: "NftReceiver",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.NftReceiver>;
-    deployContract(
-      name: "Ownable",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Ownable>;
     deployContract(
       name: "Permission",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1171,11 +1158,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.NftReceiver>;
-    deployContract(
-      name: "Ownable",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Ownable>;
     deployContract(
       name: "Permission",
       args: any[],
