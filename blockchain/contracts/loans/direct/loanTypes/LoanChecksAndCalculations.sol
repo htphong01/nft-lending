@@ -80,14 +80,15 @@ library LoanChecksAndCalculations {
         uint256 _lenderNonce
     ) external view returns (address, address) {
         checkLoanIdValidity(_loanId);
+
+        require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
         require(msg.sender == _loan.borrower, "Only borrower can initiate");
         require(block.timestamp <= (uint256(_loan.loanStartTime) + _newLoanDuration), "New duration already expired");
         require(
             uint256(_newLoanDuration) <= IDirectLoanBase(address(this)).maximumLoanDuration(),
             "New duration exceeds maximum loan duration"
         );
-        require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
-        require(_newMaximumRepaymentAmount >= _loan.principalAmount, "Negative interest rate loans are not allowed.");
+        require(_newMaximumRepaymentAmount >= _loan.principalAmount, "Negative interest rate loans are not allowed");
 
         require(
             !IDirectLoanBase(address(this)).getWhetherNonceHasBeenUsedForUser(_loan.lender, _lenderNonce),

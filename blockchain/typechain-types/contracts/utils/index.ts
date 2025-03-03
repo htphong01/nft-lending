@@ -3,5 +3,4 @@
 /* eslint-disable */
 export type { NFTfiSigningUtils } from "./NFTfiSigningUtils";
 export type { NFTfiSigningUtilsContract } from "./NFTfiSigningUtilsContract";
-export type { NftReceiver } from "./NftReceiver";
 export type { Permission } from "./Permission";

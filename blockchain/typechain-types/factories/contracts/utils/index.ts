@@ -3,5 +3,4 @@
 /* eslint-disable */
 export { NFTfiSigningUtils__factory } from "./NFTfiSigningUtils__factory";
 export { NFTfiSigningUtilsContract__factory } from "./NFTfiSigningUtilsContract__factory";
-export { NftReceiver__factory } from "./NftReceiver__factory";
 export { Permission__factory } from "./Permission__factory";

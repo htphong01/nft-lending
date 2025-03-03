@@ -128,8 +128,6 @@ export type { NFTfiSigningUtils } from "./contracts/utils/NFTfiSigningUtils";
 export { NFTfiSigningUtils__factory } from "./factories/contracts/utils/NFTfiSigningUtils__factory";
 export type { NFTfiSigningUtilsContract } from "./contracts/utils/NFTfiSigningUtilsContract";
 export { NFTfiSigningUtilsContract__factory } from "./factories/contracts/utils/NFTfiSigningUtilsContract__factory";
-export type { NftReceiver } from "./contracts/utils/NftReceiver";
-export { NftReceiver__factory } from "./factories/contracts/utils/NftReceiver__factory";
 export type { Permission } from "./contracts/utils/Permission";
 export { Permission__factory } from "./factories/contracts/utils/Permission__factory";
 export type { WXENE } from "./contracts/WXENE";
