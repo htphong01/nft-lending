@@ -120,6 +120,7 @@ export interface DirectLoanFixedOfferInterface extends Interface {
       | "drainERC20Airdrop"
       | "drainERC721Airdrop"
       | "getERC20Permit"
+      | "getNftPermit"
       | "getWhetherNonceHasBeenUsedForUser"
       | "isValidLoanId"
       | "liquidateOverdueLoan"
@@ -131,11 +132,10 @@ export interface DirectLoanFixedOfferInterface extends Interface {
       | "pause"
       | "paused"
       | "payBackLoan"
-      | "permittedNFTs"
       | "renegotiateLoan"
       | "renounceOwnership"
       | "setERC20Permit"
-      | "setERC20Permits"
+      | "setNFTPermit"
       | "transferOwnership"
       | "unpause"
       | "updateAdminFee"
@@ -185,6 +185,10 @@ export interface DirectLoanFixedOfferInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getNftPermit",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getWhetherNonceHasBeenUsedForUser",
     values: [AddressLike, BigNumberish]
   ): string;
@@ -220,10 +224,6 @@ export interface DirectLoanFixedOfferInterface extends Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "permittedNFTs",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "renegotiateLoan",
     values: [
       BytesLike,
@@ -242,8 +242,8 @@ export interface DirectLoanFixedOfferInterface extends Interface {
     values: [AddressLike, boolean]
   ): string;
   encodeFunctionData(
-    functionFragment: "setERC20Permits",
-    values: [AddressLike[], boolean[]]
+    functionFragment: "setNFTPermit",
+    values: [AddressLike, boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
@@ -288,6 +288,10 @@ export interface DirectLoanFixedOfferInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getNftPermit",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getWhetherNonceHasBeenUsedForUser",
     data: BytesLike
   ): Result;
@@ -323,10 +327,6 @@ export interface DirectLoanFixedOfferInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "permittedNFTs",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "renegotiateLoan",
     data: BytesLike
   ): Result;
@@ -339,7 +339,7 @@ export interface DirectLoanFixedOfferInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setERC20Permits",
+    functionFragment: "setNFTPermit",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -651,6 +651,12 @@ export interface DirectLoanFixedOffer extends BaseContract {
 
   getERC20Permit: TypedContractMethod<[_erc20: AddressLike], [boolean], "view">;
 
+  getNftPermit: TypedContractMethod<
+    [_nftContract: AddressLike],
+    [boolean],
+    "view"
+  >;
+
   getWhetherNonceHasBeenUsedForUser: TypedContractMethod<
     [_user: AddressLike, _nonce: BigNumberish],
     [boolean],
@@ -719,8 +725,6 @@ export interface DirectLoanFixedOffer extends BaseContract {
 
   payBackLoan: TypedContractMethod<[_loanId: BytesLike], [void], "nonpayable">;
 
-  permittedNFTs: TypedContractMethod<[], [string], "view">;
-
   renegotiateLoan: TypedContractMethod<
     [
       _loanId: BytesLike,
@@ -741,8 +745,8 @@ export interface DirectLoanFixedOffer extends BaseContract {
     "nonpayable"
   >;
 
-  setERC20Permits: TypedContractMethod<
-    [_erc20s: AddressLike[], _permits: boolean[]],
+  setNFTPermit: TypedContractMethod<
+    [_nftContract: AddressLike, _isPermitted: boolean],
     [void],
     "nonpayable"
   >;
@@ -812,6 +816,9 @@ export interface DirectLoanFixedOffer extends BaseContract {
   getFunction(
     nameOrSignature: "getERC20Permit"
   ): TypedContractMethod<[_erc20: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "getNftPermit"
+  ): TypedContractMethod<[_nftContract: AddressLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "getWhetherNonceHasBeenUsedForUser"
   ): TypedContractMethod<
@@ -884,9 +891,6 @@ export interface DirectLoanFixedOffer extends BaseContract {
     nameOrSignature: "payBackLoan"
   ): TypedContractMethod<[_loanId: BytesLike], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "permittedNFTs"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
     nameOrSignature: "renegotiateLoan"
   ): TypedContractMethod<
     [
@@ -910,9 +914,9 @@ export interface DirectLoanFixedOffer extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "setERC20Permits"
+    nameOrSignature: "setNFTPermit"
   ): TypedContractMethod<
-    [_erc20s: AddressLike[], _permits: boolean[]],
+    [_nftContract: AddressLike, _isPermitted: boolean],
     [void],
     "nonpayable"
   >;

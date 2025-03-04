@@ -27,7 +27,6 @@ export interface PermittedNFTsInterface extends Interface {
     nameOrSignature:
       | "getNFTPermit"
       | "owner"
-      | "paused"
       | "renounceOwnership"
       | "setNFTPermit"
       | "setNFTPermits"
@@ -35,11 +34,7 @@ export interface PermittedNFTsInterface extends Interface {
   ): FunctionFragment;
 
   getEvent(
-    nameOrSignatureOrTopic:
-      | "NFTPermit"
-      | "OwnershipTransferred"
-      | "Paused"
-      | "Unpaused"
+    nameOrSignatureOrTopic: "NFTPermit" | "OwnershipTransferred"
   ): EventFragment;
 
   encodeFunctionData(
@@ -47,7 +42,6 @@ export interface PermittedNFTsInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
@@ -70,7 +64,6 @@ export interface PermittedNFTsInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -108,30 +101,6 @@ export namespace OwnershipTransferredEvent {
   export interface OutputObject {
     previousOwner: string;
     newOwner: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace PausedEvent {
-  export type InputTuple = [account: AddressLike];
-  export type OutputTuple = [account: string];
-  export interface OutputObject {
-    account: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace UnpausedEvent {
-  export type InputTuple = [account: AddressLike];
-  export type OutputTuple = [account: string];
-  export interface OutputObject {
-    account: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -190,8 +159,6 @@ export interface PermittedNFTs extends BaseContract {
 
   owner: TypedContractMethod<[], [string], "view">;
 
-  paused: TypedContractMethod<[], [boolean], "view">;
-
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
   setNFTPermit: TypedContractMethod<
@@ -222,9 +189,6 @@ export interface PermittedNFTs extends BaseContract {
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "paused"
-  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
@@ -260,20 +224,6 @@ export interface PermittedNFTs extends BaseContract {
     OwnershipTransferredEvent.OutputTuple,
     OwnershipTransferredEvent.OutputObject
   >;
-  getEvent(
-    key: "Paused"
-  ): TypedContractEvent<
-    PausedEvent.InputTuple,
-    PausedEvent.OutputTuple,
-    PausedEvent.OutputObject
-  >;
-  getEvent(
-    key: "Unpaused"
-  ): TypedContractEvent<
-    UnpausedEvent.InputTuple,
-    UnpausedEvent.OutputTuple,
-    UnpausedEvent.OutputObject
-  >;
 
   filters: {
     "NFTPermit(address,bool)": TypedContractEvent<
@@ -296,28 +246,6 @@ export interface PermittedNFTs extends BaseContract {
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
-    >;
-
-    "Paused(address)": TypedContractEvent<
-      PausedEvent.InputTuple,
-      PausedEvent.OutputTuple,
-      PausedEvent.OutputObject
-    >;
-    Paused: TypedContractEvent<
-      PausedEvent.InputTuple,
-      PausedEvent.OutputTuple,
-      PausedEvent.OutputObject
-    >;
-
-    "Unpaused(address)": TypedContractEvent<
-      UnpausedEvent.InputTuple,
-      UnpausedEvent.OutputTuple,
-      UnpausedEvent.OutputObject
-    >;
-    Unpaused: TypedContractEvent<
-      UnpausedEvent.InputTuple,
-      UnpausedEvent.OutputTuple,
-      UnpausedEvent.OutputObject
     >;
   };
 }

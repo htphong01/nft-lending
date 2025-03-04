@@ -7,9 +7,6 @@ import {LoanData} from "./LoanData.sol";
 import {LoanChecksAndCalculations} from "./LoanChecksAndCalculations.sol";
 import {BaseLoan} from "../../BaseLoan.sol";
 import {NFTfiSigningUtils, ILendingPool} from "../../../utils/NFTfiSigningUtils.sol";
-import {IPermittedNFTs} from "../../../interfaces/IPermittedNFTs.sol";
-import {IPermittedERC20s} from "../../../interfaces/IPermittedERC20s.sol";
-
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -68,7 +65,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
  * pays the maximumRepaymentAmount regardless of whether they repay early or not.
  *
  */
-abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, BaseLoan, ERC721Holder, LoanData {
+abstract contract DirectLoanBaseMinimal is IDirectLoanBase, BaseLoan, ERC721Holder, LoanData {
     using SafeERC20 for IERC20;
 
     /* ******* */
@@ -129,7 +126,11 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      */
     mapping(address => bool) private erc20Permits;
 
-    IPermittedNFTs public immutable permittedNFTs;
+    /**
+     * @notice A mapping from an NFT contract's address to the Token type of that contract. A zero Token Type indicates
+     * non-permitted.
+     */
+    mapping(address => bool) private nftPermits;
 
     /* ****** */
     /* EVENTS */
@@ -270,11 +271,9 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @dev Sets `permittedNFTs`
      *
      * @param _admin - Initial admin of this contract.
-     * @param  _permittedNFT - PermittedNFT address
      * @param  _permittedErc20s -
      */
-    constructor(address _admin, address _permittedNFT, address[] memory _permittedErc20s) BaseLoan(_admin) {
-        permittedNFTs = IPermittedNFTs(_permittedNFT);
+    constructor(address _admin, address[] memory _permittedErc20s) BaseLoan(_admin) {
         for (uint256 i = 0; i < _permittedErc20s.length; i++) {
             _setERC20Permit(_permittedErc20s[i], true);
         }
@@ -319,8 +318,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     function drainERC20Airdrop(address _tokenAddress, address _receiver) external onlyOwner {
         IERC20 tokenContract = IERC20(_tokenAddress);
         uint256 amount = tokenContract.balanceOf(address(this));
-        require(amount > 0, "no tokens owned");
-        tokenContract.safeTransfer(_receiver, amount);
+        IERC20(_tokenAddress).safeTransfer(_receiver, amount);
     }
 
     /**
@@ -335,18 +333,14 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     }
 
     /**
-     * @notice This function can be called by admins to change the permitted status of a batch of ERC20 currency. This
-     * includes both adding an ERC20 currency to the permitted list and removing it.
-     *
-     * @param _erc20s - The addresses of the ERC20 currencies whose permit list status changed.
-     * @param _permits - The new statuses of whether the currency is permitted or not.
+     * @notice This function changes the permitted list status of an NFT contract. This includes both adding an NFT
+     * contract to the permitted list and removing it.
+     * @param _nftContract - The address of the NFT contract.
+     * @param _isPermitted - true - enable / false - disable
      */
-    function setERC20Permits(address[] memory _erc20s, bool[] memory _permits) external onlyOwner {
-        require(_erc20s.length == _permits.length, "setERC20Permits function information arity mismatch");
-
-        for (uint256 i = 0; i < _erc20s.length; i++) {
-            _setERC20Permit(_erc20s[i], _permits[i]);
-        }
+    function setNFTPermit(address _nftContract, bool _isPermitted) external onlyOwner {
+        require(_nftContract != address(0), "Invalid nft address");
+        nftPermits[_nftContract] = _isPermitted;
     }
 
     /**
@@ -357,10 +351,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @param _receiver - receiver of the token
      */
     function drainERC721Airdrop(address _tokenAddress, uint256 _tokenId, address _receiver) external onlyOwner {
-        IERC721 tokenContract = IERC721(_tokenAddress);
         require(_escrowTokens[_tokenAddress][_tokenId] == 0, "token is collateral");
-        require(tokenContract.ownerOf(_tokenId) == address(this), "nft not owned");
-        tokenContract.safeTransferFrom(address(this), _receiver, _tokenId);
+        IERC721(_tokenAddress).transferFrom(address(this), _receiver, _tokenId);
     }
 
     /**
@@ -406,7 +398,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      *
      * @param _loanId  A unique identifier for this particular loan, sourced from the Loan Coordinator.
      */
-    function payBackLoan(bytes32 _loanId) external nonReentrant {
+    function payBackLoan(bytes32 _loanId) external whenNotPaused nonReentrant {
         LoanChecksAndCalculations.payBackChecks(_loanId);
         (address borrower, address lender, LoanTerms memory loan) = _getPartiesAndData(_loanId);
 
@@ -436,7 +428,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      *
      * emit {LoanLiquidated} event
      */
-    function liquidateOverdueLoan(bytes32 _loanId) external nonReentrant {
+    function liquidateOverdueLoan(bytes32 _loanId) external whenNotPaused nonReentrant {
         // Sanity check that payBackLoan() and liquidateOverdueLoan() have never been called on this loanId.
         // Depending on how the rest of the code turns out, this check may be unnecessary.
         LoanChecksAndCalculations.checkLoanIdValidity(_loanId);
@@ -480,7 +472,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      *
      * @param _nonce - User nonce
      */
-    function cancelLoanCommitmentBeforeLoanHasBegun(uint256 _nonce) external {
+    function cancelLoanCommitmentBeforeLoanHasBegun(uint256 _nonce) external whenNotPaused {
         require(!_nonceHasBeenUsedForUser[msg.sender][_nonce], "Invalid nonce");
         _nonceHasBeenUsedForUser[msg.sender][_nonce] = true;
     }
@@ -517,8 +509,19 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      *
      * @return Returns whether the erc20 is permitted
      */
-    function getERC20Permit(address _erc20) public view override returns (bool) {
+    function getERC20Permit(address _erc20) public view returns (bool) {
         return erc20Permits[_erc20];
+    }
+
+    /**
+     * @notice This function can be called by anyone to get the permit associated with the erc20 contract.
+     *
+     * @param _nftContract - The address of the NFT contract.
+     *
+     * @return Returns whether the erc20 is permitted
+     */
+    function getNftPermit(address _nftContract) public view returns (bool) {
+        return nftPermits[_nftContract];
     }
 
     /* ****************** */
@@ -743,7 +746,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      */
     function _loanSanityChecks(Offer memory _offer) internal view {
         require(getERC20Permit(_offer.erc20Denomination), "Currency denomination is not permitted");
-        require(permittedNFTs.getNFTPermit(_offer.nftCollateralContract), "NFT collateral contract is not permitted");
+        require(nftPermits[_offer.nftCollateralContract], "NFT collateral contract is not permitted");
         require(uint256(_offer.duration) <= maximumLoanDuration, "Loan duration exceeds maximum loan duration");
         require(uint256(_offer.duration) != 0, "Loan duration cannot be zero");
         require(_offer.adminFeeInBasisPoints == adminFeeInBasisPoints, "The admin fee has changed since this order was signed.");

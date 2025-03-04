@@ -158,14 +158,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IMarketplace__factory>;
     getContractFactory(
-      name: "IPermittedERC20s",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IPermittedERC20s__factory>;
-    getContractFactory(
-      name: "IPermittedNFTs",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IPermittedNFTs__factory>;
-    getContractFactory(
       name: "ITokenBoundAccount",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ITokenBoundAccount__factory>;
@@ -221,10 +213,6 @@ declare module "hardhat/types/runtime" {
       name: "MockERC721",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockERC721__factory>;
-    getContractFactory(
-      name: "PermittedNFTs",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.PermittedNFTs__factory>;
     getContractFactory(
       name: "GOLD",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -447,16 +435,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IMarketplace>;
     getContractAt(
-      name: "IPermittedERC20s",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IPermittedERC20s>;
-    getContractAt(
-      name: "IPermittedNFTs",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IPermittedNFTs>;
-    getContractAt(
       name: "ITokenBoundAccount",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -526,11 +504,6 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.MockERC721>;
-    getContractAt(
-      name: "PermittedNFTs",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.PermittedNFTs>;
     getContractAt(
       name: "GOLD",
       address: string | ethers.Addressable,
@@ -727,14 +700,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IMarketplace>;
     deployContract(
-      name: "IPermittedERC20s",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IPermittedERC20s>;
-    deployContract(
-      name: "IPermittedNFTs",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IPermittedNFTs>;
-    deployContract(
       name: "ITokenBoundAccount",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ITokenBoundAccount>;
@@ -790,10 +755,6 @@ declare module "hardhat/types/runtime" {
       name: "MockERC721",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockERC721>;
-    deployContract(
-      name: "PermittedNFTs",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.PermittedNFTs>;
     deployContract(
       name: "GOLD",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1016,16 +977,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IMarketplace>;
     deployContract(
-      name: "IPermittedERC20s",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IPermittedERC20s>;
-    deployContract(
-      name: "IPermittedNFTs",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IPermittedNFTs>;
-    deployContract(
       name: "ITokenBoundAccount",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1095,11 +1046,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockERC721>;
-    deployContract(
-      name: "PermittedNFTs",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.PermittedNFTs>;
     deployContract(
       name: "GOLD",
       args: any[],

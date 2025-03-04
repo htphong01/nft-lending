@@ -509,6 +509,25 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
+        name: "_nftContract",
+        type: "address",
+      },
+    ],
+    name: "getNftPermit",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "_user",
         type: "address",
       },
@@ -743,19 +762,6 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "permittedNFTs",
-    outputs: [
-      {
-        internalType: "contract IPermittedNFTs",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "bytes32",
@@ -838,17 +844,17 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address[]",
-        name: "_erc20s",
-        type: "address[]",
+        internalType: "address",
+        name: "_nftContract",
+        type: "address",
       },
       {
-        internalType: "bool[]",
-        name: "_permits",
-        type: "bool[]",
+        internalType: "bool",
+        name: "_isPermitted",
+        type: "bool",
       },
     ],
-    name: "setERC20Permits",
+    name: "setNFTPermit",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

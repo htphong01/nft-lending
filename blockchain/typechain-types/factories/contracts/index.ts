@@ -10,5 +10,4 @@ export * as loans from "./loans";
 export * as utils from "./utils";
 export { ChonkSociety__factory } from "./ChonkSociety__factory";
 export { Marketplace__factory } from "./Marketplace__factory";
-export { PermittedNFTs__factory } from "./PermittedNFTs__factory";
 export { WXENE__factory } from "./WXENE__factory";

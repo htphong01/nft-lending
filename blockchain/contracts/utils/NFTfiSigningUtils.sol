@@ -296,24 +296,6 @@ library NFTfiSigningUtils {
 
     /**
      * @dev We need this to avoid stack too deep errors.
-     */
-    function getEncodedListing(LoanData.ListingTerms memory _listingTerms) internal pure returns (bytes memory) {
-        return
-            abi.encodePacked(
-                _listingTerms.erc20Denomination,
-                _listingTerms.minLoanPrincipalAmount,
-                _listingTerms.maxLoanPrincipalAmount,
-                _listingTerms.nftCollateralContract,
-                _listingTerms.nftCollateralId,
-                _listingTerms.minLoanDuration,
-                _listingTerms.maxLoanDuration,
-                _listingTerms.maxInterestRateForDurationInBasisPoints,
-                _listingTerms.referralFeeInBasisPoints
-            );
-    }
-
-    /**
-     * @dev We need this to avoid stack too deep errors.
      * @param _offer - The offer struct containing:
      * - erc20Denomination: The address of the ERC20 contract of the currency being used as principal/interest
      * for this loan.

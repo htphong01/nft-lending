@@ -57,18 +57,13 @@ describe("Loan", () => {
 
     const loanChecksAndCalculations = await ethers.deployContract("LoanChecksAndCalculations");
     const nftfiSigningUtils = await ethers.deployContract("NFTfiSigningUtils");
-    const permittedNFTs = await ethers.deployContract("PermittedNFTs", [deployer]);
     const wXENE = await ethers.deployContract("WXENE");
-    const directLoanFixedOffer = await ethers.deployContract(
-      "DirectLoanFixedOffer",
-      [deployer, permittedNFTs, [wXENE]],
-      {
-        libraries: {
-          LoanChecksAndCalculations: loanChecksAndCalculations,
-          NFTfiSigningUtils: nftfiSigningUtils,
-        },
-      }
-    );
+    const directLoanFixedOffer = await ethers.deployContract("DirectLoanFixedOffer", [deployer, [wXENE]], {
+      libraries: {
+        LoanChecksAndCalculations: loanChecksAndCalculations,
+        NFTfiSigningUtils: nftfiSigningUtils,
+      },
+    });
     const lendingPool = await ethers.deployContract("LendingPool", [deployer]);
     await lendingPool.setAdmin(lendingPoolAdmin, true);
     await lendingPool.setLoan(directLoanFixedOffer);
@@ -76,7 +71,7 @@ describe("Loan", () => {
     const lendingStake = await ethers.deployContract("LendingStake", [wXENE, lendingPool, TOKEN_1, 0]);
     await lendingPool.setLendingStake(lendingStake);
     const nft = await ethers.deployContract("ChonkSociety", ["test baseURI"]);
-    await permittedNFTs.setNFTPermit(nft, true);
+    await directLoanFixedOffer.setNFTPermit(nft, true);
     await nft.connect(borrower).mint(borrower, 10);
     await wXENE.mintTo(lender, { value: TOKEN_1 * 100n });
     await wXENE.mintTo(borrower, { value: TOKEN_1 * 100n });
@@ -87,7 +82,6 @@ describe("Loan", () => {
       borrower,
       lendingPoolAdmin,
       accounts,
-      permittedNFTs,
       wXENE,
       directLoanFixedOffer,
       lendingPool,
@@ -103,7 +97,6 @@ describe("Loan", () => {
       borrower,
       lendingPoolAdmin,
       accounts,
-      permittedNFTs,
       wXENE,
       directLoanFixedOffer,
       lendingPool,
@@ -135,7 +128,6 @@ describe("Loan", () => {
       borrower,
       lendingPoolAdmin,
       accounts,
-      permittedNFTs,
       wXENE,
       directLoanFixedOffer,
       lendingPool,
@@ -147,6 +139,176 @@ describe("Loan", () => {
       loanTerms,
     };
   }
+  describe("updateMaximumLoanDuration", function () {
+    it("should revert when not onwer", async function () {
+      const { directLoanFixedOffer, borrower } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.connect(borrower).updateMaximumLoanDuration(1))
+        .to.revertedWithCustomError(directLoanFixedOffer, "OwnableUnauthorizedAccount")
+        .withArgs(borrower.address);
+    });
+
+    it("should revert when newMaximumLoanDuration greater than MaxUint32", async function () {
+      const { directLoanFixedOffer } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.updateMaximumLoanDuration(4294967296)).to.revertedWith(
+        "Loan duration overflow"
+      );
+    });
+
+    it("should successfully", async function () {
+      const { directLoanFixedOffer } = await loadFixture(deployFixture);
+      await directLoanFixedOffer.updateMaximumLoanDuration(4294967295);
+      expect(await directLoanFixedOffer.maximumLoanDuration()).to.equal(4294967295);
+    });
+  });
+
+  describe("updateAdminFee", function () {
+    it("should revert when not onwer", async function () {
+      const { directLoanFixedOffer, borrower } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.connect(borrower).updateAdminFee(1))
+        .to.revertedWithCustomError(directLoanFixedOffer, "OwnableUnauthorizedAccount")
+        .withArgs(borrower.address);
+    });
+
+    it("should revert when new fee greater than 100%", async function () {
+      const { directLoanFixedOffer } = await loadFixture(deployFixture);
+      await expect(
+        directLoanFixedOffer.updateAdminFee((await directLoanFixedOffer.HUNDRED_PERCENT()) + 1n)
+      ).to.revertedWith("basis points > 10000");
+    });
+
+    it("should successfully", async function () {
+      const { directLoanFixedOffer } = await loadFixture(deployFixture);
+      await directLoanFixedOffer.updateAdminFee(0);
+      expect(await directLoanFixedOffer.adminFeeInBasisPoints()).to.equal(0);
+
+      await directLoanFixedOffer.updateAdminFee(await directLoanFixedOffer.HUNDRED_PERCENT());
+      expect(await directLoanFixedOffer.adminFeeInBasisPoints()).to.equal(await directLoanFixedOffer.HUNDRED_PERCENT());
+    });
+  });
+
+  describe("setERC20Permit", function () {
+    it("should revert when not onwer", async function () {
+      const { directLoanFixedOffer, wXENE, borrower } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.connect(borrower).setERC20Permit(wXENE, true))
+        .to.revertedWithCustomError(directLoanFixedOffer, "OwnableUnauthorizedAccount")
+        .withArgs(borrower.address);
+    });
+
+    it("should revert when token is zero address", async function () {
+      const { directLoanFixedOffer } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.setERC20Permit(ethers.ZeroAddress, true)).to.revertedWith(
+        "erc20 is zero address"
+      );
+    });
+
+    it("should successfully", async function () {
+      const { directLoanFixedOffer } = await loadFixture(deployFixture);
+
+      const newToken = await ethers.deployContract("WXENE");
+      await directLoanFixedOffer.setERC20Permit(newToken, true);
+      expect(await directLoanFixedOffer.getERC20Permit(newToken)).to.be.true;
+
+      await directLoanFixedOffer.setERC20Permit(newToken, false);
+      expect(await directLoanFixedOffer.getERC20Permit(newToken)).to.be.false;
+    });
+  });
+
+  describe("setNFTPermit", function () {
+    it("should revert when not onwer", async function () {
+      const { directLoanFixedOffer, nft, borrower } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.connect(borrower).setNFTPermit(nft, true))
+        .to.revertedWithCustomError(directLoanFixedOffer, "OwnableUnauthorizedAccount")
+        .withArgs(borrower.address);
+    });
+
+    it("should revert when token is zero address", async function () {
+      const { directLoanFixedOffer } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.setNFTPermit(ethers.ZeroAddress, true)).to.revertedWith("Invalid nft address");
+    });
+
+    it("should successfully", async function () {
+      const { directLoanFixedOffer } = await loadFixture(deployFixture);
+
+      const newNft = await ethers.deployContract("ChonkSociety", ["test baseURI"]);
+      await directLoanFixedOffer.setNFTPermit(newNft, true);
+      expect(await directLoanFixedOffer.getNftPermit(newNft)).to.be.true;
+
+      await directLoanFixedOffer.setNFTPermit(newNft, false);
+      expect(await directLoanFixedOffer.getNftPermit(newNft)).to.be.false;
+    });
+  });
+
+  describe("drainERC20Airdrop", function () {
+    it("should revert when not onwer", async function () {
+      const { directLoanFixedOffer, wXENE, borrower } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.connect(borrower).drainERC20Airdrop(wXENE, borrower))
+        .to.revertedWithCustomError(directLoanFixedOffer, "OwnableUnauthorizedAccount")
+        .withArgs(borrower.address);
+    });
+
+    it("should revert when token is zero address", async function () {
+      const { directLoanFixedOffer, borrower } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.drainERC20Airdrop(ethers.ZeroAddress, borrower)).to.reverted;
+    });
+
+    it("should successfully", async function () {
+      const { directLoanFixedOffer, wXENE, borrower } = await loadFixture(deployFixture);
+
+      await wXENE.mintTo(directLoanFixedOffer, { value: TOKEN_1 });
+      await expect(directLoanFixedOffer.drainERC20Airdrop(wXENE, borrower)).to.changeTokenBalances(
+        wXENE,
+        [directLoanFixedOffer, borrower],
+        [-TOKEN_1, TOKEN_1]
+      );
+
+      // when balance is empty
+      await expect(directLoanFixedOffer.drainERC20Airdrop(wXENE, borrower)).to.changeTokenBalances(
+        wXENE,
+        [directLoanFixedOffer, borrower],
+        [0, 0]
+      );
+    });
+  });
+
+  describe("drainERC721Airdrop", function () {
+    it("should revert when not onwer", async function () {
+      const { directLoanFixedOffer, nft, borrower } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.connect(borrower).drainERC721Airdrop(nft, 1, borrower))
+        .to.revertedWithCustomError(directLoanFixedOffer, "OwnableUnauthorizedAccount")
+        .withArgs(borrower.address);
+    });
+
+    it("should revert when nft address is zero address", async function () {
+      const { directLoanFixedOffer, borrower } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.drainERC721Airdrop(ethers.ZeroAddress, 1, borrower)).to.reverted;
+    });
+
+    it("should revert when loan is not owner of token ID", async function () {
+      const { directLoanFixedOffer, nft, borrower } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.drainERC721Airdrop(nft, 1, borrower))
+        .to.revertedWithCustomError(nft, "ERC721InsufficientApproval")
+        .withArgs(directLoanFixedOffer, 1);
+    });
+
+    it("should revert when token is collateral", async function () {
+      const { borrower, nft, directLoanFixedOffer } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+      await expect(directLoanFixedOffer.drainERC721Airdrop(nft, 1, borrower)).to.revertedWith("token is collateral");
+    });
+
+    it("should successfully", async function () {
+      const { directLoanFixedOffer, nft, borrower } = await loadFixture(deployFixture);
+
+      await nft.connect(borrower).transferFrom(borrower, directLoanFixedOffer, 1);
+      expect(await nft.ownerOf(1)).to.equal(directLoanFixedOffer);
+      await expect(directLoanFixedOffer.drainERC721Airdrop(nft, 1, borrower)).to.changeTokenBalances(
+        nft,
+        [directLoanFixedOffer, borrower],
+        [-1, 1]
+      );
+    });
+  });
 
   describe("acceptOffer", () => {
     it("should revert with currency denomination is not permitted", async () => {
@@ -328,13 +490,13 @@ describe("Loan", () => {
       });
 
       it("Should revert if offer nftCollateralContract is wrong after sign", async () => {
-        const { lender, borrower, directLoanFixedOffer, wXENE, nft, permittedNFTs } = await loadFixture(deployFixture);
+        const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
         const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
 
         signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.target);
 
         const newNft = await ethers.deployContract("ChonkSociety", ["base uri"]);
-        await permittedNFTs.setNFTPermit(newNft, true);
+        await directLoanFixedOffer.setNFTPermit(newNft, true);
         offer.nftCollateralContract = newNft.target;
         await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
           "Lender signature is invalid"
@@ -794,7 +956,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should liquidateOverdueLoan successfully", async () => {
+    it("should liquidateOverdueLoan successfully (single user)", async () => {
       const { lender, nft, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -803,6 +965,18 @@ describe("Loan", () => {
       const tx = await directLoanFixedOffer.connect(lender).liquidateOverdueLoan(loanId);
       await expect(tx).to.emit(directLoanFixedOffer, "LoanLiquidated");
       await expect(tx).to.changeTokenBalances(nft, [directLoanFixedOffer, lender.address], [-1, 1]);
+      expect(await directLoanFixedOffer.loanRepaidOrLiquidated(loanId)).to.be.true;
+    });
+
+    it("should liquidateOverdueLoan successfully (lending pool)", async () => {
+      const { lendingPoolAdmin, lendingPool, nft, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
+        withLendingPool: true,
+      });
+
+      await skipTime(ONE_DAY);
+      const tx = await directLoanFixedOffer.connect(lendingPoolAdmin).liquidateOverdueLoan(loanId);
+      await expect(tx).to.emit(directLoanFixedOffer, "LoanLiquidated");
+      await expect(tx).to.changeTokenBalances(nft, [directLoanFixedOffer, lendingPool, lendingPoolAdmin], [-1, 1, 0]);
       expect(await directLoanFixedOffer.loanRepaidOrLiquidated(loanId)).to.be.true;
     });
   });
@@ -1422,6 +1596,33 @@ describe("Loan", () => {
         expect(loan.lender).to.equal(lendingPool);
         expect(loan.useLendingPool).to.be.true;
       });
+    });
+  });
+
+  describe("cancelLoanCommitmentBeforeLoanHasBegun", () => {
+    it("should revert when nonce has been used", async () => {
+      const { lender, directLoanFixedOffer, signature } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+
+      await expect(
+        directLoanFixedOffer.connect(lender).cancelLoanCommitmentBeforeLoanHasBegun(signature.nonce)
+      ).to.revertedWith("Invalid nonce");
+    });
+
+    it("should cancel successfully", async () => {
+      const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
+      const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
+
+      await nft.connect(borrower).approve(directLoanFixedOffer, 1);
+      await wXENE.connect(lender).approve(directLoanFixedOffer, ethers.MaxUint256);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.target);
+
+      await directLoanFixedOffer.connect(lender).cancelLoanCommitmentBeforeLoanHasBegun(signature.nonce);
+
+      await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.rejectedWith(
+        "Lender nonce invalid"
+      );
     });
   });
 });

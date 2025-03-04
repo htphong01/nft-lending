@@ -22,71 +22,6 @@ import type {
 } from "../../../../common";
 
 export declare namespace LoanData {
-  export type ListingTermsStruct = {
-    minLoanPrincipalAmount: BigNumberish;
-    maxLoanPrincipalAmount: BigNumberish;
-    nftCollateralId: BigNumberish;
-    nftCollateralContract: AddressLike;
-    minLoanDuration: BigNumberish;
-    maxLoanDuration: BigNumberish;
-    maxInterestRateForDurationInBasisPoints: BigNumberish;
-    referralFeeInBasisPoints: BigNumberish;
-    erc20Denomination: AddressLike;
-  };
-
-  export type ListingTermsStructOutput = [
-    minLoanPrincipalAmount: bigint,
-    maxLoanPrincipalAmount: bigint,
-    nftCollateralId: bigint,
-    nftCollateralContract: string,
-    minLoanDuration: bigint,
-    maxLoanDuration: bigint,
-    maxInterestRateForDurationInBasisPoints: bigint,
-    referralFeeInBasisPoints: bigint,
-    erc20Denomination: string
-  ] & {
-    minLoanPrincipalAmount: bigint;
-    maxLoanPrincipalAmount: bigint;
-    nftCollateralId: bigint;
-    nftCollateralContract: string;
-    minLoanDuration: bigint;
-    maxLoanDuration: bigint;
-    maxInterestRateForDurationInBasisPoints: bigint;
-    referralFeeInBasisPoints: bigint;
-    erc20Denomination: string;
-  };
-
-  export type OfferStruct = {
-    principalAmount: BigNumberish;
-    maximumRepaymentAmount: BigNumberish;
-    nftCollateralId: BigNumberish;
-    nftCollateralContract: AddressLike;
-    duration: BigNumberish;
-    adminFeeInBasisPoints: BigNumberish;
-    erc20Denomination: AddressLike;
-    lendingPool: AddressLike;
-  };
-
-  export type OfferStructOutput = [
-    principalAmount: bigint,
-    maximumRepaymentAmount: bigint,
-    nftCollateralId: bigint,
-    nftCollateralContract: string,
-    duration: bigint,
-    adminFeeInBasisPoints: bigint,
-    erc20Denomination: string,
-    lendingPool: string
-  ] & {
-    principalAmount: bigint;
-    maximumRepaymentAmount: bigint;
-    nftCollateralId: bigint;
-    nftCollateralContract: string;
-    duration: bigint;
-    adminFeeInBasisPoints: bigint;
-    erc20Denomination: string;
-    lendingPool: string;
-  };
-
   export type LoanTermsStruct = {
     principalAmount: BigNumberish;
     maximumRepaymentAmount: BigNumberish;
@@ -131,33 +66,18 @@ export declare namespace LoanData {
 export interface LoanChecksAndCalculationsInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "bindingTermsSanityChecks"
       | "checkLoanIdValidity"
       | "computeAdminFee"
-      | "computeReferralFee"
-      | "computeRevenueShare"
       | "payBackChecks"
       | "renegotiationChecks"
   ): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: "bindingTermsSanityChecks",
-    values: [LoanData.ListingTermsStruct, LoanData.OfferStruct]
-  ): string;
   encodeFunctionData(
     functionFragment: "checkLoanIdValidity",
     values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "computeAdminFee",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "computeReferralFee",
-    values: [BigNumberish, BigNumberish, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "computeRevenueShare",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -176,23 +96,11 @@ export interface LoanChecksAndCalculationsInterface extends Interface {
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "bindingTermsSanityChecks",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "checkLoanIdValidity",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "computeAdminFee",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "computeReferralFee",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "computeRevenueShare",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -248,12 +156,6 @@ export interface LoanChecksAndCalculations extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  bindingTermsSanityChecks: TypedContractMethod<
-    [_listingTerms: LoanData.ListingTermsStruct, _offer: LoanData.OfferStruct],
-    [void],
-    "view"
-  >;
-
   checkLoanIdValidity: TypedContractMethod<
     [_loanId: BytesLike],
     [void],
@@ -262,22 +164,6 @@ export interface LoanChecksAndCalculations extends BaseContract {
 
   computeAdminFee: TypedContractMethod<
     [_interestDue: BigNumberish, _adminFeeInBasisPoints: BigNumberish],
-    [bigint],
-    "view"
-  >;
-
-  computeReferralFee: TypedContractMethod<
-    [
-      _loanPrincipalAmount: BigNumberish,
-      _referralFeeInBasisPoints: BigNumberish,
-      _referrer: AddressLike
-    ],
-    [bigint],
-    "view"
-  >;
-
-  computeRevenueShare: TypedContractMethod<
-    [_adminFee: BigNumberish, _revenueShareInBasisPoints: BigNumberish],
     [bigint],
     "view"
   >;
@@ -301,37 +187,12 @@ export interface LoanChecksAndCalculations extends BaseContract {
   ): T;
 
   getFunction(
-    nameOrSignature: "bindingTermsSanityChecks"
-  ): TypedContractMethod<
-    [_listingTerms: LoanData.ListingTermsStruct, _offer: LoanData.OfferStruct],
-    [void],
-    "view"
-  >;
-  getFunction(
     nameOrSignature: "checkLoanIdValidity"
   ): TypedContractMethod<[_loanId: BytesLike], [void], "view">;
   getFunction(
     nameOrSignature: "computeAdminFee"
   ): TypedContractMethod<
     [_interestDue: BigNumberish, _adminFeeInBasisPoints: BigNumberish],
-    [bigint],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "computeReferralFee"
-  ): TypedContractMethod<
-    [
-      _loanPrincipalAmount: BigNumberish,
-      _referralFeeInBasisPoints: BigNumberish,
-      _referrer: AddressLike
-    ],
-    [bigint],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "computeRevenueShare"
-  ): TypedContractMethod<
-    [_adminFee: BigNumberish, _revenueShareInBasisPoints: BigNumberish],
     [bigint],
     "view"
   >;

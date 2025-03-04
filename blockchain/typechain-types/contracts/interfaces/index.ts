@@ -6,6 +6,4 @@ export type { iTokenBoundAccountSol };
 export type { ILendingPool } from "./ILendingPool";
 export type { ILendingStake } from "./ILendingStake";
 export type { IMarketplace } from "./IMarketplace";
-export type { IPermittedERC20s } from "./IPermittedERC20s";
-export type { IPermittedNFTs } from "./IPermittedNFTs";
 export type { ITokenBoundAccountRegistry } from "./ITokenBoundAccountRegistry";

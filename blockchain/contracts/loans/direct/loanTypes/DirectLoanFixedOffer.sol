@@ -61,10 +61,9 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * @dev Sets `hub` and permitted erc20-s
      *
      * @param _admin - Initial admin of this contract.
-     * @param  _permittedNFT - PermittedNFT address
      * @param  _permittedErc20s - list of permitted ERC20 token contract addresses
      */
-    constructor(address _admin, address _permittedNFT, address[] memory _permittedErc20s) DirectLoanBaseMinimal(_admin, _permittedNFT, _permittedErc20s) {
+    constructor(address _admin, address[] memory _permittedErc20s) DirectLoanBaseMinimal(_admin, _permittedErc20s) {
         // solhint-disable-previous-line no-empty-blocks
     }
 

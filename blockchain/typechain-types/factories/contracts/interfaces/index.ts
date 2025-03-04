@@ -5,6 +5,4 @@ export * as iTokenBoundAccountSol from "./ITokenBoundAccount.sol";
 export { ILendingPool__factory } from "./ILendingPool__factory";
 export { ILendingStake__factory } from "./ILendingStake__factory";
 export { IMarketplace__factory } from "./IMarketplace__factory";
-export { IPermittedERC20s__factory } from "./IPermittedERC20s__factory";
-export { IPermittedNFTs__factory } from "./IPermittedNFTs__factory";
 export { ITokenBoundAccountRegistry__factory } from "./ITokenBoundAccountRegistry__factory";

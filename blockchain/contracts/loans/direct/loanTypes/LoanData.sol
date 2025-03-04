@@ -100,20 +100,6 @@ interface LoanData {
      * @param expiry - Date when the signature expires
      * @param signature - The ECDSA signature of the borrower or the lender, obtained off-chain ahead of time, signing
      * the following combination of parameters:
-     * - Borrower
-     *   - ListingTerms.erc20Denomination,
-     *   - ListingTerms.minLoanPrincipalAmount,
-     *   - ListingTerms.maxLoanPrincipalAmount,
-     *   - ListingTerms.nftCollateralContract,
-     *   - ListingTerms.nftCollateralId,
-     *   - ListingTerms.minLoanDuration,
-     *   - ListingTerms.maxLoanDuration,
-     *   - ListingTerms.maxInterestRateForDurationInBasisPoints,
-     *   - Signature.signer,
-     *   - Signature.nonce,
-     *   - Signature.expiry,
-     *   - address of the loan type contract
-     *   - chainId
      * - Lender:
      *   - Offer.erc20Denomination
      *   - Offer.principalAmount
@@ -135,42 +121,5 @@ interface LoanData {
         uint256 expiry;
         address signer;
         bytes signature;
-    }
-
-    /**
-     * @notice Terms the borrower set off-chain and is willing to accept automatically when fulfiled by a lender's
-     * offer.
-     *
-     * @param erc20Denomination - The address of the ERC20 contract of the currency being used as principal/interest
-     * for this loan.
-     * @param minLoanPrincipalAmount - The minumum sum of money transferred from lender to borrower at the beginning of
-     * the loan, measured in erc20Denomination's smallest units.
-     * @param maxLoanPrincipalAmount - The  sum of money transferred from lender to borrower at the beginning of
-     * the loan, measured in erc20Denomination's smallest units.
-     * @param maximumRepaymentAmount - The maximum amount of money that the borrower would be required to retrieve their
-     * collateral, measured in the smallest units of the ERC20 currency used for the loan. The borrower will always have
-     * to pay this amount to retrieve their collateral, regardless of whether they repay early.
-     * @param nftCollateralContract - The address of the ERC721 contract of the NFT collateral.
-     * @param nftCollateralId - The ID within the NFTCollateralContract for the NFT being used as collateral for this
-     * loan. The NFT is stored within this contract during the duration of the loan.
-     * @param minLoanDuration - The minumum amount of time (measured in seconds) that can elapse before the lender can
-     * liquidate the loan and seize the underlying collateral NFT.
-     * @param maxLoanDuration - The maximum amount of time (measured in seconds) that can elapse before the lender can
-     * liquidate the loan and seize the underlying collateral NFT.
-     * @param maxInterestRateForDurationInBasisPoints - This is maximum the interest rate (measured in basis points,
-     * e.g. hundreths of a percent) for the loan.
-     * @param referralFeeInBasisPoints - The percent (measured in basis points) of the loan principal amount that will
-     * be taken as a fee to pay to the referrer, 0 if the lender is not paying referral fee.
-     */
-    struct ListingTerms {
-        uint256 minLoanPrincipalAmount;
-        uint256 maxLoanPrincipalAmount;
-        uint256 nftCollateralId;
-        address nftCollateralContract;
-        uint32 minLoanDuration;
-        uint32 maxLoanDuration;
-        uint16 maxInterestRateForDurationInBasisPoints;
-        uint16 referralFeeInBasisPoints;
-        address erc20Denomination;
     }
 }

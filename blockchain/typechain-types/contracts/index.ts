@@ -17,5 +17,4 @@ import type * as utils from "./utils";
 export type { utils };
 export type { ChonkSociety } from "./ChonkSociety";
 export type { Marketplace } from "./Marketplace";
-export type { PermittedNFTs } from "./PermittedNFTs";
 export type { WXENE } from "./WXENE";

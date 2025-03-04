@@ -97,51 +97,6 @@ library LoanChecksAndCalculations {
     }
 
     /**
-     * @dev Performs some validation checks over loan parameters when accepting a listing
-     *
-     */
-    function bindingTermsSanityChecks(
-        LoanData.ListingTerms memory _listingTerms,
-        LoanData.Offer memory _offer
-    ) external pure {
-        // offer vs listing validations
-        require(_offer.erc20Denomination == _listingTerms.erc20Denomination, "Invalid erc20Denomination");
-        require(
-            _offer.principalAmount >= _listingTerms.minLoanPrincipalAmount &&
-                _offer.principalAmount <= _listingTerms.maxLoanPrincipalAmount,
-            "Invalid principalAmount"
-        );
-        uint256 maxRepaymentLimit = _offer.principalAmount +
-            (_offer.principalAmount * _listingTerms.maxInterestRateForDurationInBasisPoints) /
-            HUNDRED_PERCENT;
-        require(_offer.maximumRepaymentAmount <= maxRepaymentLimit, "maxInterestRateForDurationInBasisPoints violated");
-
-        require(
-            _offer.duration >= _listingTerms.minLoanDuration && _offer.duration <= _listingTerms.maxLoanDuration,
-            "Invalid duration"
-        );
-    }
-
-    /**
-     * @notice A convenience function computing the revenue share taken from the admin fee to transferr to the permitted
-     * partner.
-     *
-     * @param _adminFee - The quantity of ERC20 currency (measured in smalled units of that ERC20 currency) that is due
-     * as an admin fee.
-     * @param _revenueShareInBasisPoints - The percent (measured in basis points) of the admin fee amount that will be
-     * taken as a revenue share for a the partner, at the moment the loan is begun.
-     *
-     * @return The quantity of ERC20 currency (measured in smalled units of that ERC20 currency) that should be sent to
-     * the `revenueSharePartner`.
-     */
-    function computeRevenueShare(
-        uint256 _adminFee,
-        uint256 _revenueShareInBasisPoints
-    ) external pure returns (uint256) {
-        return (_adminFee * _revenueShareInBasisPoints) / HUNDRED_PERCENT;
-    }
-
-    /**
      * @notice A convenience function computing the adminFee taken from a specified quantity of interest.
      *
      * @param _interestDue - The amount of interest due, measured in the smallest quantity of the ERC20 currency being
@@ -156,30 +111,5 @@ library LoanChecksAndCalculations {
      */
     function computeAdminFee(uint256 _interestDue, uint256 _adminFeeInBasisPoints) external pure returns (uint256) {
         return (_interestDue * _adminFeeInBasisPoints) / HUNDRED_PERCENT;
-    }
-
-    /**
-     * @notice A convenience function computing the referral fee taken from the loan principal amount to transferr to
-     * the referrer.
-     *
-     * @param _loanPrincipalAmount - The original sum of money transferred from lender to borrower at the beginning of
-     * the loan, measured in erc20Denomination's smallest units.
-     * @param _referralFeeInBasisPoints - The percent (measured in basis points) of the loan principal amount that will
-     * be taken as a fee to pay to the referrer, 0 if the lender is not paying referral fee.
-     * @param _referrer - The address of the referrer who found the lender matching the listing, Zero address to signal
-     * that there is no referrer.
-     *
-     * @return The quantity of ERC20 currency (measured in smalled units of that ERC20 currency) that should be sent to
-     * the referrer.
-     */
-    function computeReferralFee(
-        uint256 _loanPrincipalAmount,
-        uint256 _referralFeeInBasisPoints,
-        address _referrer
-    ) external pure returns (uint256) {
-        if (_referralFeeInBasisPoints == 0 || _referrer == address(0)) {
-            return 0;
-        }
-        return (_loanPrincipalAmount * _referralFeeInBasisPoints) / HUNDRED_PERCENT;
     }
 }
