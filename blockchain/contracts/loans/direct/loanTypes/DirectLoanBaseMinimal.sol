@@ -2,19 +2,18 @@
 
 pragma solidity 0.8.28;
 
-import "./IDirectLoanBase.sol";
-import "./LoanData.sol";
-import "./LoanChecksAndCalculations.sol";
-import "../../BaseLoan.sol";
-import "../../../utils/NFTfiSigningUtils.sol";
-import "../../../interfaces/IPermittedNFTs.sol";
-import "../../../interfaces/IPermittedERC20s.sol";
+import {IDirectLoanBase} from "./IDirectLoanBase.sol";
+import {LoanData} from "./LoanData.sol";
+import {LoanChecksAndCalculations} from "./LoanChecksAndCalculations.sol";
+import {BaseLoan} from "../../BaseLoan.sol";
+import {NFTfiSigningUtils, ILendingPool} from "../../../utils/NFTfiSigningUtils.sol";
+import {IPermittedNFTs} from "../../../interfaces/IPermittedNFTs.sol";
+import {IPermittedERC20s} from "../../../interfaces/IPermittedERC20s.sol";
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @title  DirectLoanBase
@@ -376,23 +375,13 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * borrower will always have to pay this amount to retrieve their collateral, regardless of whether they repay
      * early.
      * @param _renegotiationFee Agreed upon fee in ether that borrower pays for the lender for the renegitiation
-     * @param _lenderNonce - The nonce referred to here is not the same as an Ethereum account's nonce. We are
-     * referring instead to nonces that are used by both the lender and the borrower when they are first signing
-     * off-chain Loan orders. These nonces can be any uint256 value that the user has not previously used to sign an
-     * off-chain order. Each nonce can be used at most once per user within Loan, regardless of whether they are the
-     * lender or the borrower in that situation. This serves two purposes:
-     * - First, it prevents replay attacks where an attacker would submit a user's off-chain order more than once.
-     * - Second, it allows a user to cancel an off-chain order by calling Loan.cancelLoanCommitmentBeforeLoanHasBegun()
-     * , which marks the nonce as used and prevents any future loan from using the user's off-chain order that contains
-     * that nonce.
-     * @param _expiry - The date when the renegotiation offer expires
-     * @param _lenderSignature - The ECDSA signature of the lender, obtained off-chain ahead of time, signing the
+     * @param _signature - The components of the lender's signature.
      * following combination of parameters:
      * - _loanId
      * - _newLoanDuration
      * - _newMaximumRepaymentAmount
      * - _lender
-     * - _expiry
+     * - _expiry - The date when the renegotiation offer expires
      *  - address of this contract
      * - chainId
      */
@@ -401,11 +390,9 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         uint32 _newLoanDuration,
         uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,
-        uint256 _lenderNonce,
-        uint256 _expiry,
-        bytes memory _lenderSignature
+        Signature calldata _signature
     ) external whenNotPaused nonReentrant {
-        _renegotiateLoan(_loanId, _newLoanDuration, _newMaximumRepaymentAmount, _renegotiationFee, _lenderNonce, _expiry, _lenderSignature);
+        _renegotiateLoan(_loanId, _newLoanDuration, _newMaximumRepaymentAmount, _renegotiationFee, _signature);
     }
 
     /**
@@ -450,10 +437,9 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * emit {LoanLiquidated} event
      */
     function liquidateOverdueLoan(bytes32 _loanId) external nonReentrant {
-        LoanChecksAndCalculations.checkLoanIdValidity(_loanId);
         // Sanity check that payBackLoan() and liquidateOverdueLoan() have never been called on this loanId.
         // Depending on how the rest of the code turns out, this check may be unnecessary.
-        require(!loanRepaidOrLiquidated[_loanId], "Loan already repaid/liquidated");
+        LoanChecksAndCalculations.checkLoanIdValidity(_loanId);
 
         (address borrower, address lender, LoanTerms memory loan) = _getPartiesAndData(_loanId);
 
@@ -502,17 +488,6 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
     /* ******************* */
     /* READ-ONLY FUNCTIONS */
     /* ******************* */
-
-    /**
-     * @notice This function can be used to view the current quantity of the ERC20 currency used in the specified loan
-     * required by the borrower to repay their loan, measured in the smallest unit of the ERC20 currency.
-     *
-     * @param _loanId  A unique identifier for this particular loan, sourced from the Loan Coordinator.
-     *
-     * @return The amount of the specified ERC20 currency required to pay back this loan, measured in the smallest unit
-     * of the specified ERC20 currency.
-     */
-    function getPayoffAmount(bytes32 _loanId) external view virtual returns (uint256);
 
     /**
      * @notice This function can be used to view whether a particular nonce for a particular user has already been used,
@@ -566,23 +541,13 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * the admin for the renegotiation, has to be paid with an ERC20 transfer erc20Denomination token,
      * uses transfer from, frontend will have to propmt an erc20 approve for this from the borrower to the lender,
      * admin fee is calculated by the loan's adminFeeInBasisPoints value
-     * @param _lenderNonce - The nonce referred to here is not the same as an Ethereum account's nonce. We are
-     * referring instead to nonces that are used by both the lender and the borrower when they are first signing
-     * off-chain Loan orders. These nonces can be any uint256 value that the user has not previously used to sign an
-     * off-chain order. Each nonce can be used at most once per user within Loan, regardless of whether they are the
-     * lender or the borrower in that situation. This serves two purposes:
-     * - First, it prevents replay attacks where an attacker would submit a user's off-chain order more than once.
-     * - Second, it allows a user to cancel an off-chain order by calling Loan.cancelLoanCommitmentBeforeLoanHasBegun()
-     , which marks the nonce as used and prevents any future loan from using the user's off-chain order that contains
-     * that nonce.
-     * @param _expiry - The date when the renegotiation offer expires
-     * @param _lenderSignature - The ECDSA signature of the lender, obtained off-chain ahead of time, signing the
+     * @param _signature - The components of the lender's signature.
      * following combination of parameters:
      * - _loanId
      * - _newLoanDuration
      * - _newMaximumRepaymentAmount
      * - _lender
-     * - _expiry
+     * - _expiry - The date when the renegotiation offer expires
      * - address of this contract
      * - chainId
      * 
@@ -593,15 +558,13 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
         uint32 _newLoanDuration,
         uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,
-        uint256 _lenderNonce,
-        uint256 _expiry,
-        bytes memory _lenderSignature
+        Signature calldata _signature
     ) internal {
         LoanTerms storage loan = loanIdToLoan[_loanId];
 
-        (address borrower, address lender) = LoanChecksAndCalculations.renegotiationChecks(loan, _loanId, _newLoanDuration, _newMaximumRepaymentAmount, _lenderNonce);
+        (address borrower, address lender) = LoanChecksAndCalculations.renegotiationChecks(loan, _loanId, _newLoanDuration, _newMaximumRepaymentAmount, _signature.nonce);
 
-        _nonceHasBeenUsedForUser[lender][_lenderNonce] = true;
+        _nonceHasBeenUsedForUser[lender][_signature.nonce] = true;
 
         require(
             NFTfiSigningUtils.isValidLenderRenegotiationSignature(
@@ -609,7 +572,8 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
                 _newLoanDuration,
                 _newMaximumRepaymentAmount,
                 _renegotiationFee,
-                Signature({signer: lender, nonce: _lenderNonce, expiry: _expiry, signature: _lenderSignature})
+                loan,
+                _signature
             ),
             "Renegotiation signature is invalid"
         );
@@ -777,7 +741,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      * @dev Performs some validation checks over loan parameters
      *
      */
-    function _loanSanityChecks(LoanData.Offer memory _offer) internal view {
+    function _loanSanityChecks(Offer memory _offer) internal view {
         require(getERC20Permit(_offer.erc20Denomination), "Currency denomination is not permitted");
         require(permittedNFTs.getNFTPermit(_offer.nftCollateralContract), "NFT collateral contract is not permitted");
         require(uint256(_offer.duration) <= maximumLoanDuration, "Loan duration exceeds maximum loan duration");
@@ -800,7 +764,10 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, IPermittedERC20s, Ba
      */
     function _payoffAndFee(LoanTerms memory _loanTerms) internal view virtual returns (uint256, uint256);
 
+    /**
+     * @dev Check valid loan ID
+     */
     function isValidLoanId(bytes32 _loanId) public view returns (bool) {
-        return loanIdToLoan[_loanId].status == LoanStatus.ACTIVE;
+        return loanIdToLoan[_loanId].borrower != address(0);
     }
 }

@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.28;
 
-import "./DirectLoanBaseMinimal.sol";
+import {DirectLoanBaseMinimal, NFTfiSigningUtils, LoanChecksAndCalculations} from "./DirectLoanBaseMinimal.sol";
 
 /**
  * @title  DirectLoanFixed
@@ -64,11 +64,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * @param  _permittedNFT - PermittedNFT address
      * @param  _permittedErc20s - list of permitted ERC20 token contract addresses
      */
-    constructor(
-        address _admin,
-        address _permittedNFT,
-        address[] memory _permittedErc20s
-    ) DirectLoanBaseMinimal(_admin, _permittedNFT, _permittedErc20s) {
+    constructor(address _admin, address _permittedNFT, address[] memory _permittedErc20s) DirectLoanBaseMinimal(_admin, _permittedNFT, _permittedErc20s) {
         // solhint-disable-previous-line no-empty-blocks
     }
 
@@ -78,39 +74,17 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
 
     /**
      * @notice This function is called by the borrower when accepting a lender's offer to begin a loan.
-     * 
+     *
      * @param _loanId - offchain id of loan
      * @param _offer - The offer made by the lender.
      * @param _signature - The components of the lender's signature.
      */
-    function acceptOffer(
-        bytes32 _loanId,
-        Offer memory _offer,
-        Signature memory _signature
-    ) external whenNotPaused nonReentrant {
+    function acceptOffer(bytes32 _loanId, Offer memory _offer, Signature memory _signature) external whenNotPaused nonReentrant {
         _loanSanityChecks(_offer);
         _loanSanityChecksOffer(_offer);
 
         address lender = _offer.lendingPool != address(0) ? _offer.lendingPool : _signature.signer;
         _acceptOffer(_loanId, _setupLoanTerms(_offer, lender), _offer, _signature);
-    }
-
-    /* ******************* */
-    /* READ-ONLY FUNCTIONS */
-    /* ******************* */
-
-    /**
-     * @notice This function can be used to view the current quantity of the ERC20 currency used in the specified loan
-     * required by the borrower to repay their loan, measured in the smallest unit of the ERC20 currency.
-     *
-     * @param _loanId  A unique identifier for this particular loan, sourced from the Loan Coordinator.
-     *
-     * @return The amount of the specified ERC20 currency required to pay back this loan, measured in the smallest unit
-     * of the specified ERC20 currency.
-     */
-    function getPayoffAmount(bytes32 _loanId) external view override returns (uint256) {
-        LoanTerms storage loan = loanIdToLoan[_loanId];
-        return loan.maximumRepaymentAmount;
     }
 
     /* ****************** */
@@ -124,12 +98,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * @param _offer - The offer made by the lender.
      * @param _signature - The components of the lender's signature.
      */
-    function _acceptOffer(
-        bytes32 _loanId,
-        LoanTerms memory _loanTerms,
-        Offer memory _offer,
-        Signature memory _signature
-    ) internal {
+    function _acceptOffer(bytes32 _loanId, LoanTerms memory _loanTerms, Offer memory _offer, Signature memory _signature) internal {
         // Check loan nonces. These are different from Ethereum account nonces.
         // Here, these are uint256 numbers that should uniquely identify
         // each signature for each user (i.e. each user should only create one
@@ -165,8 +134,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
                 adminFeeInBasisPoints: _offer.adminFeeInBasisPoints,
                 borrower: msg.sender,
                 lender: _lender,
-                useLendingPool: _offer.lendingPool != address(0),
-                status: LoanStatus.ACTIVE
+                useLendingPool: _offer.lendingPool != address(0)
             });
     }
 
@@ -175,9 +143,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      *
      * @param _loanTerms - Struct containing all the loan's parameters
      */
-    function _payoffAndFee(
-        LoanTerms memory _loanTerms
-    ) internal pure override returns (uint256 adminFee, uint256 payoffAmount) {
+    function _payoffAndFee(LoanTerms memory _loanTerms) internal pure override returns (uint256 adminFee, uint256 payoffAmount) {
         // Calculate amounts to send to lender and admins
         uint256 interestDue = _loanTerms.maximumRepaymentAmount - _loanTerms.principalAmount;
         adminFee = LoanChecksAndCalculations.computeAdminFee(interestDue, uint256(_loanTerms.adminFeeInBasisPoints));
@@ -188,10 +154,7 @@ contract DirectLoanFixedOffer is DirectLoanBaseMinimal {
      * @dev Function that performs some validation checks over loan parameters when accepting an offer
      *
      */
-    function _loanSanityChecksOffer(LoanData.Offer memory _offer) internal pure {
-        require(
-            _offer.maximumRepaymentAmount >= _offer.principalAmount,
-            "Negative interest rate loans are not allowed."
-        );
+    function _loanSanityChecksOffer(Offer memory _offer) internal pure {
+        require(_offer.maximumRepaymentAmount >= _offer.principalAmount, "Negative interest rate loans are not allowed.");
     }
 }

@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity 0.8.28;
 
 /**
@@ -10,12 +9,6 @@ interface LoanData {
     /* ********** */
     /* DATA TYPES */
     /* ********** */
-
-    enum LoanStatus {
-        ACTIVE,
-        REPAID,
-        LIQUIDATED
-    }
 
     /**
      * @notice The main Loan Terms struct. This data is saved upon loan creation.
@@ -52,7 +45,6 @@ interface LoanData {
         address borrower;
         address lender;
         bool useLendingPool;
-        LoanStatus status;
     }
 
     /**

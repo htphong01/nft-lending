@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity 0.8.28;
 
-import "./IDirectLoanBase.sol";
-import "./LoanData.sol";
+import {IDirectLoanBase} from "./IDirectLoanBase.sol";
+import {LoanData} from "./LoanData.sol";
 
 /**
  * @title  LoanChecksAndCalculations
@@ -25,13 +24,12 @@ library LoanChecksAndCalculations {
      * @param _loanId - The id of the loan being repaid
      */
     function payBackChecks(bytes32 _loanId) external view {
-        checkLoanIdValidity(_loanId);
         // Sanity check that payBackLoan() and liquidateOverdueLoan() have never been called on this loanId.
         // Depending on how the rest of the code turns out, this check may be unnecessary.
-        require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
+        checkLoanIdValidity(_loanId);
 
         // Fetch loan details from storage, but store them in memory for the sake of saving gas.
-        (, , , , uint32 duration, , uint64 loanStartTime, , , , , ) = IDirectLoanBase(address(this)).loanIdToLoan(
+        (, , , , uint32 duration, , uint64 loanStartTime, , , , ) = IDirectLoanBase(address(this)).loanIdToLoan(
             _loanId
         );
 
@@ -46,7 +44,8 @@ library LoanChecksAndCalculations {
      * @param _loanId Id of loan
      */
     function checkLoanIdValidity(bytes32 _loanId) public view {
-        require(IDirectLoanBase(address(this)).isValidLoanId(_loanId), "invalid loanId");
+        require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
+        require(IDirectLoanBase(address(this)).isValidLoanId(_loanId), "None existed loan ID");
     }
 
     /**
@@ -81,7 +80,6 @@ library LoanChecksAndCalculations {
     ) external view returns (address, address) {
         checkLoanIdValidity(_loanId);
 
-        require(!IDirectLoanBase(address(this)).loanRepaidOrLiquidated(_loanId), "Loan already repaid/liquidated");
         require(msg.sender == _loan.borrower, "Only borrower can initiate");
         require(block.timestamp <= (uint256(_loan.loanStartTime) + _newLoanDuration), "New duration already expired");
         require(

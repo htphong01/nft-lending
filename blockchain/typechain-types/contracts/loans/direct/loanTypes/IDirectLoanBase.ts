@@ -150,8 +150,7 @@ export interface IDirectLoanBase extends BaseContract {
         string,
         string,
         string,
-        boolean,
-        bigint
+        boolean
       ]
     ],
     "view"
@@ -198,8 +197,7 @@ export interface IDirectLoanBase extends BaseContract {
         string,
         string,
         string,
-        boolean,
-        bigint
+        boolean
       ]
     ],
     "view"

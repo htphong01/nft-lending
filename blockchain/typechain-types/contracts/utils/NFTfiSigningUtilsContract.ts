@@ -22,6 +22,46 @@ import type {
 } from "../../common";
 
 export declare namespace LoanData {
+  export type LoanTermsStruct = {
+    principalAmount: BigNumberish;
+    maximumRepaymentAmount: BigNumberish;
+    nftCollateralId: BigNumberish;
+    erc20Denomination: AddressLike;
+    duration: BigNumberish;
+    adminFeeInBasisPoints: BigNumberish;
+    loanStartTime: BigNumberish;
+    nftCollateralContract: AddressLike;
+    borrower: AddressLike;
+    lender: AddressLike;
+    useLendingPool: boolean;
+  };
+
+  export type LoanTermsStructOutput = [
+    principalAmount: bigint,
+    maximumRepaymentAmount: bigint,
+    nftCollateralId: bigint,
+    erc20Denomination: string,
+    duration: bigint,
+    adminFeeInBasisPoints: bigint,
+    loanStartTime: bigint,
+    nftCollateralContract: string,
+    borrower: string,
+    lender: string,
+    useLendingPool: boolean
+  ] & {
+    principalAmount: bigint;
+    maximumRepaymentAmount: bigint;
+    nftCollateralId: bigint;
+    erc20Denomination: string;
+    duration: bigint;
+    adminFeeInBasisPoints: bigint;
+    loanStartTime: bigint;
+    nftCollateralContract: string;
+    borrower: string;
+    lender: string;
+    useLendingPool: boolean;
+  };
+
   export type SignatureStruct = {
     nonce: BigNumberish;
     expiry: BigNumberish;
@@ -82,6 +122,7 @@ export interface NFTfiSigningUtilsContractInterface extends Interface {
       BigNumberish,
       BigNumberish,
       BigNumberish,
+      LoanData.LoanTermsStruct,
       LoanData.SignatureStruct,
       AddressLike
     ]
@@ -150,6 +191,7 @@ export interface NFTfiSigningUtilsContract extends BaseContract {
       _newLoanDuration: BigNumberish,
       _newMaximumRepaymentAmount: BigNumberish,
       _renegotiationFee: BigNumberish,
+      _loan: LoanData.LoanTermsStruct,
       _signature: LoanData.SignatureStruct,
       _loanContract: AddressLike
     ],
@@ -179,6 +221,7 @@ export interface NFTfiSigningUtilsContract extends BaseContract {
       _newLoanDuration: BigNumberish,
       _newMaximumRepaymentAmount: BigNumberish,
       _renegotiationFee: BigNumberish,
+      _loan: LoanData.LoanTermsStruct,
       _signature: LoanData.SignatureStruct,
       _loanContract: AddressLike
     ],

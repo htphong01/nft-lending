@@ -66,21 +66,21 @@ type RenogationStruct = {
   renegotiationFee: bigint;
 };
 
-async function getRenogationSignature(
+async function getRenegotiationSignature(
   renogation: RenogationStruct,
   signature: LoanData.SignatureStruct,
   signer: Signer,
   loan: AddressLike,
   chainId = 31337
 ) {
-  const message = getEncodedRenogation(renogation, signature, loan, chainId);
+  const message = getEncodedRenegotiation(renogation, signature, loan, chainId);
   const sig = await signer.signMessage(message);
 
   return sig;
 }
 
-function getEncodedRenogation(
-  renogation: RenogationStruct,
+function getEncodedRenegotiation(
+  renegotiation: RenogationStruct,
   signature: LoanData.SignatureStruct,
   loanContract: AddressLike,
   chainId: number
@@ -88,10 +88,10 @@ function getEncodedRenogation(
   const payload = ethers.solidityPacked(
     ["bytes", "uint32", "uint256", "uint256", "bytes", "address", "uint256"],
     [
-      renogation.loanId,
-      renogation.newLoanDuration,
-      renogation.newMaximumRepaymentAmount,
-      renogation.renegotiationFee,
+      renegotiation.loanId,
+      renegotiation.newLoanDuration,
+      renegotiation.newMaximumRepaymentAmount,
+      renegotiation.renegotiationFee,
       getEncodedSignature(signature),
       loanContract,
       chainId,
@@ -131,7 +131,7 @@ export {
   getEncodedOffer,
   getEncodedSignature,
   getOfferMessage,
-  getRenogationSignature,
+  getRenegotiationSignature,
   getCurrentBlock,
   skipBlock,
   getTimestamp,

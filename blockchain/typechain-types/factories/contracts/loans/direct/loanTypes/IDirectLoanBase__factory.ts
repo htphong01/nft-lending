@@ -130,11 +130,6 @@ const _abi = [
         name: "",
         type: "bool",
       },
-      {
-        internalType: "enum LoanData.LoanStatus",
-        name: "",
-        type: "uint8",
-      },
     ],
     stateMutability: "view",
     type: "function",

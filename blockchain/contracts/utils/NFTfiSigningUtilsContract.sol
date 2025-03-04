@@ -84,6 +84,7 @@ contract NFTfiSigningUtilsContract {
      * borrower will always have to pay this amount to retrieve their collateral, regardless of whether they repay
      * early.
      * @param _renegotiationFee Agreed upon fee in ether that borrower pays for the lender for the renegitiation
+     * @param _loan The current loan data
      * @param _signature - The signature structure containing:
      * - signer: The address of the signer. The borrower for `acceptOffer` the lender for `acceptListing`.
      * - nonce: The nonce referred here is not the same as an Ethereum account's nonce.
@@ -113,6 +114,7 @@ contract NFTfiSigningUtilsContract {
         uint32 _newLoanDuration,
         uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,
+        LoanData.LoanTerms memory _loan,
         LoanData.Signature memory _signature,
         address _loanContract
     ) external view returns (bool) {
@@ -122,6 +124,7 @@ contract NFTfiSigningUtilsContract {
                 _newLoanDuration,
                 _newMaximumRepaymentAmount,
                 _renegotiationFee,
+                _loan,
                 _signature,
                 _loanContract
             );

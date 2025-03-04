@@ -2,10 +2,10 @@
 
 pragma solidity 0.8.28;
 
-import "../loans/direct/loanTypes/LoanData.sol";
-import "../interfaces/ILendingPool.sol";
-import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
-import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import {LoanData} from "../loans/direct/loanTypes/LoanData.sol";
+import {ILendingPool} from "../interfaces/ILendingPool.sol";
+import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 /**
  * @title  NFTfiSigningUtils
@@ -175,6 +175,7 @@ library NFTfiSigningUtils {
      * borrower will always have to pay this amount to retrieve their collateral, regardless of whether they repay
      * early.
      * @param _renegotiationFee Agreed upon fee in ether that borrower pays for the lender for the renegitiation
+     * @param _loan The current loan data
      * @param _signature - The signature structure containing:
      * - signer: The address of the signer. The borrower for `acceptOffer` the lender for `acceptListing`.
      * - nonce: The nonce referred here is not the same as an Ethereum account's nonce.
@@ -203,6 +204,7 @@ library NFTfiSigningUtils {
         uint32 _newLoanDuration,
         uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,
+        LoanData.LoanTerms memory _loan,
         LoanData.Signature memory _signature
     ) external view returns (bool) {
         return
@@ -211,6 +213,7 @@ library NFTfiSigningUtils {
                 _newLoanDuration,
                 _newMaximumRepaymentAmount,
                 _renegotiationFee,
+                _loan,
                 _signature,
                 address(this)
             );
@@ -227,6 +230,7 @@ library NFTfiSigningUtils {
      * borrower will always have to pay this amount to retrieve their collateral, regardless of whether they repay
      * early.
      * @param _renegotiationFee Agreed upon fee in ether that borrower pays for the lender for the renegitiation
+     * @param _loan The current loan data
      * @param _signature - The signature structure containing:
      * - signer: The address of the signer. The borrower for `acceptOffer` the lender for `acceptListing`.
      * - nonce: The nonce referred here is not the same as an Ethereum account's nonce.
@@ -257,33 +261,37 @@ library NFTfiSigningUtils {
         uint32 _newLoanDuration,
         uint256 _newMaximumRepaymentAmount,
         uint256 _renegotiationFee,
+        LoanData.LoanTerms memory _loan,
         LoanData.Signature memory _signature,
         address _loanContract
     ) public view returns (bool) {
         require(block.timestamp <= _signature.expiry, "Renegotiation Signature has expired");
         require(_loanContract != address(0), "Loan is zero address");
-        if (_signature.signer == address(0)) {
-            return false;
-        } else {
-            bytes32 message = keccak256(
-                abi.encodePacked(
-                    _loanId,
-                    _newLoanDuration,
-                    _newMaximumRepaymentAmount,
-                    _renegotiationFee,
-                    getEncodedSignature(_signature),
-                    _loanContract,
-                    getChainID()
-                )
-            );
 
-            return
-                SignatureChecker.isValidSignatureNow(
-                    _signature.signer,
-                    MessageHashUtils.toEthSignedMessageHash(message),
-                    _signature.signature
-                );
+        if (_loan.useLendingPool) {
+            if (!ILendingPool(_loan.lender).isAdmin(_signature.signer)) return false;
+        } else {
+            if (_signature.signer != _loan.lender) return false;
         }
+
+        bytes32 message = keccak256(
+            abi.encodePacked(
+                _loanId,
+                _newLoanDuration,
+                _newMaximumRepaymentAmount,
+                _renegotiationFee,
+                getEncodedSignature(_signature),
+                _loanContract,
+                getChainID()
+            )
+        );
+
+        return
+            SignatureChecker.isValidSignatureNow(
+                _signature.signer,
+                MessageHashUtils.toEthSignedMessageHash(message),
+                _signature.signature
+            );
     }
 
     /**

@@ -1,7 +1,4 @@
 // SPDX-License-Identifier: MIT
-
-import "./LoanData.sol";
-
 pragma solidity 0.8.28;
 
 interface IDirectLoanBase {
@@ -25,8 +22,7 @@ interface IDirectLoanBase {
             address,
             address,
             address,
-            bool,
-            LoanData.LoanStatus
+            bool
         );
 
     function loanRepaidOrLiquidated(bytes32) external view returns (bool);

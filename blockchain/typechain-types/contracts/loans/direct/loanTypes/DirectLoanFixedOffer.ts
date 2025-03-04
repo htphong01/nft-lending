@@ -36,7 +36,6 @@ export declare namespace LoanData {
     borrower: AddressLike;
     lender: AddressLike;
     useLendingPool: boolean;
-    status: BigNumberish;
   };
 
   export type LoanTermsStructOutput = [
@@ -50,8 +49,7 @@ export declare namespace LoanData {
     nftCollateralContract: string,
     borrower: string,
     lender: string,
-    useLendingPool: boolean,
-    status: bigint
+    useLendingPool: boolean
   ] & {
     principalAmount: bigint;
     maximumRepaymentAmount: bigint;
@@ -64,7 +62,6 @@ export declare namespace LoanData {
     borrower: string;
     lender: string;
     useLendingPool: boolean;
-    status: bigint;
   };
 
   export type OfferStruct = {
@@ -123,7 +120,6 @@ export interface DirectLoanFixedOfferInterface extends Interface {
       | "drainERC20Airdrop"
       | "drainERC721Airdrop"
       | "getERC20Permit"
-      | "getPayoffAmount"
       | "getWhetherNonceHasBeenUsedForUser"
       | "isValidLoanId"
       | "liquidateOverdueLoan"
@@ -189,10 +185,6 @@ export interface DirectLoanFixedOfferInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "getPayoffAmount",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getWhetherNonceHasBeenUsedForUser",
     values: [AddressLike, BigNumberish]
   ): string;
@@ -238,9 +230,7 @@ export interface DirectLoanFixedOfferInterface extends Interface {
       BigNumberish,
       BigNumberish,
       BigNumberish,
-      BigNumberish,
-      BigNumberish,
-      BytesLike
+      LoanData.SignatureStruct
     ]
   ): string;
   encodeFunctionData(
@@ -295,10 +285,6 @@ export interface DirectLoanFixedOfferInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getERC20Permit",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getPayoffAmount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -665,8 +651,6 @@ export interface DirectLoanFixedOffer extends BaseContract {
 
   getERC20Permit: TypedContractMethod<[_erc20: AddressLike], [boolean], "view">;
 
-  getPayoffAmount: TypedContractMethod<[_loanId: BytesLike], [bigint], "view">;
-
   getWhetherNonceHasBeenUsedForUser: TypedContractMethod<
     [_user: AddressLike, _nonce: BigNumberish],
     [boolean],
@@ -695,8 +679,7 @@ export interface DirectLoanFixedOffer extends BaseContract {
         string,
         string,
         string,
-        boolean,
-        bigint
+        boolean
       ] & {
         principalAmount: bigint;
         maximumRepaymentAmount: bigint;
@@ -709,7 +692,6 @@ export interface DirectLoanFixedOffer extends BaseContract {
         borrower: string;
         lender: string;
         useLendingPool: boolean;
-        status: bigint;
       }
     ],
     "view"
@@ -745,9 +727,7 @@ export interface DirectLoanFixedOffer extends BaseContract {
       _newLoanDuration: BigNumberish,
       _newMaximumRepaymentAmount: BigNumberish,
       _renegotiationFee: BigNumberish,
-      _lenderNonce: BigNumberish,
-      _expiry: BigNumberish,
-      _lenderSignature: BytesLike
+      _signature: LoanData.SignatureStruct
     ],
     [void],
     "nonpayable"
@@ -833,9 +813,6 @@ export interface DirectLoanFixedOffer extends BaseContract {
     nameOrSignature: "getERC20Permit"
   ): TypedContractMethod<[_erc20: AddressLike], [boolean], "view">;
   getFunction(
-    nameOrSignature: "getPayoffAmount"
-  ): TypedContractMethod<[_loanId: BytesLike], [bigint], "view">;
-  getFunction(
     nameOrSignature: "getWhetherNonceHasBeenUsedForUser"
   ): TypedContractMethod<
     [_user: AddressLike, _nonce: BigNumberish],
@@ -864,8 +841,7 @@ export interface DirectLoanFixedOffer extends BaseContract {
         string,
         string,
         string,
-        boolean,
-        bigint
+        boolean
       ] & {
         principalAmount: bigint;
         maximumRepaymentAmount: bigint;
@@ -878,7 +854,6 @@ export interface DirectLoanFixedOffer extends BaseContract {
         borrower: string;
         lender: string;
         useLendingPool: boolean;
-        status: bigint;
       }
     ],
     "view"
@@ -919,9 +894,7 @@ export interface DirectLoanFixedOffer extends BaseContract {
       _newLoanDuration: BigNumberish,
       _newMaximumRepaymentAmount: BigNumberish,
       _renegotiationFee: BigNumberish,
-      _lenderNonce: BigNumberish,
-      _expiry: BigNumberish,
-      _lenderSignature: BytesLike
+      _signature: LoanData.SignatureStruct
     ],
     [void],
     "nonpayable"

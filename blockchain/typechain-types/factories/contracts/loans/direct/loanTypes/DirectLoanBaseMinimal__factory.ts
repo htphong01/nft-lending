@@ -338,11 +338,6 @@ const _abi = [
             name: "useLendingPool",
             type: "bool",
           },
-          {
-            internalType: "enum LoanData.LoanStatus",
-            name: "status",
-            type: "uint8",
-          },
         ],
         indexed: false,
         internalType: "struct LoanData.LoanTerms",
@@ -513,25 +508,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes32",
-        name: "_loanId",
-        type: "bytes32",
-      },
-    ],
-    name: "getPayoffAmount",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "_user",
         type: "address",
@@ -649,11 +625,6 @@ const _abi = [
         internalType: "bool",
         name: "useLendingPool",
         type: "bool",
-      },
-      {
-        internalType: "enum LoanData.LoanStatus",
-        name: "status",
-        type: "uint8",
       },
     ],
     stateMutability: "view",
@@ -807,19 +778,31 @@ const _abi = [
         type: "uint256",
       },
       {
-        internalType: "uint256",
-        name: "_lenderNonce",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_expiry",
-        type: "uint256",
-      },
-      {
-        internalType: "bytes",
-        name: "_lenderSignature",
-        type: "bytes",
+        components: [
+          {
+            internalType: "uint256",
+            name: "nonce",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "expiry",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "signer",
+            type: "address",
+          },
+          {
+            internalType: "bytes",
+            name: "signature",
+            type: "bytes",
+          },
+        ],
+        internalType: "struct LoanData.Signature",
+        name: "_signature",
+        type: "tuple",
       },
     ],
     name: "renegotiateLoan",

@@ -22,6 +22,46 @@ import type {
 } from "../../common";
 
 export declare namespace LoanData {
+  export type LoanTermsStruct = {
+    principalAmount: BigNumberish;
+    maximumRepaymentAmount: BigNumberish;
+    nftCollateralId: BigNumberish;
+    erc20Denomination: AddressLike;
+    duration: BigNumberish;
+    adminFeeInBasisPoints: BigNumberish;
+    loanStartTime: BigNumberish;
+    nftCollateralContract: AddressLike;
+    borrower: AddressLike;
+    lender: AddressLike;
+    useLendingPool: boolean;
+  };
+
+  export type LoanTermsStructOutput = [
+    principalAmount: bigint,
+    maximumRepaymentAmount: bigint,
+    nftCollateralId: bigint,
+    erc20Denomination: string,
+    duration: bigint,
+    adminFeeInBasisPoints: bigint,
+    loanStartTime: bigint,
+    nftCollateralContract: string,
+    borrower: string,
+    lender: string,
+    useLendingPool: boolean
+  ] & {
+    principalAmount: bigint;
+    maximumRepaymentAmount: bigint;
+    nftCollateralId: bigint;
+    erc20Denomination: string;
+    duration: bigint;
+    adminFeeInBasisPoints: bigint;
+    loanStartTime: bigint;
+    nftCollateralContract: string;
+    borrower: string;
+    lender: string;
+    useLendingPool: boolean;
+  };
+
   export type SignatureStruct = {
     nonce: BigNumberish;
     expiry: BigNumberish;
@@ -72,8 +112,8 @@ export interface NFTfiSigningUtilsInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "getChainID"
-      | "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,address,bytes))"
-      | "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,address,bytes),address)"
+      | "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,uint256,address,uint32,uint16,uint64,address,address,address,bool),(uint256,uint256,address,bytes))"
+      | "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,uint256,address,uint32,uint16,uint64,address,address,address,bool),(uint256,uint256,address,bytes),address)"
       | "isValidLenderSignature((uint256,uint256,uint256,address,uint32,uint16,address,address),(uint256,uint256,address,bytes),address)"
       | "isValidLenderSignature((uint256,uint256,uint256,address,uint32,uint16,address,address),(uint256,uint256,address,bytes))"
   ): FunctionFragment;
@@ -83,22 +123,24 @@ export interface NFTfiSigningUtilsInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,address,bytes))",
+    functionFragment: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,uint256,address,uint32,uint16,uint64,address,address,address,bool),(uint256,uint256,address,bytes))",
     values: [
       BytesLike,
       BigNumberish,
       BigNumberish,
       BigNumberish,
+      LoanData.LoanTermsStruct,
       LoanData.SignatureStruct
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,address,bytes),address)",
+    functionFragment: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,uint256,address,uint32,uint16,uint64,address,address,address,bool),(uint256,uint256,address,bytes),address)",
     values: [
       BytesLike,
       BigNumberish,
       BigNumberish,
       BigNumberish,
+      LoanData.LoanTermsStruct,
       LoanData.SignatureStruct,
       AddressLike
     ]
@@ -114,11 +156,11 @@ export interface NFTfiSigningUtilsInterface extends Interface {
 
   decodeFunctionResult(functionFragment: "getChainID", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,address,bytes))",
+    functionFragment: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,uint256,address,uint32,uint16,uint64,address,address,address,bool),(uint256,uint256,address,bytes))",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,address,bytes),address)",
+    functionFragment: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,uint256,address,uint32,uint16,uint64,address,address,address,bool),(uint256,uint256,address,bytes),address)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -176,24 +218,26 @@ export interface NFTfiSigningUtils extends BaseContract {
 
   getChainID: TypedContractMethod<[], [bigint], "view">;
 
-  "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,address,bytes))": TypedContractMethod<
+  "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,uint256,address,uint32,uint16,uint64,address,address,address,bool),(uint256,uint256,address,bytes))": TypedContractMethod<
     [
       _loanId: BytesLike,
       _newLoanDuration: BigNumberish,
       _newMaximumRepaymentAmount: BigNumberish,
       _renegotiationFee: BigNumberish,
+      _loan: LoanData.LoanTermsStruct,
       _signature: LoanData.SignatureStruct
     ],
     [boolean],
     "view"
   >;
 
-  "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,address,bytes),address)": TypedContractMethod<
+  "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,uint256,address,uint32,uint16,uint64,address,address,address,bool),(uint256,uint256,address,bytes),address)": TypedContractMethod<
     [
       _loanId: BytesLike,
       _newLoanDuration: BigNumberish,
       _newMaximumRepaymentAmount: BigNumberish,
       _renegotiationFee: BigNumberish,
+      _loan: LoanData.LoanTermsStruct,
       _signature: LoanData.SignatureStruct,
       _loanContract: AddressLike
     ],
@@ -225,26 +269,28 @@ export interface NFTfiSigningUtils extends BaseContract {
     nameOrSignature: "getChainID"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,address,bytes))"
+    nameOrSignature: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,uint256,address,uint32,uint16,uint64,address,address,address,bool),(uint256,uint256,address,bytes))"
   ): TypedContractMethod<
     [
       _loanId: BytesLike,
       _newLoanDuration: BigNumberish,
       _newMaximumRepaymentAmount: BigNumberish,
       _renegotiationFee: BigNumberish,
+      _loan: LoanData.LoanTermsStruct,
       _signature: LoanData.SignatureStruct
     ],
     [boolean],
     "view"
   >;
   getFunction(
-    nameOrSignature: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,address,bytes),address)"
+    nameOrSignature: "isValidLenderRenegotiationSignature(bytes32,uint32,uint256,uint256,(uint256,uint256,uint256,address,uint32,uint16,uint64,address,address,address,bool),(uint256,uint256,address,bytes),address)"
   ): TypedContractMethod<
     [
       _loanId: BytesLike,
       _newLoanDuration: BigNumberish,
       _newMaximumRepaymentAmount: BigNumberish,
       _renegotiationFee: BigNumberish,
+      _loan: LoanData.LoanTermsStruct,
       _signature: LoanData.SignatureStruct,
       _loanContract: AddressLike
     ],

@@ -99,7 +99,6 @@ export declare namespace LoanData {
     borrower: AddressLike;
     lender: AddressLike;
     useLendingPool: boolean;
-    status: BigNumberish;
   };
 
   export type LoanTermsStructOutput = [
@@ -113,8 +112,7 @@ export declare namespace LoanData {
     nftCollateralContract: string,
     borrower: string,
     lender: string,
-    useLendingPool: boolean,
-    status: bigint
+    useLendingPool: boolean
   ] & {
     principalAmount: bigint;
     maximumRepaymentAmount: bigint;
@@ -127,7 +125,6 @@ export declare namespace LoanData {
     borrower: string;
     lender: string;
     useLendingPool: boolean;
-    status: bigint;
   };
 }
 

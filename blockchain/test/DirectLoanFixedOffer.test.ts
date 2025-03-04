@@ -2,17 +2,11 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { BaseContract, Signer } from "ethers";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { getRandomInt, getTimestamp, skipTime, getOfferSignature, getRenogationSignature } from "./utils";
+import { getRandomInt, getTimestamp, skipTime, getOfferSignature, getRenegotiationSignature } from "./utils";
 import { LoanData } from "../typechain-types/contracts/loans/direct/loanTypes/DirectLoanFixedOffer";
 
 const TOKEN_1 = ethers.parseUnits("1", 18);
 const ONE_DAY = 24 * 60 * 60;
-
-enum LoanStatus {
-  ACTIVE,
-  REPAID,
-  LIQUIDATED,
-}
 
 const createOffer = async (
   token: BaseContract,
@@ -472,7 +466,6 @@ describe("Loan", () => {
           borrower.address,
           lender.address,
           false,
-          LoanStatus.ACTIVE,
         ]);
       await expect(tx).to.changeTokenBalances(
         wXENE,
@@ -494,7 +487,6 @@ describe("Loan", () => {
       expect(loan.borrower).to.equal(borrower.address);
       expect(loan.lender).to.equal(lender.address);
       expect(loan.useLendingPool).to.be.false;
-      expect(loan.status).to.equal(LoanStatus.ACTIVE);
     });
   });
 
@@ -560,7 +552,6 @@ describe("Loan", () => {
           borrower.address,
           lendingPool,
           true,
-          LoanStatus.ACTIVE,
         ]);
       await expect(tx).to.changeTokenBalances(wXENE, [lendingStake, borrower.address], [-TOKEN_1 * 15n, TOKEN_1 * 15n]);
       expect(await nft.ownerOf(1)).to.equal(directLoanFixedOffer);
@@ -577,11 +568,20 @@ describe("Loan", () => {
       expect(loan.borrower).to.equal(borrower.address);
       expect(loan.lender).to.equal(lendingPool);
       expect(loan.useLendingPool).to.be.true;
-      expect(loan.status).to.equal(LoanStatus.ACTIVE);
     });
   });
 
   describe("payBackLoan", () => {
+    it("should revert with invalid loan id", async () => {
+      const { borrower, directLoanFixedOffer } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+
+      await expect(directLoanFixedOffer.connect(borrower).payBackLoan(ethers.encodeBytes32String("2"))).to.revertedWith(
+        "None existed loan ID"
+      );
+    });
+
     it("should revert with insufficient allowance", async () => {
       const { borrower, directLoanFixedOffer, wXENE, loanId, loanTerms } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
@@ -825,9 +825,7 @@ describe("Loan", () => {
             loanTerms.duration + BigInt(ONE_DAY),
             loanTerms.maximumRepaymentAmount + 1n,
             10n,
-            BigInt(signature.nonce) + 1n,
-            signature.expiry,
-            signature.signature
+            signature
           )
       ).to.revertedWith("Loan already repaid/liquidated");
     });
@@ -848,9 +846,7 @@ describe("Loan", () => {
             loanTerms.duration + BigInt(ONE_DAY),
             loanTerms.maximumRepaymentAmount + 1n,
             10n,
-            BigInt(signature.nonce) + 1n,
-            signature.expiry,
-            signature.signature
+            signature
           )
       ).to.revertedWith("Loan already repaid/liquidated");
     });
@@ -868,9 +864,7 @@ describe("Loan", () => {
             loanTerms.duration + BigInt(ONE_DAY),
             loanTerms.maximumRepaymentAmount + 1n,
             10n,
-            BigInt(signature.nonce) + 1n,
-            signature.expiry,
-            signature.signature
+            signature
           )
       ).to.revertedWith("Only borrower can initiate");
     });
@@ -884,15 +878,7 @@ describe("Loan", () => {
       await expect(
         directLoanFixedOffer
           .connect(borrower)
-          .renegotiateLoan(
-            loanId,
-            loanTerms.duration - 1n,
-            loanTerms.maximumRepaymentAmount + 1n,
-            10n,
-            BigInt(signature.nonce) + 1n,
-            signature.expiry,
-            signature.signature
-          )
+          .renegotiateLoan(loanId, loanTerms.duration - 1n, loanTerms.maximumRepaymentAmount + 1n, 10n, signature)
       ).to.revertedWith("New duration already expired");
     });
 
@@ -905,15 +891,7 @@ describe("Loan", () => {
       await expect(
         directLoanFixedOffer
           .connect(borrower)
-          .renegotiateLoan(
-            loanId,
-            maximumLoanDuration + 1n,
-            loanTerms.maximumRepaymentAmount + 1n,
-            10n,
-            BigInt(signature.nonce) + 1n,
-            signature.expiry,
-            signature.signature
-          )
+          .renegotiateLoan(loanId, maximumLoanDuration + 1n, loanTerms.maximumRepaymentAmount + 1n, 10n, signature)
       ).to.revertedWith("New duration exceeds maximum loan duration");
     });
 
@@ -925,15 +903,7 @@ describe("Loan", () => {
       await expect(
         directLoanFixedOffer
           .connect(borrower)
-          .renegotiateLoan(
-            loanId,
-            loanTerms.duration + BigInt(ONE_DAY),
-            loanTerms.principalAmount - 1n,
-            10n,
-            BigInt(signature.nonce) + 1n,
-            signature.expiry,
-            signature.signature
-          )
+          .renegotiateLoan(loanId, loanTerms.duration + BigInt(ONE_DAY), loanTerms.principalAmount - 1n, 10n, signature)
       ).to.revertedWith("Negative interest rate loans are not allowed");
     });
 
@@ -950,9 +920,7 @@ describe("Loan", () => {
             loanTerms.duration + BigInt(ONE_DAY),
             loanTerms.maximumRepaymentAmount + 1n,
             10n,
-            signature.nonce,
-            signature.expiry,
-            signature.signature
+            signature
           )
       ).to.revertedWith("Lender nonce invalid");
     });
@@ -962,22 +930,22 @@ describe("Loan", () => {
         withLendingPool: false,
       });
 
-      const renogationData = {
+      const renegotiationData = {
         loanId: loanId,
         newLoanDuration: loanTerms.duration + BigInt(ONE_DAY),
         newMaximumRepaymentAmount: loanTerms.maximumRepaymentAmount + 1n,
         renegotiationFee: 10n,
       };
 
-      const renogationSignature = {
+      const renegotiationSignature = {
         nonce: Math.floor(Math.random() * 100000),
         expiry: await getTimestamp(),
         signer: lender.address,
         signature: "",
       };
-      renogationSignature.signature = await getRenogationSignature(
-        renogationData,
-        renogationSignature,
+      renegotiationSignature.signature = await getRenegotiationSignature(
+        renegotiationData,
+        renegotiationSignature,
         lender,
         directLoanFixedOffer.target
       );
@@ -986,13 +954,11 @@ describe("Loan", () => {
         directLoanFixedOffer
           .connect(borrower)
           .renegotiateLoan(
-            renogationData.loanId,
-            renogationData.newLoanDuration,
-            renogationData.newMaximumRepaymentAmount,
-            renogationData.renegotiationFee,
-            renogationSignature.nonce,
-            renogationSignature.expiry,
-            renogationSignature.signature
+            renegotiationData.loanId,
+            renegotiationData.newLoanDuration,
+            renegotiationData.newMaximumRepaymentAmount,
+            renegotiationData.renegotiationFee,
+            renegotiationSignature
           )
       ).to.revertedWith("Renegotiation Signature has expired");
     });
@@ -1002,22 +968,22 @@ describe("Loan", () => {
         withLendingPool: false,
       });
 
-      const renogationData = {
+      const renegotiationData = {
         loanId: loanId,
         newLoanDuration: loanTerms.duration + BigInt(ONE_DAY),
         newMaximumRepaymentAmount: loanTerms.maximumRepaymentAmount + 1n,
         renegotiationFee: 10n,
       };
 
-      const renogationSignature = {
+      const renegotiationSignature = {
         nonce: Math.floor(Math.random() * 100000),
         expiry: (await getTimestamp()) + ONE_DAY,
         signer: lender.address,
         signature: "",
       };
-      renogationSignature.signature = await getRenogationSignature(
-        renogationData,
-        renogationSignature,
+      renegotiationSignature.signature = await getRenegotiationSignature(
+        renegotiationData,
+        renegotiationSignature,
         lender,
         ethers.ZeroAddress // TODO: Can NOT reach require loan contract is ZERO, cause here blockchain/contracts/utils/NFTfiSigningUtils.sol:217
       );
@@ -1026,38 +992,37 @@ describe("Loan", () => {
         directLoanFixedOffer
           .connect(borrower)
           .renegotiateLoan(
-            renogationData.loanId,
-            renogationData.newLoanDuration,
-            renogationData.newMaximumRepaymentAmount,
-            renogationData.renegotiationFee,
-            renogationSignature.nonce,
-            renogationSignature.expiry,
-            renogationSignature.signature
+            renegotiationData.loanId,
+            renegotiationData.newLoanDuration,
+            renegotiationData.newMaximumRepaymentAmount,
+            renegotiationData.renegotiationFee,
+            renegotiationSignature
           )
       ).to.revertedWith("Loan is zero address");
     });
 
-    it.skip("TODO: should revert with signature signer is zero address", async () => {
+    it("should revert with signature signer is not lender", async () => {
       const { borrower, lender, directLoanFixedOffer, loanId, loanTerms } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
 
-      const renogationData = {
+      const renegotiationData = {
         loanId: loanId,
         newLoanDuration: loanTerms.duration + BigInt(ONE_DAY),
         newMaximumRepaymentAmount: loanTerms.maximumRepaymentAmount + 1n,
         renegotiationFee: 10n,
       };
 
-      const renogationSignature = {
+      // Signature signer is ZERO Address
+      const renegotiationSignature = {
         nonce: Math.floor(Math.random() * 100000),
         expiry: (await getTimestamp()) + ONE_DAY,
-        signer: ethers.ZeroAddress, // TODO: Can NOT reach require loan contract is ZERO, cause here blockchain/contracts/loans/direct/loanTypes/DirectLoanBaseMinimal.sol:613
+        signer: ethers.ZeroAddress,
         signature: "",
       };
-      renogationSignature.signature = await getRenogationSignature(
-        renogationData,
-        renogationSignature,
+      renegotiationSignature.signature = await getRenegotiationSignature(
+        renegotiationData,
+        renegotiationSignature,
         lender,
         directLoanFixedOffer.target
       );
@@ -1066,78 +1031,173 @@ describe("Loan", () => {
         directLoanFixedOffer
           .connect(borrower)
           .renegotiateLoan(
-            renogationData.loanId,
-            renogationData.newLoanDuration,
-            renogationData.newMaximumRepaymentAmount,
-            renogationData.renegotiationFee,
-            renogationSignature.nonce,
-            renogationSignature.expiry,
-            renogationSignature.signature
+            renegotiationData.loanId,
+            renegotiationData.newLoanDuration,
+            renegotiationData.newMaximumRepaymentAmount,
+            renegotiationData.renegotiationFee,
+            renegotiationSignature
+          )
+      ).to.revertedWith("Renegotiation signature is invalid");
+
+      // Signature signer is not lender
+      renegotiationSignature.signer = borrower.address;
+      renegotiationSignature.signature = await getRenegotiationSignature(
+        renegotiationData,
+        renegotiationSignature,
+        lender,
+        directLoanFixedOffer.target
+      );
+      await expect(
+        directLoanFixedOffer
+          .connect(borrower)
+          .renegotiateLoan(
+            renegotiationData.loanId,
+            renegotiationData.newLoanDuration,
+            renegotiationData.newMaximumRepaymentAmount,
+            renegotiationData.renegotiationFee,
+            renegotiationSignature
           )
       ).to.revertedWith("Renegotiation signature is invalid");
     });
 
-    it("should revert with signature is invalid", async () => {
+    it("should revert with signature signer is not lending pool admin", async () => {
+      const { borrower, lender, directLoanFixedOffer, loanId, loanTerms } = await loadFixtureAndAcceptOffer({
+        withLendingPool: true,
+      });
+
+      const renegotiationData = {
+        loanId: loanId,
+        newLoanDuration: loanTerms.duration + BigInt(ONE_DAY),
+        newMaximumRepaymentAmount: loanTerms.maximumRepaymentAmount + 1n,
+        renegotiationFee: 10n,
+      };
+
+      // Signature signer is ZERO Address
+      const renegotiationSignature = {
+        nonce: Math.floor(Math.random() * 100000),
+        expiry: (await getTimestamp()) + ONE_DAY,
+        signer: ethers.ZeroAddress,
+        signature: "",
+      };
+      renegotiationSignature.signature = await getRenegotiationSignature(
+        renegotiationData,
+        renegotiationSignature,
+        lender,
+        directLoanFixedOffer.target
+      );
+
+      await expect(
+        directLoanFixedOffer
+          .connect(borrower)
+          .renegotiateLoan(
+            renegotiationData.loanId,
+            renegotiationData.newLoanDuration,
+            renegotiationData.newMaximumRepaymentAmount,
+            renegotiationData.renegotiationFee,
+            renegotiationSignature
+          )
+      ).to.revertedWith("Renegotiation signature is invalid");
+
+      // Signature signer is not lender
+      renegotiationSignature.signer = borrower.address;
+      renegotiationSignature.signature = await getRenegotiationSignature(
+        renegotiationData,
+        renegotiationSignature,
+        lender,
+        directLoanFixedOffer.target
+      );
+      await expect(
+        directLoanFixedOffer
+          .connect(borrower)
+          .renegotiateLoan(
+            renegotiationData.loanId,
+            renegotiationData.newLoanDuration,
+            renegotiationData.newMaximumRepaymentAmount,
+            renegotiationData.renegotiationFee,
+            renegotiationSignature
+          )
+      ).to.revertedWith("Renegotiation signature is invalid");
+    });
+
+    it("should revert with renegotiation data is invalid", async () => {
       const { borrower, lender, directLoanFixedOffer, loanId, loanTerms } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
 
-      const renogationData = {
+      const renegotiationData = {
         loanId: loanId,
         newLoanDuration: loanTerms.duration + BigInt(ONE_DAY),
         newMaximumRepaymentAmount: loanTerms.principalAmount + 1n,
         renegotiationFee: 10n,
       };
 
-      const renogationSignature = {
+      const renegotiationSignature = {
         nonce: Math.floor(Math.random() * 100000),
         expiry: (await getTimestamp()) + ONE_DAY,
         signer: lender.address,
         signature: "",
       };
-      renogationSignature.signature = await getRenogationSignature(
-        renogationData,
-        renogationSignature,
+      renegotiationSignature.signature = await getRenegotiationSignature(
+        renegotiationData,
+        renegotiationSignature,
         lender,
         directLoanFixedOffer.target
       );
 
       await expect(
         directLoanFixedOffer.connect(borrower).renegotiateLoan(
-          renogationData.loanId,
-          renogationData.newLoanDuration + 1n, // change here
-          renogationData.newMaximumRepaymentAmount,
-          renogationData.renegotiationFee,
-          renogationSignature.nonce,
-          renogationSignature.expiry,
-          renogationSignature.signature
+          renegotiationData.loanId,
+          renegotiationData.newLoanDuration + 1n, // change here
+          renegotiationData.newMaximumRepaymentAmount,
+          renegotiationData.renegotiationFee,
+          renegotiationSignature
+        )
+      ).to.revertedWith("Renegotiation signature is invalid");
+
+      await expect(
+        directLoanFixedOffer.connect(borrower).renegotiateLoan(
+          renegotiationData.loanId,
+          renegotiationData.newLoanDuration,
+          renegotiationData.newMaximumRepaymentAmount + 1n, // change here
+          renegotiationData.renegotiationFee,
+          renegotiationSignature
+        )
+      ).to.revertedWith("Renegotiation signature is invalid");
+
+      await expect(
+        directLoanFixedOffer.connect(borrower).renegotiateLoan(
+          renegotiationData.loanId,
+          renegotiationData.newLoanDuration,
+          renegotiationData.newMaximumRepaymentAmount,
+          renegotiationData.renegotiationFee + 1n, // change here
+          renegotiationSignature
         )
       ).to.revertedWith("Renegotiation signature is invalid");
     });
 
-    describe("should renogation loan successfully", () => {
+    describe("should renegotiation loan successfully (single user)", () => {
       it("without renegotiation fee", async () => {
         const { borrower, lender, directLoanFixedOffer, wXENE, nft, loanId, loanTerms } =
           await loadFixtureAndAcceptOffer({
             withLendingPool: false,
           });
 
-        const renogationData = {
+        const renegotiationData = {
           loanId: loanId,
           newLoanDuration: loanTerms.duration + BigInt(ONE_DAY),
           newMaximumRepaymentAmount: loanTerms.principalAmount + 1n,
           renegotiationFee: 0n,
         };
 
-        const renogationSignature = {
+        const renegotiationSignature = {
           nonce: Math.floor(Math.random() * 100000),
           expiry: (await getTimestamp()) + ONE_DAY,
           signer: lender.address,
           signature: "",
         };
-        renogationSignature.signature = await getRenogationSignature(
-          renogationData,
-          renogationSignature,
+        renegotiationSignature.signature = await getRenegotiationSignature(
+          renegotiationData,
+          renegotiationSignature,
           lender,
           directLoanFixedOffer.target
         );
@@ -1145,13 +1205,11 @@ describe("Loan", () => {
         const tx = await directLoanFixedOffer
           .connect(borrower)
           .renegotiateLoan(
-            renogationData.loanId,
-            renogationData.newLoanDuration,
-            renogationData.newMaximumRepaymentAmount,
-            renogationData.renegotiationFee,
-            renogationSignature.nonce,
-            renogationSignature.expiry,
-            renogationSignature.signature
+            renegotiationData.loanId,
+            renegotiationData.newLoanDuration,
+            renegotiationData.newMaximumRepaymentAmount,
+            renegotiationData.renegotiationFee,
+            renegotiationSignature
           );
 
         await expect(tx).to.changeTokenBalances(
@@ -1164,17 +1222,16 @@ describe("Loan", () => {
 
         const loan = await directLoanFixedOffer.loanIdToLoan(loanId);
         expect(loan.principalAmount).to.equal(TOKEN_1 * 15n);
-        expect(loan.maximumRepaymentAmount).to.equal(renogationData.newMaximumRepaymentAmount);
+        expect(loan.maximumRepaymentAmount).to.equal(renegotiationData.newMaximumRepaymentAmount);
         expect(loan.nftCollateralId).to.equal(1);
         expect(loan.erc20Denomination).to.equal(wXENE);
-        expect(loan.duration).to.equal(renogationData.newLoanDuration);
+        expect(loan.duration).to.equal(renegotiationData.newLoanDuration);
         expect(loan.adminFeeInBasisPoints).to.equal(25);
         expect(loan.loanStartTime).to.closeTo(await getTimestamp(), 10);
         expect(loan.nftCollateralContract).to.equal(nft);
         expect(loan.borrower).to.equal(borrower.address);
         expect(loan.lender).to.equal(lender.address);
         expect(loan.useLendingPool).to.be.false;
-        expect(loan.status).to.equal(LoanStatus.ACTIVE);
       });
 
       it("with renegotiation fee", async () => {
@@ -1183,61 +1240,187 @@ describe("Loan", () => {
             withLendingPool: false,
           });
 
-        const renogationData = {
+        const renegotiationData = {
           loanId: loanId,
           newLoanDuration: loanTerms.duration + BigInt(ONE_DAY),
           newMaximumRepaymentAmount: loanTerms.principalAmount + 1n,
           renegotiationFee: TOKEN_1 * 100n,
         };
 
-        const renogationSignature = {
+        const renegotiationSignature = {
           nonce: Math.floor(Math.random() * 100000),
           expiry: (await getTimestamp()) + ONE_DAY,
           signer: lender.address,
           signature: "",
         };
-        renogationSignature.signature = await getRenogationSignature(
-          renogationData,
-          renogationSignature,
+        renegotiationSignature.signature = await getRenegotiationSignature(
+          renegotiationData,
+          renegotiationSignature,
           lender,
           directLoanFixedOffer.target
         );
 
-        await wXENE.connect(borrower).approve(directLoanFixedOffer, renogationData.renegotiationFee);
+        await wXENE.connect(borrower).approve(directLoanFixedOffer, renegotiationData.renegotiationFee);
         const tx = await directLoanFixedOffer
           .connect(borrower)
           .renegotiateLoan(
-            renogationData.loanId,
-            renogationData.newLoanDuration,
-            renogationData.newMaximumRepaymentAmount,
-            renogationData.renegotiationFee,
-            renogationSignature.nonce,
-            renogationSignature.expiry,
-            renogationSignature.signature
+            renegotiationData.loanId,
+            renegotiationData.newLoanDuration,
+            renegotiationData.newMaximumRepaymentAmount,
+            renegotiationData.renegotiationFee,
+            renegotiationSignature
           );
 
-        const adminFee = (renogationData.renegotiationFee * loanTerms.adminFeeInBasisPoints) / HUNDRED_PERCENT;
+        const adminFee = (renegotiationData.renegotiationFee * loanTerms.adminFeeInBasisPoints) / HUNDRED_PERCENT;
         await expect(tx).to.changeTokenBalances(
           wXENE,
           [lender, borrower, deployer, directLoanFixedOffer],
-          [renogationData.renegotiationFee - adminFee, -renogationData.renegotiationFee, adminFee, 0]
+          [renegotiationData.renegotiationFee - adminFee, -renegotiationData.renegotiationFee, adminFee, 0]
         );
         await expect(tx).to.changeTokenBalances(nft, [directLoanFixedOffer, borrower.address], [0, 0]);
         expect(await nft.ownerOf(1)).to.equal(directLoanFixedOffer);
 
         const loan = await directLoanFixedOffer.loanIdToLoan(loanId);
         expect(loan.principalAmount).to.equal(TOKEN_1 * 15n);
-        expect(loan.maximumRepaymentAmount).to.equal(renogationData.newMaximumRepaymentAmount);
+        expect(loan.maximumRepaymentAmount).to.equal(renegotiationData.newMaximumRepaymentAmount);
         expect(loan.nftCollateralId).to.equal(1);
         expect(loan.erc20Denomination).to.equal(wXENE);
-        expect(loan.duration).to.equal(renogationData.newLoanDuration);
+        expect(loan.duration).to.equal(renegotiationData.newLoanDuration);
         expect(loan.adminFeeInBasisPoints).to.equal(25);
         expect(loan.loanStartTime).to.closeTo(await getTimestamp(), 10);
         expect(loan.nftCollateralContract).to.equal(nft);
         expect(loan.borrower).to.equal(borrower.address);
         expect(loan.lender).to.equal(lender.address);
         expect(loan.useLendingPool).to.be.false;
-        expect(loan.status).to.equal(LoanStatus.ACTIVE);
+      });
+    });
+
+    describe("should renegotiation loan successfully (lending pool)", () => {
+      it("without renegotiation fee", async () => {
+        const { borrower, lendingPoolAdmin, lendingPool, directLoanFixedOffer, wXENE, nft, loanId, loanTerms } =
+          await loadFixtureAndAcceptOffer({
+            withLendingPool: true,
+          });
+
+        const renegotiationData = {
+          loanId: loanId,
+          newLoanDuration: loanTerms.duration + BigInt(ONE_DAY),
+          newMaximumRepaymentAmount: loanTerms.principalAmount + 1n,
+          renegotiationFee: 0n,
+        };
+
+        const renegotiationSignature = {
+          nonce: Math.floor(Math.random() * 100000),
+          expiry: (await getTimestamp()) + ONE_DAY,
+          signer: lendingPoolAdmin.address,
+          signature: "",
+        };
+        renegotiationSignature.signature = await getRenegotiationSignature(
+          renegotiationData,
+          renegotiationSignature,
+          lendingPoolAdmin,
+          directLoanFixedOffer.target
+        );
+
+        const tx = await directLoanFixedOffer
+          .connect(borrower)
+          .renegotiateLoan(
+            renegotiationData.loanId,
+            renegotiationData.newLoanDuration,
+            renegotiationData.newMaximumRepaymentAmount,
+            renegotiationData.renegotiationFee,
+            renegotiationSignature
+          );
+
+        await expect(tx).to.changeTokenBalances(
+          wXENE,
+          [lendingPoolAdmin.address, borrower.address, directLoanFixedOffer],
+          [0, 0, 0]
+        );
+        await expect(tx).to.changeTokenBalances(nft, [directLoanFixedOffer, borrower.address], [0, 0]);
+        expect(await nft.ownerOf(1)).to.equal(directLoanFixedOffer);
+
+        const loan = await directLoanFixedOffer.loanIdToLoan(loanId);
+        expect(loan.principalAmount).to.equal(TOKEN_1 * 15n);
+        expect(loan.maximumRepaymentAmount).to.equal(renegotiationData.newMaximumRepaymentAmount);
+        expect(loan.nftCollateralId).to.equal(1);
+        expect(loan.erc20Denomination).to.equal(wXENE);
+        expect(loan.duration).to.equal(renegotiationData.newLoanDuration);
+        expect(loan.adminFeeInBasisPoints).to.equal(25);
+        expect(loan.loanStartTime).to.closeTo(await getTimestamp(), 10);
+        expect(loan.nftCollateralContract).to.equal(nft);
+        expect(loan.borrower).to.equal(borrower.address);
+        expect(loan.lender).to.equal(lendingPool.target);
+        expect(loan.useLendingPool).to.be.true;
+      });
+
+      it("with renegotiation fee", async () => {
+        const {
+          deployer,
+          borrower,
+          lendingPoolAdmin,
+          lendingPool,
+          directLoanFixedOffer,
+          wXENE,
+          nft,
+          loanId,
+          loanTerms,
+        } = await loadFixtureAndAcceptOffer({
+          withLendingPool: true,
+        });
+
+        const renegotiationData = {
+          loanId: loanId,
+          newLoanDuration: loanTerms.duration + BigInt(ONE_DAY),
+          newMaximumRepaymentAmount: loanTerms.principalAmount + 1n,
+          renegotiationFee: TOKEN_1 * 100n,
+        };
+
+        const renegotiationSignature = {
+          nonce: Math.floor(Math.random() * 100000),
+          expiry: (await getTimestamp()) + ONE_DAY,
+          signer: lendingPoolAdmin.address,
+          signature: "",
+        };
+        renegotiationSignature.signature = await getRenegotiationSignature(
+          renegotiationData,
+          renegotiationSignature,
+          lendingPoolAdmin,
+          directLoanFixedOffer.target
+        );
+
+        await wXENE.connect(borrower).approve(directLoanFixedOffer, renegotiationData.renegotiationFee);
+        const tx = await directLoanFixedOffer
+          .connect(borrower)
+          .renegotiateLoan(
+            renegotiationData.loanId,
+            renegotiationData.newLoanDuration,
+            renegotiationData.newMaximumRepaymentAmount,
+            renegotiationData.renegotiationFee,
+            renegotiationSignature
+          );
+
+        const adminFee = (renegotiationData.renegotiationFee * loanTerms.adminFeeInBasisPoints) / HUNDRED_PERCENT;
+        await expect(tx).to.changeTokenBalances(
+          wXENE,
+          [lendingPoolAdmin, lendingPool, borrower, deployer, directLoanFixedOffer],
+          [0, renegotiationData.renegotiationFee - adminFee, -renegotiationData.renegotiationFee, adminFee, 0]
+        );
+        await expect(tx).to.changeTokenBalances(nft, [directLoanFixedOffer, borrower.address], [0, 0]);
+        expect(await nft.ownerOf(1)).to.equal(directLoanFixedOffer);
+
+        const loan = await directLoanFixedOffer.loanIdToLoan(loanId);
+        expect(loan.principalAmount).to.equal(TOKEN_1 * 15n);
+        expect(loan.maximumRepaymentAmount).to.equal(renegotiationData.newMaximumRepaymentAmount);
+        expect(loan.nftCollateralId).to.equal(1);
+        expect(loan.erc20Denomination).to.equal(wXENE);
+        expect(loan.duration).to.equal(renegotiationData.newLoanDuration);
+        expect(loan.adminFeeInBasisPoints).to.equal(25);
+        expect(loan.loanStartTime).to.closeTo(await getTimestamp(), 10);
+        expect(loan.nftCollateralContract).to.equal(nft);
+        expect(loan.borrower).to.equal(borrower.address);
+        expect(loan.lender).to.equal(lendingPool);
+        expect(loan.useLendingPool).to.be.true;
       });
     });
   });
