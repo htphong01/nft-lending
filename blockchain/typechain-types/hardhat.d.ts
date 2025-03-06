@@ -38,29 +38,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC1363__factory>;
     getContractFactory(
-      name: "IERC2981",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC2981__factory>;
-    getContractFactory(
       name: "IERC4906",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC4906__factory>;
-    getContractFactory(
-      name: "ERC1155",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ERC1155__factory>;
-    getContractFactory(
-      name: "IERC1155MetadataURI",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC1155MetadataURI__factory>;
-    getContractFactory(
-      name: "IERC1155",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC1155__factory>;
-    getContractFactory(
-      name: "IERC1155Receiver",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC1155Receiver__factory>;
     getContractFactory(
       name: "ERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -101,10 +81,6 @@ declare module "hardhat/types/runtime" {
       name: "ERC721Holder",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721Holder__factory>;
-    getContractFactory(
-      name: "Address",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Address__factory>;
     getContractFactory(
       name: "Create2",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -154,22 +130,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ILendingStake__factory>;
     getContractFactory(
-      name: "IMarketplace",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IMarketplace__factory>;
-    getContractFactory(
-      name: "ITokenBoundAccount",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ITokenBoundAccount__factory>;
-    getContractFactory(
-      name: "ITokenBoundAccountProxy",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ITokenBoundAccountProxy__factory>;
-    getContractFactory(
-      name: "ITokenBoundAccountRegistry",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ITokenBoundAccountRegistry__factory>;
-    getContractFactory(
       name: "LendingPool",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.LendingPool__factory>;
@@ -177,10 +137,6 @@ declare module "hardhat/types/runtime" {
       name: "LendingStake",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.LendingStake__factory>;
-    getContractFactory(
-      name: "TransferHelper",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.TransferHelper__factory>;
     getContractFactory(
       name: "BaseLoan",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -202,29 +158,33 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.LoanChecksAndCalculations__factory>;
     getContractFactory(
+      name: "NFTfiSigningUtils",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NFTfiSigningUtils__factory>;
+    getContractFactory(
+      name: "NFTfiSigningUtilsContract",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NFTfiSigningUtilsContract__factory>;
+    getContractFactory(
+      name: "IMarketplace",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IMarketplace__factory>;
+    getContractFactory(
       name: "Marketplace",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Marketplace__factory>;
     getContractFactory(
-      name: "MockERC1155",
+      name: "ITokenBoundAccount",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.MockERC1155__factory>;
+    ): Promise<Contracts.ITokenBoundAccount__factory>;
     getContractFactory(
-      name: "MockERC721",
+      name: "ITokenBoundAccountProxy",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.MockERC721__factory>;
+    ): Promise<Contracts.ITokenBoundAccountProxy__factory>;
     getContractFactory(
-      name: "GOLD",
+      name: "ITokenBoundAccountRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.GOLD__factory>;
-    getContractFactory(
-      name: "Character",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Character__factory>;
-    getContractFactory(
-      name: "SILVER",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.SILVER__factory>;
+    ): Promise<Contracts.ITokenBoundAccountRegistry__factory>;
     getContractFactory(
       name: "TokenBoundAccount",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -234,21 +194,13 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TokenBoundAccountRegistry__factory>;
     getContractFactory(
-      name: "Weapon",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Weapon__factory>;
-    getContractFactory(
-      name: "NFTfiSigningUtils",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.NFTfiSigningUtils__factory>;
-    getContractFactory(
-      name: "NFTfiSigningUtilsContract",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.NFTfiSigningUtilsContract__factory>;
-    getContractFactory(
       name: "Permission",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Permission__factory>;
+    getContractFactory(
+      name: "TransferHelper",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.TransferHelper__factory>;
     getContractFactory(
       name: "WXENE",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -285,35 +237,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC1363>;
     getContractAt(
-      name: "IERC2981",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC2981>;
-    getContractAt(
       name: "IERC4906",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC4906>;
-    getContractAt(
-      name: "ERC1155",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.ERC1155>;
-    getContractAt(
-      name: "IERC1155MetadataURI",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC1155MetadataURI>;
-    getContractAt(
-      name: "IERC1155",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC1155>;
-    getContractAt(
-      name: "IERC1155Receiver",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC1155Receiver>;
     getContractAt(
       name: "ERC20",
       address: string | ethers.Addressable,
@@ -364,11 +291,6 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC721Holder>;
-    getContractAt(
-      name: "Address",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Address>;
     getContractAt(
       name: "Create2",
       address: string | ethers.Addressable,
@@ -430,26 +352,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ILendingStake>;
     getContractAt(
-      name: "IMarketplace",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IMarketplace>;
-    getContractAt(
-      name: "ITokenBoundAccount",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.ITokenBoundAccount>;
-    getContractAt(
-      name: "ITokenBoundAccountProxy",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.ITokenBoundAccountProxy>;
-    getContractAt(
-      name: "ITokenBoundAccountRegistry",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.ITokenBoundAccountRegistry>;
-    getContractAt(
       name: "LendingPool",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -459,11 +361,6 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.LendingStake>;
-    getContractAt(
-      name: "TransferHelper",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.TransferHelper>;
     getContractAt(
       name: "BaseLoan",
       address: string | ethers.Addressable,
@@ -490,35 +387,40 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.LoanChecksAndCalculations>;
     getContractAt(
+      name: "NFTfiSigningUtils",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.NFTfiSigningUtils>;
+    getContractAt(
+      name: "NFTfiSigningUtilsContract",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.NFTfiSigningUtilsContract>;
+    getContractAt(
+      name: "IMarketplace",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IMarketplace>;
+    getContractAt(
       name: "Marketplace",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.Marketplace>;
     getContractAt(
-      name: "MockERC1155",
+      name: "ITokenBoundAccount",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.MockERC1155>;
+    ): Promise<Contracts.ITokenBoundAccount>;
     getContractAt(
-      name: "MockERC721",
+      name: "ITokenBoundAccountProxy",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.MockERC721>;
+    ): Promise<Contracts.ITokenBoundAccountProxy>;
     getContractAt(
-      name: "GOLD",
+      name: "ITokenBoundAccountRegistry",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.GOLD>;
-    getContractAt(
-      name: "Character",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Character>;
-    getContractAt(
-      name: "SILVER",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.SILVER>;
+    ): Promise<Contracts.ITokenBoundAccountRegistry>;
     getContractAt(
       name: "TokenBoundAccount",
       address: string | ethers.Addressable,
@@ -530,25 +432,15 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.TokenBoundAccountRegistry>;
     getContractAt(
-      name: "Weapon",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Weapon>;
-    getContractAt(
-      name: "NFTfiSigningUtils",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.NFTfiSigningUtils>;
-    getContractAt(
-      name: "NFTfiSigningUtilsContract",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.NFTfiSigningUtilsContract>;
-    getContractAt(
       name: "Permission",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.Permission>;
+    getContractAt(
+      name: "TransferHelper",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.TransferHelper>;
     getContractAt(
       name: "WXENE",
       address: string | ethers.Addressable,
@@ -580,29 +472,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC1363>;
     deployContract(
-      name: "IERC2981",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC2981>;
-    deployContract(
       name: "IERC4906",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC4906>;
-    deployContract(
-      name: "ERC1155",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.ERC1155>;
-    deployContract(
-      name: "IERC1155MetadataURI",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC1155MetadataURI>;
-    deployContract(
-      name: "IERC1155",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC1155>;
-    deployContract(
-      name: "IERC1155Receiver",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC1155Receiver>;
     deployContract(
       name: "ERC20",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -643,10 +515,6 @@ declare module "hardhat/types/runtime" {
       name: "ERC721Holder",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC721Holder>;
-    deployContract(
-      name: "Address",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Address>;
     deployContract(
       name: "Create2",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -696,22 +564,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ILendingStake>;
     deployContract(
-      name: "IMarketplace",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IMarketplace>;
-    deployContract(
-      name: "ITokenBoundAccount",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.ITokenBoundAccount>;
-    deployContract(
-      name: "ITokenBoundAccountProxy",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.ITokenBoundAccountProxy>;
-    deployContract(
-      name: "ITokenBoundAccountRegistry",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.ITokenBoundAccountRegistry>;
-    deployContract(
       name: "LendingPool",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LendingPool>;
@@ -719,10 +571,6 @@ declare module "hardhat/types/runtime" {
       name: "LendingStake",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LendingStake>;
-    deployContract(
-      name: "TransferHelper",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.TransferHelper>;
     deployContract(
       name: "BaseLoan",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -744,29 +592,33 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LoanChecksAndCalculations>;
     deployContract(
+      name: "NFTfiSigningUtils",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NFTfiSigningUtils>;
+    deployContract(
+      name: "NFTfiSigningUtilsContract",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NFTfiSigningUtilsContract>;
+    deployContract(
+      name: "IMarketplace",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IMarketplace>;
+    deployContract(
       name: "Marketplace",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Marketplace>;
     deployContract(
-      name: "MockERC1155",
+      name: "ITokenBoundAccount",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.MockERC1155>;
+    ): Promise<Contracts.ITokenBoundAccount>;
     deployContract(
-      name: "MockERC721",
+      name: "ITokenBoundAccountProxy",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.MockERC721>;
+    ): Promise<Contracts.ITokenBoundAccountProxy>;
     deployContract(
-      name: "GOLD",
+      name: "ITokenBoundAccountRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.GOLD>;
-    deployContract(
-      name: "Character",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Character>;
-    deployContract(
-      name: "SILVER",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.SILVER>;
+    ): Promise<Contracts.ITokenBoundAccountRegistry>;
     deployContract(
       name: "TokenBoundAccount",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -776,21 +628,13 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.TokenBoundAccountRegistry>;
     deployContract(
-      name: "Weapon",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Weapon>;
-    deployContract(
-      name: "NFTfiSigningUtils",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.NFTfiSigningUtils>;
-    deployContract(
-      name: "NFTfiSigningUtilsContract",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.NFTfiSigningUtilsContract>;
-    deployContract(
       name: "Permission",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Permission>;
+    deployContract(
+      name: "TransferHelper",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TransferHelper>;
     deployContract(
       name: "WXENE",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -827,35 +671,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC1363>;
     deployContract(
-      name: "IERC2981",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC2981>;
-    deployContract(
       name: "IERC4906",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC4906>;
-    deployContract(
-      name: "ERC1155",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.ERC1155>;
-    deployContract(
-      name: "IERC1155MetadataURI",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC1155MetadataURI>;
-    deployContract(
-      name: "IERC1155",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC1155>;
-    deployContract(
-      name: "IERC1155Receiver",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC1155Receiver>;
     deployContract(
       name: "ERC20",
       args: any[],
@@ -906,11 +725,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC721Holder>;
-    deployContract(
-      name: "Address",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Address>;
     deployContract(
       name: "Create2",
       args: any[],
@@ -972,26 +786,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ILendingStake>;
     deployContract(
-      name: "IMarketplace",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IMarketplace>;
-    deployContract(
-      name: "ITokenBoundAccount",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.ITokenBoundAccount>;
-    deployContract(
-      name: "ITokenBoundAccountProxy",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.ITokenBoundAccountProxy>;
-    deployContract(
-      name: "ITokenBoundAccountRegistry",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.ITokenBoundAccountRegistry>;
-    deployContract(
       name: "LendingPool",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1001,11 +795,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LendingStake>;
-    deployContract(
-      name: "TransferHelper",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.TransferHelper>;
     deployContract(
       name: "BaseLoan",
       args: any[],
@@ -1032,35 +821,40 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LoanChecksAndCalculations>;
     deployContract(
+      name: "NFTfiSigningUtils",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NFTfiSigningUtils>;
+    deployContract(
+      name: "NFTfiSigningUtilsContract",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NFTfiSigningUtilsContract>;
+    deployContract(
+      name: "IMarketplace",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IMarketplace>;
+    deployContract(
       name: "Marketplace",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Marketplace>;
     deployContract(
-      name: "MockERC1155",
+      name: "ITokenBoundAccount",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.MockERC1155>;
+    ): Promise<Contracts.ITokenBoundAccount>;
     deployContract(
-      name: "MockERC721",
+      name: "ITokenBoundAccountProxy",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.MockERC721>;
+    ): Promise<Contracts.ITokenBoundAccountProxy>;
     deployContract(
-      name: "GOLD",
+      name: "ITokenBoundAccountRegistry",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.GOLD>;
-    deployContract(
-      name: "Character",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Character>;
-    deployContract(
-      name: "SILVER",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.SILVER>;
+    ): Promise<Contracts.ITokenBoundAccountRegistry>;
     deployContract(
       name: "TokenBoundAccount",
       args: any[],
@@ -1072,25 +866,15 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.TokenBoundAccountRegistry>;
     deployContract(
-      name: "Weapon",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Weapon>;
-    deployContract(
-      name: "NFTfiSigningUtils",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.NFTfiSigningUtils>;
-    deployContract(
-      name: "NFTfiSigningUtilsContract",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.NFTfiSigningUtilsContract>;
-    deployContract(
       name: "Permission",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Permission>;
+    deployContract(
+      name: "TransferHelper",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TransferHelper>;
     deployContract(
       name: "WXENE",
       args: any[],

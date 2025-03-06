@@ -6,7 +6,7 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {ILendingPool} from "../interfaces/ILendingPool.sol";
+import {ILendingPool} from "./interfaces/ILendingPool.sol";
 
 contract LendingStake is Context, Pausable, ReentrancyGuard {
     using Math for uint256;
@@ -238,7 +238,6 @@ contract LendingStake is Context, Pausable, ReentrancyGuard {
      */
     function getMultiplier(uint256 _from, uint256 _to) private pure returns (uint256) {
         unchecked {
-            if (_from > _to) return 0;
             return _to - _from;
         }
     }

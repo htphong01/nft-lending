@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/interfaces/IERC1271.sol";
-import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
-
-import "../interfaces/ITokenBoundAccount.sol";
-import "../libraries/TokenBoundAccountLib.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {IERC1271} from "@openzeppelin/contracts/interfaces/IERC1271.sol";
+import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
+import {ITokenBoundAccount} from "./interfaces/ITokenBoundAccount.sol";
+import {TokenBoundAccountLib} from "./libraries/TokenBoundAccountLib.sol";
 
 contract TokenBoundAccount is IERC165, IERC1271, ITokenBoundAccount {
     uint256 public nonce;

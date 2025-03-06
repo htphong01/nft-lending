@@ -12,7 +12,7 @@
     "@openzeppelin/contracts": "^5.2.0",
     "cli-color": "2.0.3",
     "dotenv": "10.0.0",
-    "hardhat": "^2.22.18",
+    "hardhat": "2.22.19",
     "keccak256": "1.0.6"
   },
   "devDependencies": {

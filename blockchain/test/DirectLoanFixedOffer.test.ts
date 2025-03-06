@@ -57,6 +57,11 @@ describe("Loan", () => {
 
     const loanChecksAndCalculations = await ethers.deployContract("LoanChecksAndCalculations");
     const nftfiSigningUtils = await ethers.deployContract("NFTfiSigningUtils");
+    const nftfiSigningUtilsContract = await ethers.deployContract("NFTfiSigningUtilsContract", [], {
+      libraries: {
+        NFTfiSigningUtils: nftfiSigningUtils,
+      },
+    });
     const wXENE = await ethers.deployContract("WXENE");
     const directLoanFixedOffer = await ethers.deployContract("DirectLoanFixedOffer", [deployer, [wXENE]], {
       libraries: {
@@ -83,6 +88,7 @@ describe("Loan", () => {
       lendingPoolAdmin,
       accounts,
       wXENE,
+      nftfiSigningUtilsContract,
       directLoanFixedOffer,
       lendingPool,
       lendingStake,
@@ -98,6 +104,7 @@ describe("Loan", () => {
       lendingPoolAdmin,
       accounts,
       wXENE,
+      nftfiSigningUtilsContract,
       directLoanFixedOffer,
       lendingPool,
       lendingStake,
@@ -129,6 +136,7 @@ describe("Loan", () => {
       lendingPoolAdmin,
       accounts,
       wXENE,
+      nftfiSigningUtilsContract,
       directLoanFixedOffer,
       lendingPool,
       lendingStake,
@@ -311,7 +319,7 @@ describe("Loan", () => {
   });
 
   describe("acceptOffer", () => {
-    it("should revert with currency denomination is not permitted", async () => {
+    it("should revert when currency denomination is not permitted", async () => {
       const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
       const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
 
@@ -328,7 +336,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with NFT collateral contract is not permitted", async () => {
+    it("should revert when NFT collateral contract is not permitted", async () => {
       const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
       const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
 
@@ -345,7 +353,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with loan duration exceeds maximum loan duration", async () => {
+    it("should revert when loan duration exceeds maximum loan duration", async () => {
       const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
       const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
       offer.duration = ONE_DAY * 7 * 53 + 1;
@@ -356,7 +364,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with loan duration cannot be zero", async () => {
+    it("should revert when loan duration cannot be zero", async () => {
       const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
       const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
 
@@ -368,7 +376,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with the admin fee has changed since this order was signed.", async () => {
+    it("should revert when the admin fee has changed since this order was signed.", async () => {
       const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
       const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
 
@@ -385,7 +393,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with negative interest rate loans are not allowed.", async () => {
+    it("should revert when negative interest rate loans are not allowed.", async () => {
       const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
       const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
 
@@ -404,7 +412,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with lender nonce invalid", async () => {
+    it("should revert when lender nonce invalid", async () => {
       const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
       const { offer, signature } = await createTestData(lender, wXENE, nft);
 
@@ -420,7 +428,7 @@ describe("Loan", () => {
       );
     });
 
-    describe("should revert with lender signature is invalid", () => {
+    describe("should revert when lender signature is invalid", () => {
       it("Should revert if signature is expired", async () => {
         const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
         const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
@@ -553,7 +561,7 @@ describe("Loan", () => {
       });
     });
 
-    it("should revert with invalid token id", async () => {
+    it("should revert when invalid token id", async () => {
       const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
       const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
 
@@ -564,7 +572,7 @@ describe("Loan", () => {
         .withArgs(123);
     });
 
-    it("should revert with caller is not token owner or approved", async () => {
+    it("should revert when caller is not token owner or approved", async () => {
       const { lender, borrower, accounts, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
       const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
 
@@ -579,7 +587,7 @@ describe("Loan", () => {
         .withArgs(directLoanFixedOffer, 1);
     });
 
-    it("should revert with token insufficient allowance", async () => {
+    it("should revert when token insufficient allowance", async () => {
       const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
       const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
 
@@ -592,7 +600,7 @@ describe("Loan", () => {
         .withArgs(directLoanFixedOffer, 0, offer.principalAmount);
     });
 
-    it("should revert with transfer amount exceeds balance", async () => {
+    it("should revert when transfer amount exceeds balance", async () => {
       const { borrower, accounts, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
       const { offer, signature, loanId } = await createTestData(accounts[0], wXENE, nft);
 
@@ -663,7 +671,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with Lender signature is invalid", async () => {
+    it("should revert when Lender signature is invalid", async () => {
       const { lendingPoolAdmin, borrower, directLoanFixedOffer, wXENE, nft, lendingPool } = await loadFixture(
         deployFixture
       );
@@ -671,13 +679,25 @@ describe("Loan", () => {
 
       signature.signature = await getOfferSignature(offer, signature, lendingPoolAdmin, directLoanFixedOffer.target);
       signature.nonce = 0;
-
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
         "Lender signature is invalid"
       );
     });
 
-    it("should revert with transfer amount exceeds lending stake balance", async () => {
+    it("should revert when Lender Signature has expired", async () => {
+      const { lendingPoolAdmin, borrower, directLoanFixedOffer, wXENE, nft, lendingPool } = await loadFixture(
+        deployFixture
+      );
+      const { offer, signature, loanId } = await createTestData(lendingPoolAdmin, wXENE, nft, lendingPool);
+
+      signature.signature = await getOfferSignature(offer, signature, lendingPoolAdmin, directLoanFixedOffer.target);
+      signature.expiry = (await getTimestamp()) - 1000;
+      await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.revertedWith(
+        "Lender Signature has expired"
+      );
+    });
+
+    it("should revert when transfer amount exceeds lending stake balance", async () => {
       const { lendingPoolAdmin, borrower, directLoanFixedOffer, wXENE, nft, lendingPool, lendingStake } =
         await loadFixture(deployFixture);
       const { offer, signature, loanId } = await createTestData(lendingPoolAdmin, wXENE, nft, lendingPool);
@@ -734,7 +754,7 @@ describe("Loan", () => {
   });
 
   describe("payBackLoan", () => {
-    it("should revert with invalid loan id", async () => {
+    it("should revert when invalid loan id", async () => {
       const { borrower, directLoanFixedOffer } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -744,7 +764,19 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with insufficient allowance", async () => {
+    it("should revert when pause", async () => {
+      const { borrower, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+
+      await directLoanFixedOffer.pause();
+      await expect(directLoanFixedOffer.connect(borrower).payBackLoan(loanId)).to.revertedWithCustomError(
+        directLoanFixedOffer,
+        "EnforcedPause"
+      );
+    });
+
+    it("should revert when insufficient allowance", async () => {
       const { borrower, directLoanFixedOffer, wXENE, loanId, loanTerms } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -755,7 +787,7 @@ describe("Loan", () => {
         .withArgs(directLoanFixedOffer, 0, payoffAmount);
     });
 
-    it("should revert with loan already repaid", async () => {
+    it("should revert when loan already repaid", async () => {
       const { borrower, directLoanFixedOffer, wXENE, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -769,7 +801,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with loan already liquidated", async () => {
+    it("should revert when loan already liquidated", async () => {
       const { lender, borrower, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -782,7 +814,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with loan is expired", async () => {
+    it("should revert when loan is expired", async () => {
       const { borrower, directLoanFixedOffer, wXENE, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -792,7 +824,7 @@ describe("Loan", () => {
       await expect(directLoanFixedOffer.connect(borrower).payBackLoan(loanId)).to.revertedWith("Loan is expired");
     });
 
-    it("should revert with transfer amount exceeds balance", async () => {
+    it("should revert when transfer amount exceeds balance", async () => {
       const { borrower, lender, directLoanFixedOffer, wXENE, loanId, loanTerms } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -896,7 +928,7 @@ describe("Loan", () => {
   });
 
   describe("liquidateOverdueLoan", () => {
-    it("should revert with loan already repaid", async () => {
+    it("should revert when loan already repaid", async () => {
       const { borrower, directLoanFixedOffer, wXENE, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -910,7 +942,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with loan already liquidated", async () => {
+    it("should revert when loan already liquidated", async () => {
       const { lender, borrower, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -923,7 +955,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with loan is not overdue yet", async () => {
+    it("should revert when loan is not overdue yet", async () => {
       const { lender, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -933,7 +965,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with only lender can liquidate", async () => {
+    it("should revert when only lender can liquidate", async () => {
       const { borrower, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -945,7 +977,7 @@ describe("Loan", () => {
       );
     });
 
-    it("should revert with only admin lending pool can liquidate", async () => {
+    it("should revert when only admin lending pool can liquidate", async () => {
       const { borrower, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: true,
       });
@@ -982,7 +1014,7 @@ describe("Loan", () => {
   });
 
   describe("renegotiateLoan", () => {
-    it("should revert with loan already repaid", async () => {
+    it("should revert when loan already repaid", async () => {
       const { borrower, directLoanFixedOffer, wXENE, loanId, loanTerms, signature } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -1004,7 +1036,7 @@ describe("Loan", () => {
       ).to.revertedWith("Loan already repaid/liquidated");
     });
 
-    it("should revert with loan already liquidated", async () => {
+    it("should revert when loan already liquidated", async () => {
       const { lender, borrower, directLoanFixedOffer, loanId, loanTerms, signature } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -1025,7 +1057,7 @@ describe("Loan", () => {
       ).to.revertedWith("Loan already repaid/liquidated");
     });
 
-    it("should revert with caller is not borrower", async () => {
+    it("should revert when caller is not borrower", async () => {
       const { lender, directLoanFixedOffer, loanId, loanTerms, signature } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -1043,7 +1075,7 @@ describe("Loan", () => {
       ).to.revertedWith("Only borrower can initiate");
     });
 
-    it("should revert with new duration already expired", async () => {
+    it("should revert when new duration already expired", async () => {
       const { borrower, directLoanFixedOffer, loanId, loanTerms, signature } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -1056,7 +1088,7 @@ describe("Loan", () => {
       ).to.revertedWith("New duration already expired");
     });
 
-    it("should revert with new duration exceeds maximum loan duration", async () => {
+    it("should revert when new duration exceeds maximum loan duration", async () => {
       const { borrower, directLoanFixedOffer, loanId, loanTerms, signature } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -1069,7 +1101,7 @@ describe("Loan", () => {
       ).to.revertedWith("New duration exceeds maximum loan duration");
     });
 
-    it("should revert with newMaximumRepaymentAmount less than loan pricipal amount", async () => {
+    it("should revert when newMaximumRepaymentAmount less than loan pricipal amount", async () => {
       const { borrower, directLoanFixedOffer, loanId, loanTerms, signature } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -1081,7 +1113,7 @@ describe("Loan", () => {
       ).to.revertedWith("Negative interest rate loans are not allowed");
     });
 
-    it("should revert with lender nonce invalid", async () => {
+    it("should revert when lender nonce invalid", async () => {
       const { borrower, directLoanFixedOffer, loanId, loanTerms, signature } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -1099,7 +1131,7 @@ describe("Loan", () => {
       ).to.revertedWith("Lender nonce invalid");
     });
 
-    it("should revert with renegotiation signature has expired", async () => {
+    it("should revert when renegotiation signature has expired", async () => {
       const { borrower, lender, directLoanFixedOffer, loanId, loanTerms } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -1113,7 +1145,7 @@ describe("Loan", () => {
 
       const renegotiationSignature = {
         nonce: Math.floor(Math.random() * 100000),
-        expiry: await getTimestamp(),
+        expiry: (await getTimestamp()) - 100,
         signer: lender.address,
         signature: "",
       };
@@ -1135,33 +1167,8 @@ describe("Loan", () => {
             renegotiationSignature
           )
       ).to.revertedWith("Renegotiation Signature has expired");
-    });
 
-    it.skip("TODO: should revert with loan contract address is zero address", async () => {
-      const { borrower, lender, directLoanFixedOffer, loanId, loanTerms } = await loadFixtureAndAcceptOffer({
-        withLendingPool: false,
-      });
-
-      const renegotiationData = {
-        loanId: loanId,
-        newLoanDuration: loanTerms.duration + BigInt(ONE_DAY),
-        newMaximumRepaymentAmount: loanTerms.maximumRepaymentAmount + 1n,
-        renegotiationFee: 10n,
-      };
-
-      const renegotiationSignature = {
-        nonce: Math.floor(Math.random() * 100000),
-        expiry: (await getTimestamp()) + ONE_DAY,
-        signer: lender.address,
-        signature: "",
-      };
-      renegotiationSignature.signature = await getRenegotiationSignature(
-        renegotiationData,
-        renegotiationSignature,
-        lender,
-        ethers.ZeroAddress // TODO: Can NOT reach require loan contract is ZERO, cause here blockchain/contracts/utils/NFTfiSigningUtils.sol:217
-      );
-
+      renegotiationSignature.expiry = await getTimestamp();
       await expect(
         directLoanFixedOffer
           .connect(borrower)
@@ -1172,10 +1179,10 @@ describe("Loan", () => {
             renegotiationData.renegotiationFee,
             renegotiationSignature
           )
-      ).to.revertedWith("Loan is zero address");
+      ).to.revertedWith("Renegotiation Signature has expired");
     });
 
-    it("should revert with signature signer is not lender", async () => {
+    it("should revert when signature signer is not lender", async () => {
       const { borrower, lender, directLoanFixedOffer, loanId, loanTerms } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -1234,7 +1241,7 @@ describe("Loan", () => {
       ).to.revertedWith("Renegotiation signature is invalid");
     });
 
-    it("should revert with signature signer is not lending pool admin", async () => {
+    it("should revert when signature signer is not lending pool admin", async () => {
       const { borrower, lender, directLoanFixedOffer, loanId, loanTerms } = await loadFixtureAndAcceptOffer({
         withLendingPool: true,
       });
@@ -1293,7 +1300,7 @@ describe("Loan", () => {
       ).to.revertedWith("Renegotiation signature is invalid");
     });
 
-    it("should revert with renegotiation data is invalid", async () => {
+    it("should revert when renegotiation data is invalid", async () => {
       const { borrower, lender, directLoanFixedOffer, loanId, loanTerms } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
       });
@@ -1623,6 +1630,106 @@ describe("Loan", () => {
       await expect(directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)).to.rejectedWith(
         "Lender nonce invalid"
       );
+    });
+  });
+
+  describe("isValidLenderSignature", () => {
+    it("should revert when loan contract is zero address", async () => {
+      const { lendingPoolAdmin, nftfiSigningUtilsContract, directLoanFixedOffer, wXENE, nft, lendingPool } =
+        await loadFixture(deployFixture);
+      const { offer, signature } = await createTestData(lendingPoolAdmin, wXENE, nft, lendingPool);
+      signature.signature = await getOfferSignature(offer, signature, lendingPoolAdmin, directLoanFixedOffer.target);
+
+      await expect(
+        nftfiSigningUtilsContract.isValidLenderSignature(offer, signature, ethers.ZeroAddress)
+      ).to.revertedWith("Loan is zero address");
+    });
+  });
+
+  describe("isValidLenderRenegotiationSignature", () => {
+    it("should revert when loan contract is zero address", async () => {
+      const { lender, nftfiSigningUtilsContract, directLoanFixedOffer, loanId, loanTerms } =
+        await loadFixtureAndAcceptOffer({
+          withLendingPool: false,
+        });
+
+      const renegotiationData = {
+        loanId: loanId,
+        newLoanDuration: loanTerms.duration + BigInt(ONE_DAY),
+        newMaximumRepaymentAmount: loanTerms.principalAmount + 1n,
+        renegotiationFee: 10n,
+      };
+
+      const renegotiationSignature = {
+        nonce: Math.floor(Math.random() * 100000),
+        expiry: (await getTimestamp()) + ONE_DAY,
+        signer: lender.address,
+        signature: "",
+      };
+      renegotiationSignature.signature = await getRenegotiationSignature(
+        renegotiationData,
+        renegotiationSignature,
+        lender,
+        directLoanFixedOffer.target
+      );
+
+      const loan = {
+        principalAmount: loanTerms.principalAmount,
+        maximumRepaymentAmount: loanTerms.maximumRepaymentAmount,
+        nftCollateralId: loanTerms.nftCollateralId,
+        erc20Denomination: loanTerms.erc20Denomination,
+        duration: loanTerms.duration,
+        adminFeeInBasisPoints: loanTerms.adminFeeInBasisPoints,
+        loanStartTime: loanTerms.loanStartTime,
+        nftCollateralContract: loanTerms.nftCollateralContract,
+        borrower: loanTerms.borrower,
+        lender: loanTerms.lender,
+        useLendingPool: loanTerms.useLendingPool,
+      } as LoanData.LoanTermsStruct;
+      await expect(
+        nftfiSigningUtilsContract.isValidLenderRenegotiationSignature(
+          renegotiationData.loanId,
+          renegotiationData.newLoanDuration,
+          renegotiationData.newMaximumRepaymentAmount,
+          renegotiationData.renegotiationFee,
+          loan,
+          renegotiationSignature,
+          ethers.ZeroAddress
+        )
+      ).to.revertedWith("Loan is zero address");
+    });
+  });
+
+  describe("pause/unpause", () => {
+    it("should revert when is not owner", async () => {
+      const { borrower, directLoanFixedOffer } = await loadFixture(deployFixture);
+      await expect(directLoanFixedOffer.connect(borrower).pause()).to.revertedWithCustomError(
+        directLoanFixedOffer,
+        "OwnableUnauthorizedAccount"
+      );
+      await expect(directLoanFixedOffer.connect(borrower).unpause()).to.revertedWithCustomError(
+        directLoanFixedOffer,
+        "OwnableUnauthorizedAccount"
+      );
+    });
+
+    it("should pause/unpause successfully", async () => {
+      const { lender, borrower, directLoanFixedOffer, wXENE, nft } = await loadFixture(deployFixture);
+      const { offer, signature, loanId } = await createTestData(lender, wXENE, nft);
+
+      await nft.connect(borrower).approve(directLoanFixedOffer, 1);
+      await wXENE.connect(lender).approve(directLoanFixedOffer, ethers.MaxUint256);
+      signature.signature = await getOfferSignature(offer, signature, lender, directLoanFixedOffer.target);
+
+      await directLoanFixedOffer.pause();
+      expect(await directLoanFixedOffer.paused()).to.be.true;
+      await expect(
+        directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature)
+      ).to.revertedWithCustomError(directLoanFixedOffer, "EnforcedPause");
+
+      await directLoanFixedOffer.unpause();
+      expect(await directLoanFixedOffer.paused()).to.be.false;
+      await directLoanFixedOffer.connect(borrower).acceptOffer(loanId, offer, signature);
     });
   });
 });

@@ -8,9 +8,8 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import {Permission, Ownable} from "../utils/Permission.sol";
-import {TransferHelper} from "../libraries/TransferHelper.sol";
-import {IMarketplace} from "../interfaces/IMarketplace.sol";
-import {ILendingStake} from "../interfaces/ILendingStake.sol";
+import {IMarketplace} from "../Marketplace/IMarketplace.sol";
+import {ILendingStake} from "./interfaces/ILendingStake.sol";
 
 /**
  * @title  LendingPool

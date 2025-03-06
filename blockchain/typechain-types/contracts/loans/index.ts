@@ -3,4 +3,6 @@
 /* eslint-disable */
 import type * as direct from "./direct";
 export type { direct };
+import type * as utils from "./utils";
+export type { utils };
 export type { BaseLoan } from "./BaseLoan";

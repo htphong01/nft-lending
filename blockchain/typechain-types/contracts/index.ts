@@ -3,18 +3,13 @@
 /* eslint-disable */
 import type * as lendingPool from "./LendingPool";
 export type { lendingPool };
-import type * as mock from "./Mock";
-export type { mock };
+import type * as marketplace from "./Marketplace";
+export type { marketplace };
 import type * as tokenBoundAccount from "./TokenBoundAccount";
 export type { tokenBoundAccount };
-import type * as interfaces from "./interfaces";
-export type { interfaces };
-import type * as libraries from "./libraries";
-export type { libraries };
 import type * as loans from "./loans";
 export type { loans };
 import type * as utils from "./utils";
 export type { utils };
 export type { ChonkSociety } from "./ChonkSociety";
-export type { Marketplace } from "./Marketplace";
 export type { WXENE } from "./WXENE";

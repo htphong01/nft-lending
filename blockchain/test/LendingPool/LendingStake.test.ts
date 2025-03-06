@@ -42,6 +42,7 @@ describe("LendingStake", function () {
       expect((await lendingStake.getAllAddress()).length).to.equal(0);
       expect(await lendingStake.pendingReward(user1)).to.equal(0);
       expect(await lendingStake.rewardSupply()).to.equal(0);
+      await expect(lendingStake.getAddressByIndex(0)).to.be.reverted;
     });
   });
 
@@ -233,6 +234,7 @@ describe("LendingStake", function () {
       expect(await lendingStake.getAllAddress()).to.deep.equal([user1.address, user2.address]);
       expect(await lendingStake.pendingReward(user2)).to.equal(0);
       expect(await lendingStake.rewardSupply()).to.equal(3000000000000000000n);
+      expect(await lendingStake.getAddressByIndex(0)).to.equal(user1);
 
       //=============================== User1 continue to deposit
       // Mint and approve tokens
@@ -260,6 +262,7 @@ describe("LendingStake", function () {
       expect(await lendingStake.getAllAddress()).to.deep.equal([user1.address, user2.address]);
       expect(await lendingStake.pendingReward(user1)).to.equal(4500000000000000000n);
       expect(await lendingStake.rewardSupply()).to.equal(6000000000000000000n);
+      expect(await lendingStake.getAddressByIndex(0)).to.equal(user1);
     });
   });
 
@@ -311,6 +314,7 @@ describe("LendingStake", function () {
       expect(await lendingStake.getAllAddress()).to.deep.equal([user1.address]);
       expect(await lendingStake.pendingReward(user1)).to.equal(1000000000000000000n);
       expect(await lendingStake.rewardSupply()).to.equal(1000000000000000000n);
+      expect(await lendingStake.getAddressByIndex(0)).to.equal(user1);
 
       //======================= Withdraw all remaining
       await expect(lendingStake.connect(user1).withdraw(withdrawAmount)).to.changeTokenBalances(
@@ -333,6 +337,7 @@ describe("LendingStake", function () {
       expect(await lendingStake.getAllAddress()).to.deep.equal([]);
       expect(await lendingStake.pendingReward(user1)).to.equal(2000000000000000000n);
       expect(await lendingStake.rewardSupply()).to.equal(2000000000000000000n);
+      await expect(lendingStake.getAddressByIndex(0)).to.be.reverted;
     });
   });
 
@@ -381,6 +386,7 @@ describe("LendingStake", function () {
       // Check pending rewards
       let pendingRewards = await lendingStake.pendingReward(user1);
       expect(pendingRewards).to.be.gt(0);
+      expect(await lendingStake.rewardSupply()).to.equal(5000000000000000000n);
 
       // Claim rewards successfully
       await wXENE.mintTo(lendingPool, { value: ONE * 10n });
@@ -391,6 +397,7 @@ describe("LendingStake", function () {
       );
       pendingRewards = await lendingStake.pendingReward(user1);
       expect(pendingRewards).to.equal(0);
+      expect(await lendingStake.rewardSupply()).to.equal(0);
     });
   });
 
