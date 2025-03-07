@@ -126,6 +126,14 @@ describe("Marketplace", function () {
       ).to.revertedWithCustomError(marketplace, "InvalidNft");
     });
 
+    it("should throw error when beneficiary address is invalid", async function () {
+      const { marketplace, wXENE, nft, user1 } = await loadFixture(deployFixture);
+      await marketplace.setPaymentToken(wXENE, true);
+      await expect(
+        marketplace.connect(user1).makeItem(nft, 1, wXENE, 1, ethers.ZeroAddress)
+      ).to.revertedWithCustomError(marketplace, "InvalidBeneficiary");
+    });
+
     it("should throw error nft balance is zero", async function () {
       const { marketplace, wXENE, nft, user2, beneficiary } = await loadFixture(deployFixture);
       await marketplace.setPaymentToken(wXENE, true);

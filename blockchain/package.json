@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomiclabs/hardhat-solhint": "^4.0.1",
     "@openzeppelin/contracts": "^5.2.0",
     "cli-color": "2.0.3",
     "dotenv": "10.0.0",

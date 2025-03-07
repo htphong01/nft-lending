@@ -581,7 +581,7 @@ abstract contract DirectLoanBaseMinimal is IDirectLoanBase, BaseLoan, ERC721Hold
             "Renegotiation signature is invalid"
         );
 
-        uint256 renegotiationAdminFee;
+        uint256 renegotiationAdminFee = 0;
         /**
          * @notice Transfers fee to the lender immediately
          * @dev implements Checks-Effects-Interactions pattern by modifying state only after

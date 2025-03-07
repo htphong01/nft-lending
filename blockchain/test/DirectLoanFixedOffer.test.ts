@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 import { BaseContract, Signer } from "ethers";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { getRandomInt, getTimestamp, skipTime, getOfferSignature, getRenegotiationSignature } from "./utils";
-import { LoanData } from "../typechain-types/contracts/loans/direct/loanTypes/DirectLoanFixedOffer";
+import { LoanData } from "../typechain-types/contracts/loans/direct/DirectLoanFixedOffer";
 
 const TOKEN_1 = ethers.parseUnits("1", 18);
 const ONE_DAY = 24 * 60 * 60;
@@ -928,6 +928,18 @@ describe("Loan", () => {
   });
 
   describe("liquidateOverdueLoan", () => {
+    it("should revert when pause", async () => {
+      const { borrower, directLoanFixedOffer, loanId } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+
+      await directLoanFixedOffer.pause();
+      await expect(directLoanFixedOffer.connect(borrower).liquidateOverdueLoan(loanId)).to.revertedWithCustomError(
+        directLoanFixedOffer,
+        "EnforcedPause"
+      );
+    });
+
     it("should revert when loan already repaid", async () => {
       const { borrower, directLoanFixedOffer, wXENE, loanId } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
@@ -1014,6 +1026,25 @@ describe("Loan", () => {
   });
 
   describe("renegotiateLoan", () => {
+    it("should revert when pause", async () => {
+      const { borrower, directLoanFixedOffer, loanId, loanTerms, signature } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+
+      await directLoanFixedOffer.pause();
+      await expect(
+        directLoanFixedOffer
+          .connect(borrower)
+          .renegotiateLoan(
+            loanId,
+            loanTerms.duration + BigInt(ONE_DAY),
+            loanTerms.maximumRepaymentAmount + 1n,
+            10n,
+            signature
+          )
+      ).to.revertedWithCustomError(directLoanFixedOffer, "EnforcedPause");
+    });
+
     it("should revert when loan already repaid", async () => {
       const { borrower, directLoanFixedOffer, wXENE, loanId, loanTerms, signature } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,
@@ -1607,6 +1638,17 @@ describe("Loan", () => {
   });
 
   describe("cancelLoanCommitmentBeforeLoanHasBegun", () => {
+    it("should revert when pause", async () => {
+      const { lender, directLoanFixedOffer, signature } = await loadFixtureAndAcceptOffer({
+        withLendingPool: false,
+      });
+
+      await directLoanFixedOffer.pause();
+      await expect(
+        directLoanFixedOffer.connect(lender).cancelLoanCommitmentBeforeLoanHasBegun(signature.nonce)
+      ).to.revertedWithCustomError(directLoanFixedOffer, "EnforcedPause");
+    });
+
     it("should revert when nonce has been used", async () => {
       const { lender, directLoanFixedOffer, signature } = await loadFixtureAndAcceptOffer({
         withLendingPool: false,

@@ -44,7 +44,7 @@ contract LendingStake is Context, Pausable, ReentrancyGuard {
     PoolInfo public poolInfo;
 
     // The stake token
-    IERC20 public wXENE;
+    IERC20 public immutable wXENE;
 
     // The lending pool contract address
     address public lendingPool;

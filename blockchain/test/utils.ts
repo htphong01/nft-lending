@@ -1,6 +1,6 @@
 import hre, { ethers } from "hardhat";
 import { AddressLike, BytesLike, Signer } from "ethers";
-import { LoanData } from "../typechain-types/contracts/loans/direct/loanTypes/DirectLoanFixedOffer";
+import { LoanData } from "../typechain-types/contracts/loans/direct/DirectLoanFixedOffer";
 
 function getEncodedOffer(offer: LoanData.OfferStruct) {
   const {

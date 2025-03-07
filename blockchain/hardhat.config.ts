@@ -1,13 +1,7 @@
 require("dotenv").config();
 
-// Solidity compile
-import "solidity-coverage";
-
 import "@nomicfoundation/hardhat-toolbox";
-
-// Report gas
-// import "hardhat-gas-reporter");
-
+import "@nomiclabs/hardhat-solhint";
 import { HardhatUserConfig } from "hardhat/types";
 
 const config: HardhatUserConfig = {
@@ -19,7 +13,7 @@ const config: HardhatUserConfig = {
     },
     cvc_testnet: {
       url: process.env.CVC_RPC,
-      accounts: process.env.SYSTEM_PRIVATE_KEY ? [process.env.SYSTEM_PRIVATE_KEY] : [],
+      accounts: process.env.DEPLOY_PRIVATE_KEY ? [process.env.DEPLOY_PRIVATE_KEY] : [],
     },
   },
   etherscan: {
@@ -40,6 +34,13 @@ const config: HardhatUserConfig = {
         },
       },
     ],
+  },
+  gasReporter: {
+    currency: "USD",
+    token: "ETH",
+    coinmarketcap: process.env.COIN_MARKET_CAP_API_KEY ?? "",
+    gasPriceApi: process.env.GAS_PRICE_API_KEY ?? "",
+    enabled: !!process.env.REPORT_GAS,
   },
 };
 
