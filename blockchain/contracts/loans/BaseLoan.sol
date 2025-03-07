@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
+pragma solidity 0.8.28;
 
-pragma solidity 0.8.18;
-
-import "../utils/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title  BaseLoan

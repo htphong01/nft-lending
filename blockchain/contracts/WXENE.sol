@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+pragma solidity 0.8.28;
+
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract WXENE is ERC20 {
     event Minted(address account, uint256 amount);
     event Burnt(address account, uint256 amount);
+
+    error TransferNativeFailed();
 
     /* *********** */
     /* CONSTRUCTOR */
@@ -28,6 +31,18 @@ contract WXENE is ERC20 {
     }
 
     /**
+     * @notice Mint wXENE to a specific user
+     * @dev Everyone can call this function
+     *
+     * emit {Minted} event
+     */
+    function mintTo(address _receiver) external payable {
+        _mint(_receiver, msg.value);
+
+        emit Minted(_receiver, msg.value);
+    }
+
+    /**
      * @notice Burn wXENE and transfer XENE to user
      * @param _amount Amount of token
      *
@@ -36,7 +51,7 @@ contract WXENE is ERC20 {
     function burn(uint256 _amount) external {
         _burn(_msgSender(), _amount);
         (bool success, ) = (_msgSender()).call{value: _amount}("");
-        require(success, "Fail transfer native");
+        if (!success) revert TransferNativeFailed();
 
         emit Burnt(_msgSender(), _amount);
     }

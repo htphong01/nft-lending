@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
+pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  *  @title  Permission
@@ -24,11 +24,13 @@ abstract contract Permission is Ownable {
 
     event SetAdmin(address indexed user, bool allow);
 
-    /* *********** */
-    /* CONSTRUCTOR */
-    /* *********** */
-
-    constructor() {}
+    /* ********* */
+    /* ERRORS */
+    /* ********* */
+    error AdminUnauthorizedAccount(address account);
+    error PermissionUnauthorizedAccount(address account);
+    error InvalidAddress();
+    error InvalidLength();
 
     /* ********* */
     /* MODIFIERS */
@@ -38,25 +40,9 @@ abstract contract Permission is Ownable {
      * Throw exception of caller is not admin
      */
     modifier onlyAdmin() {
-        require(owner() == _msgSender() || admins[_msgSender()], "Ownable: caller is not an admin");
-        _;
-    }
-
-    /**
-     * Throw exception if _addr is zero address
-     * @param _addr Address will be checked
-     */
-    modifier notZeroAddress(address _addr) {
-        require(_addr != address(0), "Invalid address");
-        _;
-    }
-
-    /**
-     * Throw exception if _amount if zero
-     * @param _amount Nubmer will be checked
-     */
-    modifier notZeroAmount(uint256 _amount) {
-        require(_amount > 0, "Invalid amount");
+        if (owner() != _msgSender() && !admins[_msgSender()]) {
+            revert AdminUnauthorizedAccount(_msgSender());
+        }
         _;
     }
 
@@ -65,7 +51,9 @@ abstract contract Permission is Ownable {
      * @param _account Account will be checked
      */
     modifier permittedTo(address _account) {
-        require(msg.sender == _account, "Permission: Unauthorized.");
+        if (_msgSender() != _account) {
+            revert PermissionUnauthorizedAccount(_msgSender());
+        }
         _;
     }
 
@@ -90,7 +78,7 @@ abstract contract Permission is Ownable {
      * @param _allow Specific users will be set as admin or not
      */
     function setAdmins(address[] memory _users, bool _allow) public virtual onlyOwner {
-        require(_users.length > 0, "Invalid length");
+        if (_users.length == 0) revert InvalidLength();
         for (uint256 i = 0; i < _users.length; i++) {
             _setAdmin(_users[i], _allow);
         }
@@ -105,10 +93,11 @@ abstract contract Permission is Ownable {
      * @dev    Only owner can call this function.
      * @param _user User address
      * @param _allow Specific user will be set as admin or not
-     * 
+     *
      * emit {SetAdmin} event
      */
-    function _setAdmin(address _user, bool _allow) internal virtual notZeroAddress(_user) {
+    function _setAdmin(address _user, bool _allow) internal virtual {
+        if (_user == address(0)) revert InvalidAddress();
         admins[_user] = _allow;
         emit SetAdmin(_user, _allow);
     }
@@ -123,6 +112,6 @@ abstract contract Permission is Ownable {
      * @param _account User's account will be checkedd
      */
     function isAdmin(address _account) external view returns (bool) {
-        return admins[_account];
+        return owner() == _account || admins[_account];
     }
 }
