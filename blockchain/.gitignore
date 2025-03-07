@@ -76,3 +76,4 @@ slither-report.sarif
 
 # Hardhat Ignition default folder for deployments against a local node
 ignition/deployments/chain-31337
+deployments/chain-31337.json
