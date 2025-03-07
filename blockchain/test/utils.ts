@@ -1,32 +1,8 @@
 import hre, { ethers } from "hardhat";
-import { Offer, Signature } from "./types";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { AddressLike, BytesLike, Signer } from "ethers";
+import { LoanData } from "../typechain-types/contracts/loans/direct/DirectLoanFixedOffer";
 
-const { AddressZero: ZERO_ADDRESS, MaxUint256: MAX_UINT256 } = ethers.constants;
-
-async function signatureData(taskId, users, rewards, nonce, privateKey) {
-  const { chainId } = await ethers.provider.getNetwork();
-  // 66 byte string, which represents 32 bytes of data
-  let messageHash = encodeData(chainId, taskId, users, rewards, nonce);
-
-  // 32 bytes of data in Uint8Array
-  let messageHashBinary = ethers.utils.arrayify(messageHash);
-  let wallet = new ethers.Wallet(privateKey);
-
-  // To sign the 32 bytes of data, make sure you pass in the data
-  const signature = await wallet.signMessage(messageHashBinary);
-  return signature;
-}
-
-function encodeData(chainId, taskId, users, rewards, nonce) {
-  const payload = ethers.utils.defaultAbiCoder.encode(
-    ["uint256", "uint256", "address[]", "uint256[]", "uint256"],
-    [chainId, taskId, users, rewards, nonce]
-  );
-  return ethers.utils.keccak256(payload);
-}
-
-function getEncodeOffer(offer: Offer) {
+function getEncodedOffer(offer: LoanData.OfferStruct) {
   const {
     principalAmount,
     maximumRepaymentAmount,
@@ -37,7 +13,7 @@ function getEncodeOffer(offer: Offer) {
     erc20Denomination,
     lendingPool,
   } = offer;
-  const payload = ethers.utils.solidityPack(
+  const payload = ethers.solidityPacked(
     ["address", "uint256", "uint256", "address", "uint256", "uint32", "uint16", "address"],
     [
       erc20Denomination,
@@ -54,33 +30,75 @@ function getEncodeOffer(offer: Offer) {
 }
 
 async function getOfferSignature(
-  offer: Offer,
-  signature: Signature,
-  signer: SignerWithAddress,
-  loanAddress: string,
+  offer: LoanData.OfferStruct,
+  signature: LoanData.SignatureStruct,
+  signer: Signer,
+  loan: AddressLike,
   chainId = 31337
 ) {
-  const encodedOffer = getEncodeOffer(offer);
+  const encodedOffer = getEncodedOffer(offer);
   const encodedSignature = getEncodedSignature(signature);
-  const message = getMessage(encodedOffer, encodedSignature, loanAddress, chainId);
+  const message = getOfferMessage(encodedOffer, encodedSignature, loan, chainId);
   const sig = await signer.signMessage(message);
 
   return sig;
 }
 
-function getEncodedSignature(signature: Signature) {
+function getEncodedSignature(signature: LoanData.SignatureStruct) {
   const { signer, nonce, expiry } = signature;
-  const payload = ethers.utils.solidityPack(["address", "uint256", "uint256"], [signer, nonce, expiry]);
+  const payload = ethers.solidityPacked(["address", "uint256", "uint256"], [signer, nonce, expiry]);
   return payload;
 }
 
-function getMessage(encodedOffer: string, encodedSignature: string, loanContract: string, chainId: number) {
-  const payload = ethers.utils.solidityPack(
+function getOfferMessage(encodedOffer: string, encodedSignature: string, loanContract: AddressLike, chainId: number) {
+  const payload = ethers.solidityPacked(
     ["bytes", "bytes", "address", "uint256"],
     [encodedOffer, encodedSignature, loanContract, chainId]
   );
-  // return new TextEncoder("utf-8").encode(ethers.utils.keccak256(payload));
-  return ethers.utils.arrayify(ethers.utils.keccak256(payload));
+
+  return ethers.getBytes(ethers.keccak256(payload));
+}
+
+type RenogationStruct = {
+  loanId: BytesLike;
+  newLoanDuration: bigint;
+  newMaximumRepaymentAmount: bigint;
+  renegotiationFee: bigint;
+};
+
+async function getRenegotiationSignature(
+  renogation: RenogationStruct,
+  signature: LoanData.SignatureStruct,
+  signer: Signer,
+  loan: AddressLike,
+  chainId = 31337
+) {
+  const message = getEncodedRenegotiation(renogation, signature, loan, chainId);
+  const sig = await signer.signMessage(message);
+
+  return sig;
+}
+
+function getEncodedRenegotiation(
+  renegotiation: RenogationStruct,
+  signature: LoanData.SignatureStruct,
+  loanContract: AddressLike,
+  chainId: number
+) {
+  const payload = ethers.solidityPacked(
+    ["bytes", "uint32", "uint256", "uint256", "bytes", "address", "uint256"],
+    [
+      renegotiation.loanId,
+      renegotiation.newLoanDuration,
+      renegotiation.newMaximumRepaymentAmount,
+      renegotiation.renegotiationFee,
+      getEncodedSignature(signature),
+      loanContract,
+      chainId,
+    ]
+  );
+
+  return ethers.getBytes(ethers.keccak256(payload));
 }
 
 const getRandomInt = () => {
@@ -88,8 +106,8 @@ const getRandomInt = () => {
 };
 
 const getCurrentBlock = async () => {
-  const latestBlock = await hre.ethers.provider.getBlock("latest");
-  return latestBlock.number;
+  const latestBlock = await ethers.provider.getBlock("latest");
+  return latestBlock?.number;
 };
 
 const skipBlock = async (blockNumber: number) => {
@@ -100,7 +118,7 @@ const skipBlock = async (blockNumber: number) => {
 
 async function getTimestamp() {
   const latestBlock = await ethers.provider.getBlock("latest");
-  return latestBlock.timestamp;
+  return latestBlock ? latestBlock.timestamp : 0;
 }
 
 async function skipTime(seconds: number) {
@@ -110,15 +128,13 @@ async function skipTime(seconds: number) {
 
 export {
   getRandomInt,
-  encodeData,
-  getEncodeOffer,
+  getEncodedOffer,
   getEncodedSignature,
-  getMessage,
+  getOfferMessage,
+  getRenegotiationSignature,
   getCurrentBlock,
   skipBlock,
   getTimestamp,
   skipTime,
-  ZERO_ADDRESS,
-  MAX_UINT256,
   getOfferSignature,
 };

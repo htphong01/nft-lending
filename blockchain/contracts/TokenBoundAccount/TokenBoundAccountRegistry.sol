@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
+pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts/utils/Create2.sol";
-
-import "../interfaces/ITokenBoundAccountRegistry.sol";
-import "../libraries/TokenBoundAccountBytecodeLib.sol";
+import {Create2} from "@openzeppelin/contracts/utils/Create2.sol";
+import {ITokenBoundAccountRegistry} from "./interfaces/ITokenBoundAccountRegistry.sol";
+import {TokenBoundAccountBytecodeLib} from "./libraries/TokenBoundAccountBytecodeLib.sol";
 
 contract TokenBoundAccountRegistry is ITokenBoundAccountRegistry {
     error InitializationFailed();
