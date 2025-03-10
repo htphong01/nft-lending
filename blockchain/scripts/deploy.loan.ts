@@ -73,7 +73,7 @@ async function main() {
     LendingPool: await lendingPool.getAddress(),
     LendingStake: await lendingStake.getAddress(),
     ChonkSocietyNFT: await nft.getAddress(),
-    WXENE: await nft.getAddress(),
+    WXENE: await wXENE.getAddress(),
     Marketplace: await marketplace.getAddress(),
   };
   const networkChainID = (await ethers.provider.getNetwork()).chainId;

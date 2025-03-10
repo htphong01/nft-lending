@@ -8,8 +8,9 @@ const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
-      accounts: { count: 100 },
+      accounts: { count: 20 },
       allowUnlimitedContractSize: false,
+      loggingEnabled: true,
     },
     cvc_testnet: {
       url: process.env.CVC_RPC,

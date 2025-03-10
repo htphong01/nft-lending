@@ -72,7 +72,7 @@ slither-report.sarif
 /csv-export/
 
 # script
-/scripts/runscript.js
+/scripts/local/*
 
 # Hardhat Ignition default folder for deployments against a local node
 ignition/deployments/chain-31337
