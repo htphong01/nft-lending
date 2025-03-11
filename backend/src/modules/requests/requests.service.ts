@@ -11,11 +11,7 @@ import {
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
-import {
-  verifySignature,
-  generateOfferMessage,
-  generateRequestMessage,
-} from '../utils/signature';
+import { createOfferMessage, verifySignature } from '../utils/signature';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { RequestStatus } from './dto/request.enum';
 import { Request } from './reposities/request.reposity';
@@ -25,12 +21,15 @@ import { OfferStatus } from '../offers/dto/offer.enum';
 import { OrdersService } from '../orders/orders.service';
 import { OrderStatus } from '../orders/dto/order.enum';
 import { UpdateRequestDto } from './dto/update-request.dto';
+import { ONE_DAY } from '../utils/constants';
+import { DirectLoanFixedOffer, DirectLoanFixedOffer__factory, ERC721, ERC721__factory } from 'src/typechain-types';
 // import * as FACTORY_ABI from './abi/LOAN.json';
 
 @Injectable()
 export class RequestsService implements OnModuleInit {
   private rpcProvider: JsonRpcProvider;
-  private nftContract: Contract;
+  private nftContract: ERC721;
+  private loanContract: DirectLoanFixedOffer;
 
   constructor(
     private readonly request: Request,
@@ -42,11 +41,14 @@ export class RequestsService implements OnModuleInit {
 
   onModuleInit() {
     this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
-    // this.nftContract = new Contract(
-    //   config.ENV.COLLECTION_ADDRESS,
-    //   FACTORY_ABI,
-    //   this.rpcProvider,
-    // );
+    this.nftContract = ERC721__factory.connect(
+      config.ENV.COLLECTION_ADDRESS,
+      this.rpcProvider,
+    );
+    this.loanContract = DirectLoanFixedOffer__factory.connect(
+          config.ENV.LOAN_ADDRESS,
+          this.rpcProvider,
+        );
   }
 
   async create(dto: CreateRequestDto) {
@@ -56,11 +58,20 @@ export class RequestsService implements OnModuleInit {
       throw new BadRequestException('invalid_status');
     }
 
-    const requestHash = generateRequestMessage(
-      dto,
+    const requestHash = createOfferMessage(
+      {
+        adminFeeInBasisPoints: 25n,
+        duration: ONE_DAY,
+        erc20Denomination: dto.erc20Denomination,
+        maximumRepaymentAmount: ethers.parseUnits('0.018', 18),
+        nftCollateralContract: this.nftContract.target,
+        nftCollateralId: 1n,
+        principalAmount: ethers.parseUnits('0.015', 18),
+        lendingPool: ethers.ZeroAddress,
+      },
       dto.signature,
-      config.ENV.LOAN_ADDRESS,
-      config.ENV.CHAIN_ID,
+      this.loanContract.target,
+      Number(config.ENV.CHAIN_ID),
     );
     if (
       !verifySignature(
@@ -90,7 +101,7 @@ export class RequestsService implements OnModuleInit {
 
     const dacs_cid = await this.dacs.upload(newRequest);
     newRequest.dacs_url = `${config.ENV.SERVER_HOST}:${config.ENV.SERVER_PORT}/dacs/${dacs_cid}`;
-    
+
     await this.request.create(requestHash, newRequest);
   }
 

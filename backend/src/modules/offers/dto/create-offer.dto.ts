@@ -17,4 +17,5 @@ export class CreateOfferDto {
   createdAt: number;
   adminFeeInBasisPoints: number;
   signature: OfferSignature;
+  lendingPoolAddress: string;
 }

@@ -8,6 +8,7 @@ export type RequestSignature = {
 export class CreateRequestDto {
   creator: string;
   lender: string;
+  erc20Denomination: string;
   loanId: string;
   offer: string;
   loanDuration: number;

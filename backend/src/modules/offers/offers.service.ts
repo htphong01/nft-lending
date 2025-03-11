@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
-import { verifySignature, generateOfferMessage } from '../utils/signature';
+import { createOfferMessage, verifySignature } from '../utils/signature';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { OfferStatus } from './dto/offer.enum';
 import { OrderStatus } from '../orders/dto/order.enum';
@@ -20,6 +20,15 @@ import { DacsService } from '../dacs/dacs.service';
 import * as FACTORY_ABI from './abi/LOAN.json';
 import { Request } from '../requests/reposities/request.reposity';
 import { ONE_DAY, WXCR_DECIMALS } from '../utils/constants';
+import { UpdateOrderDto } from './dto/update-offer.dto';
+import {
+  DirectLoanFixedOffer,
+  DirectLoanFixedOffer__factory,
+  ERC721,
+  ERC721__factory,
+  LendingPool,
+  LendingPool__factory,
+} from 'src/typechain-types';
 
 @Injectable()
 export class OffersService implements OnModuleInit {
@@ -27,7 +36,10 @@ export class OffersService implements OnModuleInit {
     throw new Error('Method not implemented.');
   }
   private rpcProvider: JsonRpcProvider;
-  private nftContract: Contract;
+  private nftContract: ERC721;
+  private lendingPoolContract: LendingPool;
+  private loanContract: DirectLoanFixedOffer;
+
   private readonly logger: Logger = new Logger(OffersService.name);
 
   constructor(
@@ -40,19 +52,35 @@ export class OffersService implements OnModuleInit {
 
   onModuleInit() {
     this.rpcProvider = new JsonRpcProvider(config.ENV.NETWORK_RPC_URL);
-    this.nftContract = new Contract(
+    this.nftContract = ERC721__factory.connect(
       config.ENV.COLLECTION_ADDRESS,
-      FACTORY_ABI,
+      this.rpcProvider,
+    );
+    this.lendingPoolContract = LendingPool__factory.connect(
+      config.ENV.LENDING_POOL_ADDRESS,
+      this.rpcProvider,
+    );
+    this.loanContract = DirectLoanFixedOffer__factory.connect(
+      config.ENV.LOAN_ADDRESS,
       this.rpcProvider,
     );
   }
 
   async create(createOfferDto: CreateOfferDto) {
-    const offerHash = generateOfferMessage(
-      createOfferDto,
-      createOfferDto.signature,
-      config.ENV.LOAN_ADDRESS,
-      config.ENV.CHAIN_ID,
+    const offerHash = createOfferMessage(
+      {
+        adminFeeInBasisPoints: 25n,
+        duration: ONE_DAY,
+        erc20Denomination: createOfferDto.erc20Denomination,
+        maximumRepaymentAmount: ethers.parseUnits('0.018', 18),
+        nftCollateralContract: this.nftContract.target,
+        nftCollateralId: 1n,
+        principalAmount: ethers.parseUnits('0.015', 18),
+        lendingPool: ethers.ZeroAddress,
+      },
+      createOfferDto.signature, // Created from client side
+      this.loanContract.target,
+      Number(config.ENV.CHAIN_ID),
     );
 
     if (
@@ -146,7 +174,7 @@ export class OffersService implements OnModuleInit {
           case 'LoanLiquidated': {
             const loanId = event.args.loanId;
             const offer = await this.findById(loanId);
-            
+
             if (offer) {
               await Promise.all([
                 this.offer.update(loanId, { status: OfferStatus.LIQUIDATED }),
