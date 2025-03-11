@@ -3,7 +3,7 @@ import { LENDING_POOL_ABI } from '@src/abi';
 import { LENDING_POOL_ADDRESS } from '@src/constants';
 import { getRawBalance, getBalance } from './erc20';
 
-const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+const provider = new ethers.BrowserProvider(window.ethereum, 'any');
 const signer = provider.getSigner();
 
 const lendingPoolContract = (signerOrProvider = provider) => {

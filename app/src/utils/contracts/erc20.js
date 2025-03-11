@@ -2,7 +2,7 @@ import { ERC20_ABI } from '@src/abi';
 import { WXCR_ADDRESS, LOAN_ADDRESS } from '@src/constants';
 import { ethers } from 'ethers';
 
-const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+const provider = new ethers.BrowserProvider(window.ethereum, 'any');
 
 export const ERC20Contract = (address, signerOrProvider = provider) => {
   return new ethers.Contract(address, ERC20_ABI, signerOrProvider);

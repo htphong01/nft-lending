@@ -106,7 +106,8 @@ export default function Assets() {
       </div>
       {isLoading ? (
         <div className="react-loading-item">
-          <ReactLoading type="bars" color="#fff" height={100} width={120} />
+          <p>Loading...</p>
+          {/* <ReactLoading type="bars" color="#fff" height={100} width={120} /> */}
         </div>
       ) : listNFT.length > 0 ? (
         <div className={styles['list-nfts']}>

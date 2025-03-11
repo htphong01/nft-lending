@@ -38,11 +38,15 @@ export function resolveIpfsUri(uri, options = DEFAULT_IPFS_RESOLVER_OPTIONS) {
 export const useFetchMediaType = (key, _url) => {
   const [type, setType] = useState();
   const [isGif, setIsGif] = useState(false);
-  const { data, isLoading, refetch } = useQuery(key, () => fetchMediaType(_url), {
-    onSuccess: (data) => {
-      if (data && data.type && typeof data.type === 'string') {
-        setType(data.type.split('/')[0]);
-      }
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['mime-type', key],
+    queryFn: () => fetchMediaType(_url),
+    behavior: {
+      onFetch: (data) => {
+        if (data && data.type && typeof data.type === 'string') {
+          setType(data.type.split('/')[0]);
+        }
+      },
     },
   });
 
@@ -72,18 +76,18 @@ export function useResolvedMediaType(uri, mimeType) {
   const [type, setType] = useState();
 
   const resolvedUrl = useMemo(() => resolveIpfsUri(uri), [uri]);
-  const { data: resolvedMimeType, isLoading } = useQuery(
-    ['mime-type', resolvedUrl],
-    () => fetchMediaType(resolvedUrl),
-    {
-      enabled: !!resolvedUrl && !mimeType,
-      onSuccess: (data) => {
+  const { data: resolvedMimeType, isLoading } = useQuery({
+    queryKey: ['mime-type', resolvedUrl],
+    queryFn: () => fetchMediaType(resolvedUrl),
+    enabled: !!resolvedUrl && !mimeType,
+    behavior: {
+      onFetch: (data) => {
         if (data && data.type && typeof data.type === 'string') {
           setType(data.type.split('/')[0]);
         }
       },
-    }
-  );
+    },
+  });
   const _type = useMemo(
     () => (resolvedMimeType ? resolvedMimeType.type?.split('/')[0] : type),
     [resolvedMimeType, type]

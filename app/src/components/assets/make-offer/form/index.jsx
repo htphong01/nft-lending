@@ -106,7 +106,9 @@ export default function Form({ order, fetchOffers }) {
     <form className={styles.form} onSubmit={handleSubmit}>
       {isLoading && (
         <div className="screen-loading-overlay">
-          <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
+          <p>Loading...</p>
+
+          {/* <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} /> */}
         </div>
       )}
       <Toaster position="top-center" reverseOrder={false} />

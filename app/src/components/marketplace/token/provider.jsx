@@ -9,7 +9,11 @@ const TokenDetailProvider = ({ children }) => {
   const qc = useQueryClient();
   const { hash } = useParams();
 
-  const { data, isLoading } = useQuery(['saleInfo', hash], () => getSale(hash), { enabled: !!hash });
+  const { data, isLoading } = useQuery({
+    queryKey: ['saleInfo', hash],
+    queryFn: () => getSale(hash),
+    enabled: !!hash,
+  });
 
   const token = useMemo(() => (data ? { ...JSON.parse(data.metadata ?? ''), ...data } : {}), [data]);
 

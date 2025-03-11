@@ -23,8 +23,11 @@ const items = [
 
 export default function Marketplace() {
   const [currentPage, setPage] = useState(1);
-  const { status, data, refetch } = useQuery(['listMarketplaceItems', { currentPage }], () => getSales({ status: 0, page: currentPage }));
-
+  const { status, data, refetch } = useQuery({
+    queryKey: ['listMarketplaceItems', { currentPage }],
+    queryFn: () => getSales({ status: 0, page: currentPage }),
+  });
+  
   const changePage = (key) => {
     setPage(key);
   };
@@ -72,12 +75,14 @@ export default function Marketplace() {
           </List.Item>
         )}
       />
-      <div style={{
-        marginTop: '2%',
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}>
+      <div
+        style={{
+          marginTop: '2%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         <Pagination onChange={changePage} defaultCurrent={currentPage} total={data?.data.total} />
       </div>
     </div>

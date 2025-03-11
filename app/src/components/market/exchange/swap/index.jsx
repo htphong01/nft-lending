@@ -104,7 +104,9 @@ export default function Swap() {
     <div className={styles['swap-container']}>
       {isLoading && (
         <div className={styles.loading}>
-          <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
+          <p>Loading...</p>
+
+          {/* <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} /> */}
         </div>
       )}
       <Toaster position="top-center" reverseOrder={false} />

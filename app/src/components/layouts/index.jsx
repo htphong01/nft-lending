@@ -96,7 +96,7 @@ export default function UserLayout() {
       requireSwitchNetwork();
       fetchRate();
 
-      const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+      const provider = new ethers.BrowserProvider(window.ethereum, 'any');
       provider.getNetwork().then(({ chainId }) => setNetwork(chainId));
     } else {
       alert('MetaMask is not installed. Please consider installing it: https://metamask.io/download.html');

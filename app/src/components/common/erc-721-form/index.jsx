@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { useOnClickOutside } from 'usehooks-ts';
 import { importCollection } from '@src/api/nfts.api';
 import styles from './styles.module.scss';
-import { isAddress } from 'ethers/lib/utils';
+import { ethers } from 'ethers';
 
 export default function ERC721Form({ onClose }) {
   const account = useSelector((state) => state.account);
@@ -23,7 +23,7 @@ export default function ERC721Form({ onClose }) {
       const formData = new FormData(e.target);
       const collectionAddress = formData.get('collectionAddress').toLowerCase();
 
-      if (!isAddress(collectionAddress)) throw new Error('Invalid collection address');
+      if (!ethers.isAddress(collectionAddress)) throw new Error('Invalid collection address');
 
       const res = await importCollection({ collectionAddress, from: account.address });
 
@@ -44,7 +44,9 @@ export default function ERC721Form({ onClose }) {
     <div className={styles.container}>
       {isLoading && (
         <div className="screen-loading-overlay">
-          <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
+          <p>Loading...</p>
+
+          {/* <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} /> */}
         </div>
       )}
       <Toaster position="top-center" reverseOrder={false} />

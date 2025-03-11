@@ -20,12 +20,11 @@ import { ONE_DAY, OrderStatus, FormType, MARKETPLACE_ADDRESS } from '@src/consta
 import { submitVote, getVote } from '@src/api/vote.api';
 import styles from '../styles.module.scss';
 import { ERC721_ABI } from '@src/abi';
-import { Contract, providers } from 'ethers';
+import { Contract, ethers } from 'ethers';
 import { resolveIpfsUri } from '@src/hooks';
 import axios from 'axios';
 import { createNft } from '@src/api/nfts.api';
 import { MARKETPLACE_ABI } from '@src/abi/marketPlace';
-import { formatEther } from 'ethers/lib/utils';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
@@ -33,7 +32,7 @@ export default function Form({ item, onClose, type }) {
   const ref = useRef(null);
   const rate = useSelector((state) => state.rate.rate);
   const account = useSelector((state) => state.account);
-  const provider = useMemo(() => new providers.Web3Provider(window.ethereum, 'any'), []);
+  const provider = useMemo(() => new ethers.BrowserProvider(window.ethereum, 'any'), []);
 
   const [commitLoading, setCommitLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -96,7 +95,7 @@ export default function Form({ item, onClose, type }) {
       await createNft({
         nft: nft.toString(),
         tokenId: tokenId.toString(),
-        price: formatEther(price),
+        price: ethers.formatEther(price),
         creator: seller.toString(),
         metadata: JSON.stringify(token),
         itemId: itemId.toString()
@@ -142,14 +141,18 @@ export default function Form({ item, onClose, type }) {
       <Toaster position="top-center" reverseOrder={false} />
       {commitLoading && (
         <div className="screen-loading-overlay">
-          <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
+          <p>Loading...</p>
+
+          {/* <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} /> */}
         </div>
       )}
       <div className={styles.form} ref={ref}>
         <Icon icon="material-symbols:close" className={styles['close-btn']} onClick={() => onClose()} />
         {isLoading ? (
           <div className="react-loading-item mb-60 mt-60">
-            <ReactLoading type="bars" color="#fff" height={100} width={120} />
+          <p>Loading...</p>
+
+            {/* <ReactLoading type="bars" color="#fff" height={100} width={120} /> */}
           </div>
         ) : (
           <>

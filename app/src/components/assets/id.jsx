@@ -31,7 +31,9 @@ export default function Assets() {
   if (isLoading)
     return (
       <div className="react-loading-item" style={{ marginTop: '200px' }}>
-        <ReactLoading type="bars" color="#fff" height={100} width={120} />
+          <p>Loading...</p>
+
+        {/* <ReactLoading type="bars" color="#fff" height={100} width={120} /> */}
       </div>
     );
 

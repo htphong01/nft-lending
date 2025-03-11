@@ -5,7 +5,7 @@ import { compareString } from '@src/utils';
 import { useQuery } from '@tanstack/react-query';
 import { Button, Form, Input, Spin, Typography } from 'antd';
 import axios from 'axios';
-import { Contract, providers } from 'ethers';
+import { Contract, ethers } from 'ethers';
 import { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -14,12 +14,12 @@ const Preview = ({ loading }) => {
   const address = Form.useWatch('address', form);
   const tokenId = Form.useWatch('tokenId', form);
 
-  const provider = useMemo(() => new providers.Web3Provider(window.ethereum, 'any'), []);
+  const provider = useMemo(() => new ethers.BrowserProvider(window.ethereum, 'any'), []);
   const account = useSelector((state) => state.account.address);
 
-  const { data: token, isLoading } = useQuery(
-    ['tokenInfo', { address, tokenId, account }],
-    async () => {
+  const { data: token, isLoading } = useQuery({
+    queryKey: ['tokenInfo', { address, tokenId, account }],
+    queryFn: async () => {
       const values = form.getFieldsValue();
       const contract = new Contract(values.address, ERC721_ABI, provider);
 
@@ -34,8 +34,8 @@ const Preview = ({ loading }) => {
       const { data: metadata } = await axios.get(uri);
       return { ...metadata, image: resolveIpfsUri(metadata.image) };
     },
-    { enabled: !!address && !!tokenId }
-  );
+    enabled: !!address && !!tokenId,
+  });
 
   useEffect(() => {
     if (token) {

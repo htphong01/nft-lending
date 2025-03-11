@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import { LOAN_ADDRESS, NFT_CONTRACT_ADDRESS, DEFAULT_ERC6551_BASE_URI } from '@src/constants';
 import { ERC721_ABI } from '@src/abi';
 
-const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+const provider = new ethers.BrowserProvider(window.ethereum, 'any');
 
 export const ERC721Contract = (
   contractAddress = NFT_CONTRACT_ADDRESS,

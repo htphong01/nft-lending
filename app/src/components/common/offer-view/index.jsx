@@ -51,7 +51,9 @@ export default function OfferView({ item, onClose, action }) {
         <Icon icon="material-symbols:close" className={styles['close-btn']} onClick={() => onClose()} />
         {isLoading ? (
           <div className="react-loading-item mb-60 mt-60">
-            <ReactLoading type="bars" color="#fff" height={100} width={120} />
+          <p>Loading...</p>
+
+            {/* <ReactLoading type="bars" color="#fff" height={100} width={120} /> */}
           </div>
         ) : (
           <div className={styles.row}>

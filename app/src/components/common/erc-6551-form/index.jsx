@@ -101,7 +101,9 @@ export default function ERC6551Form({ onClose }) {
     <div className={styles.container}>
       {isLoading && (
         <div className="screen-loading-overlay">
-          <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
+          <p>Loading...</p>
+
+          {/* <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} /> */}
         </div>
       )}
       <Toaster position="top-center" reverseOrder={false} />

@@ -79,7 +79,9 @@ export default function Requests() {
     <div className={styles.container}>
       {isCommitLoading && (
         <div className="screen-loading-overlay">
-          <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
+          <p>Loading...</p>
+
+          {/* <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} /> */}
         </div>
       )}
       <Toaster position="top-center" reverseOrder={false} />
@@ -87,7 +89,9 @@ export default function Requests() {
       {selectedRequest && <RequestPopup item={selectedRequest} onClose={onClose} />}
       {isLoading ? (
         <div className="react-loading-item">
-          <ReactLoading type="bars" color="#fff" height={100} width={120} />
+          <p>Loading...</p>
+
+          {/* <ReactLoading type="bars" color="#fff" height={100} width={120} /> */}
         </div>
       ) : (
         <Table

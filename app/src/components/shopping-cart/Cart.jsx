@@ -3,7 +3,7 @@ import { clearAllCart, selectTotalPrice } from '@src/redux/features/cartSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import CartItem from './CartItem';
 import { StyledCart } from './styled';
-import { ethers, utils } from 'ethers';
+import { ethers } from 'ethers';
 import { marketPlaceContract } from '@src/utils';
 import { purchaseItems } from '@src/api/nfts.api';
 import { useMutation } from '@tanstack/react-query';
@@ -18,7 +18,7 @@ const Cart = () => {
   const buySales = async () => {
     // eslint-disable-next-line no-useless-catch
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+      const provider = new ethers.BrowserProvider(window.ethereum, 'any');
       const account = (await provider.listAccounts())[0];
       const signer = provider.getSigner(account);
 
@@ -26,7 +26,7 @@ const Cart = () => {
       await (
         await marketPlace.purchaseItems(
           cartItems.map((item) => item.itemId),
-          { value: utils.parseEther(totalPrice.toString()) }
+          { value: ethers.parseEther(totalPrice.toString()) }
         )
       ).wait();
       await purchaseItems(cartItems.map((item) => item.hash));
@@ -35,7 +35,8 @@ const Cart = () => {
     }
   };
 
-  const { mutate, isLoading } = useMutation(buySales, {
+  const { mutate, isLoading } = useMutation({
+    mutationFn: buySales,
     onSuccess: () => {
       toast.success('Purchase NFT successfully');
       dispatch(clearAllCart());

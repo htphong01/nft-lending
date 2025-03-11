@@ -8,7 +8,7 @@ import {
 } from '@src/constants';
 import { TOKEN_BOUND_ACCOUNT_REGISTRY_ABI } from '@src/abi';
 
-const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+const provider = new ethers.BrowserProvider(window.ethereum, 'any');
 
 export const TokenBoundAccountRegistryContract = (
   contractAddress = TOKEN_BOUND_ACCOUNT_REGISTRY_ADDRESS,

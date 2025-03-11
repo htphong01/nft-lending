@@ -2,7 +2,7 @@ import { PERMITTED_NFTS_ABI } from '@src/abi';
 import { PERMITTED_NFTS_ADDRESS } from '@src/constants';
 import { ethers } from 'ethers';
 
-const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+const provider = new ethers.BrowserProvider(window.ethereum, 'any');
 const signer = provider.getSigner();
 
 export const PermittedNFTsContract = (signerOrProvider = provider) => {

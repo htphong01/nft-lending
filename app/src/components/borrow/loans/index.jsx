@@ -74,8 +74,10 @@ export default function Loans() {
     <div className={styles.container}>
       <Toaster position="top-center" reverseOrder={false} />
       {commitLoading && (
-        <div className="screen-loading-overlay">
-          <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} />
+        <div className="screen-loading-overla
+          <p>Loading...</p>
+        y">
+          {/* <ReactLoading type="spinningBubbles" color="#ffffff" height={60} width={60} /> */}
         </div>
       )}
       {selectedOffer &&
@@ -90,7 +92,9 @@ export default function Loans() {
         ))}
       {isLoading ? (
         <div className="react-loading-item">
-          <ReactLoading type="bars" color="#fff" height={100} width={120} />
+          <p>Loading...</p>
+
+          {/* <ReactLoading type="bars" color="#fff" height={100} width={120} /> */}
         </div>
       ) : (
         <>

@@ -20,7 +20,7 @@ export const Create = () => {
   const onCreateNFT = async (values) => {
     // eslint-disable-next-line no-useless-catch
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+      const provider = new ethers.BrowserProvider(window.ethereum, 'any');
       const account = (await provider.listAccounts())[0];
       const signer = provider.getSigner(account);
 
@@ -48,7 +48,8 @@ export const Create = () => {
     }
   };
 
-  const { mutate, isLoading } = useMutation(onCreateNFT, {
+  const { mutate, isLoading } = useMutation({
+    mutationFn: onCreateNFT,
     onSuccess: () => {
       toast.success('Create NFT sale successfully!');
       navigate('/marketplace');

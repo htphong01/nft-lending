@@ -36,7 +36,9 @@ export default function Assets() {
       <div className={styles.heading}>List assets</div>
       {isLoading ? (
         <div className="react-loading-item">
-          <ReactLoading type="bars" color="#fff" height={100} width={120} />
+          <p>Loading...</p>
+
+          {/* <ReactLoading type="bars" color="#fff" height={100} width={120} /> */}
         </div>
       ) : orderList.length > 0 ? (
         <div className={styles['list-nfts']}>

@@ -127,7 +127,9 @@ export default function MakeOffer({ item }) {
       </div>
       {isLoading ? (
         <div className="react-loading-item">
-          <ReactLoading type="bars" color="#fff" height={100} width={120} />
+          <p>Loading...</p>
+
+          {/* <ReactLoading type="bars" color="#fff" height={100} width={120} /> */}
         </div>
       ) : (
         <Table title="Offers received" data={offerList} creator={item.creator} />

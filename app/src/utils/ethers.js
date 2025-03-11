@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { LOAN_ADDRESS, CHAIN_ID, WXCR_ADDRESS } from '@src/constants';
 
 const RPC_URL = 'https://rpc-kura.cross.technology';
-export const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+export const provider = new ethers.JsonRpcProvider(RPC_URL);
 
 export const getNativeBalance = async (account) => {
   const balance = await provider.getBalance(account);
@@ -10,7 +10,7 @@ export const getNativeBalance = async (account) => {
 };
 
 export const generateSignature = async (data) => {
-  const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+  const provider = new ethers.BrowserProvider(window.ethereum, 'any');
   const account = (await provider.listAccounts())[0];
   const signer = provider.getSigner(account);
 
@@ -28,7 +28,7 @@ export const generateOrderSignature = async (order) => {
 
   const orderHash = ethers.utils.keccak256(encodedOrder);
 
-  const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+  const provider = new ethers.BrowserProvider(window.ethereum, 'any');
   const account = (await provider.listAccounts())[0];
   const signer = provider.getSigner(account);
   const signature = await signer.signMessage(orderHash);
@@ -66,7 +66,7 @@ export const generateOfferSignature = async (
 
   const message = ethers.utils.arrayify(ethers.utils.keccak256(payload));
 
-  const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+  const provider = new ethers.BrowserProvider(window.ethereum, 'any');
   const account = (await provider.listAccounts())[0];
   const signer = provider.getSigner(account);
   const signature = await signer.signMessage(message);
@@ -107,7 +107,7 @@ export const generateRequestSignature = async (
 
   const message = ethers.utils.arrayify(ethers.utils.keccak256(payload));
 
-  const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+  const provider = new ethers.BrowserProvider(window.ethereum, 'any');
   const account = (await provider.listAccounts())[0];
   const signer = provider.getSigner(account);
   const signature = await signer.signMessage(message);

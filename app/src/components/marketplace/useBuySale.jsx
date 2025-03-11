@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { removeFromCart, selectIsItemInCart } from '@src/redux/features/cartSlice';
-import { ethers, utils } from 'ethers';
+import { ethers } from 'ethers';
 import { purchaseItem } from '@src/api/nfts.api';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -13,20 +13,21 @@ export const useBuySale = (token, reloadToken = () => { }) => {
   const buySale = async () => {
     // eslint-disable-next-line no-useless-catch
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+      const provider = new ethers.BrowserProvider(window.ethereum, 'any');
       const account = (await provider.listAccounts())[0];
       const signer = provider.getSigner(account);
 
       const marketPlace = marketPlaceContract(signer);
 
-      await (await marketPlace.purchaseItems([token.itemId], { value: utils.parseEther(token.price) })).wait();
+      await (await marketPlace.purchaseItems([token.itemId], { value: ethers.parseEther(token.price) })).wait();
       await purchaseItem(token.hash);
     } catch (error) {
       throw error;
     }
   };
 
-  const { mutate, isLoading } = useMutation(buySale, {
+  const { mutate, isLoading } = useMutation({
+    mutationFn: buySale,
     onSuccess: () => {
       reloadToken();
       isInCart && dispatch(removeFromCart(token.hash));
