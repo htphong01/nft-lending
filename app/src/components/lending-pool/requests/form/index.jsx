@@ -12,7 +12,7 @@ import {
   calculateRepayment,
   sliceAddress,
   convertOfferDataToSign,
-  generateOfferSignature,
+  getOfferSignature,
   liquidateLoan,
   parseMetamaskError,
 } from '@src/utils';
@@ -24,7 +24,7 @@ import { Contract, ethers } from 'ethers';
 import { resolveIpfsUri } from '@src/hooks';
 import axios from 'axios';
 import { createNft } from '@src/api/nfts.api';
-import { MARKETPLACE_ABI } from '@src/abi/marketPlace';
+import { MARKETPLACE_ABI } from '@src/abi/market-place';
 
 const CVC_SCAN = import.meta.env.VITE_CVC_SCAN;
 
@@ -58,7 +58,7 @@ export default function Form({ item, onClose, type }) {
         expiration: ONE_DAY * 7,
       });
 
-      const signature = await generateOfferSignature(offerData, signatureData);
+      const signature = await getOfferSignature(offerData, signatureData);
       signatureData.signature = signature;
       voteData.signature = signatureData;
 

@@ -34,7 +34,7 @@ export const Create = () => {
         await (await tokenContract.setApprovalForAll(MARKETPLACE_ADDRESS, true)).wait();
       }
       const receipt = await (
-        await marketPlace.makeItem(values.address, values.tokenId, ethers.utils.parseUnits(values.price))
+        await marketPlace.makeItem(values.address, values.tokenId, ethers.parseUnits(values.price))
       ).wait();
 
       let itemId;

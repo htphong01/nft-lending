@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
-import { createOfferMessage, verifySignature } from '../utils/signature';
+import { createOfferMessage, hashOfferMessage, verifySignature } from '../utils/signature';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { OfferStatus } from './dto/offer.enum';
 import { OrderStatus } from '../orders/dto/order.enum';
@@ -29,6 +29,7 @@ import {
   LendingPool,
   LendingPool__factory,
 } from 'src/typechain-types';
+import { calculateRepayment } from '../utils/apr';
 
 @Injectable()
 export class OffersService implements OnModuleInit {
@@ -67,26 +68,33 @@ export class OffersService implements OnModuleInit {
   }
 
   async create(createOfferDto: CreateOfferDto) {
-    const offerHash = createOfferMessage(
+    const repayment = calculateRepayment(
+      createOfferDto.offer,
+      createOfferDto.rate,
+      createOfferDto.duration,
+    );
+
+    const offerMessage = createOfferMessage(
       {
-        adminFeeInBasisPoints: 25n,
-        duration: ONE_DAY,
+        adminFeeInBasisPoints: createOfferDto.adminFeeInBasisPoints,
+        duration: Number(createOfferDto.duration) * ONE_DAY,
         erc20Denomination: createOfferDto.erc20Denomination,
-        maximumRepaymentAmount: ethers.parseUnits('0.018', 18),
-        nftCollateralContract: this.nftContract.target,
-        nftCollateralId: 1n,
-        principalAmount: ethers.parseUnits('0.015', 18),
-        lendingPool: ethers.ZeroAddress,
+        maximumRepaymentAmount: ethers.parseUnits(repayment, 18),
+        nftCollateralContract: createOfferDto.nftAddress,
+        nftCollateralId: createOfferDto.nftTokenId,
+        principalAmount: ethers.parseUnits(createOfferDto.offer, 18),
+        lendingPool: createOfferDto.lendingPool,
       },
       createOfferDto.signature, // Created from client side
       this.loanContract.target,
       Number(config.ENV.CHAIN_ID),
     );
+    const hashedOfferMessage = hashOfferMessage(offerMessage);
 
     if (
       !verifySignature(
         createOfferDto.creator,
-        ethers.getBytes(offerHash),
+        offerMessage,
         createOfferDto.signature.signature,
       )
     ) {
@@ -95,8 +103,8 @@ export class OffersService implements OnModuleInit {
 
     const newOffer: Record<string, any> = {
       ...createOfferDto,
-      floorPrice: (createOfferDto.offer * 1.1).toFixed(2),
-      hash: offerHash,
+      floorPrice: (Number(createOfferDto.offer) * 1.1).toFixed(2),
+      hash: hashedOfferMessage,
       status: OfferStatus.OPENING,
       // createdAt: new Date().getTime(),
     };
@@ -104,7 +112,7 @@ export class OffersService implements OnModuleInit {
     const dacs_cid = await this.dacs.upload(newOffer);
     newOffer.dacs_url = `${config.ENV.SERVER_HOST}:${config.ENV.SERVER_PORT}/dacs/${dacs_cid}`;
 
-    await this.offer.create(createOfferDto.order, offerHash, newOffer);
+    await this.offer.create(createOfferDto.order, hashedOfferMessage, newOffer);
   }
 
   async findAll(conditions: Record<string, any> = {}) {

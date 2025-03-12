@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { Contract, JsonRpcProvider, ethers } from 'ethers';
 import config from 'src/config';
-import { createOfferMessage, verifySignature } from '../utils/signature';
+import { createOfferMessage, hashOfferMessage, verifySignature } from '../utils/signature';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { RequestStatus } from './dto/request.enum';
 import { Request } from './reposities/request.reposity';
@@ -58,7 +58,7 @@ export class RequestsService implements OnModuleInit {
       throw new BadRequestException('invalid_status');
     }
 
-    const requestHash = createOfferMessage(
+    const offerMessage = createOfferMessage(
       {
         adminFeeInBasisPoints: 25n,
         duration: ONE_DAY,
@@ -73,10 +73,12 @@ export class RequestsService implements OnModuleInit {
       this.loanContract.target,
       Number(config.ENV.CHAIN_ID),
     );
+    const hashedOfferMessage = hashOfferMessage(offerMessage);
+
     if (
       !verifySignature(
         dto.creator,
-        ethers.getBytes(requestHash),
+        ethers.getBytes(offerMessage),
         dto.signature.signature,
       )
     ) {
@@ -94,7 +96,7 @@ export class RequestsService implements OnModuleInit {
       // floorPrice: (createOfferDto.offer * 1.1).toFixed(2),
       lender: offer.creator,
       creator: dto.creator,
-      hash: requestHash,
+      hash: hashedOfferMessage,
       status: RequestStatus.OPENING,
       createdAt: new Date().getTime(),
     };
@@ -102,7 +104,7 @@ export class RequestsService implements OnModuleInit {
     const dacs_cid = await this.dacs.upload(newRequest);
     newRequest.dacs_url = `${config.ENV.SERVER_HOST}:${config.ENV.SERVER_PORT}/dacs/${dacs_cid}`;
 
-    await this.request.create(requestHash, newRequest);
+    await this.request.create(hashedOfferMessage, newRequest);
   }
 
   async findAll(conditions: Record<string, any> = {}) {

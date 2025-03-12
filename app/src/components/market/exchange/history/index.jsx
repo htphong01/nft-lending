@@ -40,7 +40,7 @@ export default function Table() {
   };
 
   const formatHexValue = (amount) => {
-    const value = ethers.utils.formatUnits(amount, 18);
+    const value = ethers.formatUnits(amount, 18);
     return Math.round(value * 100) / 100;
   };
 

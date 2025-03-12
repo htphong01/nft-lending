@@ -10,12 +10,14 @@ export class CreateOfferDto {
   order: string;
   borrower: string;
   erc20Denomination: string;
-  offer: number;
-  duration: number;
-  rate: number;
+  offer: string;
+  duration: string;
+  rate: string;
   expiration: number;
   createdAt: number;
+  nftAddress: string;
+  nftTokenId: string;
   adminFeeInBasisPoints: number;
   signature: OfferSignature;
-  lendingPoolAddress: string;
+  lendingPool: string;
 }

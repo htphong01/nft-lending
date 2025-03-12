@@ -27,8 +27,8 @@ export default function Loans() {
     try {
       setCommitLoading(true);
       const repayment = calculateRepayment(offer.offer, offer.rate, offer.duration);
-      if (!(await checkAllowance(account.address, ethers.utils.parseUnits(`${repayment}`, 18)))) {
-        const tx = await approveERC20(ethers.utils.parseUnits(`${repayment}`, 18));
+      if (!(await checkAllowance(account.address, ethers.parseUnits(`${repayment}`, 18)))) {
+        const tx = await approveERC20(ethers.parseUnits(`${repayment}`, 18));
         await tx.wait();
       }
       const tx = await payBackLoan(offer.hash);

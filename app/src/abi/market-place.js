@@ -1,10 +1,20 @@
-export const LOAN_ABI = [
+export const MARKETPLACE_ABI = [
   {
     "inputs": [
       {
         "internalType": "address",
         "name": "_initialOwner",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_feeReceiver",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_feePercent",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
@@ -23,22 +33,62 @@ export const LOAN_ABI = [
   },
   {
     "inputs": [],
-    "name": "EnforcedPause",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ExpectedPause",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "InvalidAddress",
     "type": "error"
   },
   {
     "inputs": [],
+    "name": "InvalidBeneficiary",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidFeePercent",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidFeeReceiver",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidLength",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidNft",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidPrice",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotEnougnETH",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotExistedItem",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotOpeningItem",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotPermittedToken",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OnlyItemOwner",
     "type": "error"
   },
   {
@@ -91,28 +141,27 @@ export const LOAN_ABI = [
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "TransferNativeFailed",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
         "indexed": true,
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "itemId",
+        "type": "uint256"
       },
       {
         "indexed": true,
         "internalType": "address",
-        "name": "to",
+        "name": "buyer",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
       }
     ],
-    "name": "Disbursed",
+    "name": "BoughtItem",
     "type": "event"
   },
   {
@@ -120,24 +169,73 @@ export const LOAN_ABI = [
     "inputs": [
       {
         "indexed": true,
-        "internalType": "address",
-        "name": "nftContract",
-        "type": "address"
-      },
-      {
-        "indexed": true,
         "internalType": "uint256",
-        "name": "nftTokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "price",
+        "name": "itemId",
         "type": "uint256"
       }
     ],
-    "name": "ListNftToMarket",
+    "name": "ClosedItem",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "itemId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "itemId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "nft",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "paymentToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "seller",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "beneficiary",
+            "type": "address"
+          },
+          {
+            "internalType": "enum IMarketplace.ItemStatus",
+            "name": "status",
+            "type": "uint8"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct Marketplace.Item",
+        "name": "item",
+        "type": "tuple"
+      }
+    ],
+    "name": "MakeItem",
     "type": "event"
   },
   {
@@ -165,38 +263,6 @@ export const LOAN_ABI = [
       {
         "indexed": true,
         "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "PaidBack",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "Paused",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
         "name": "user",
         "type": "address"
       },
@@ -215,18 +281,18 @@ export const LOAN_ABI = [
     "inputs": [
       {
         "indexed": true,
-        "internalType": "address",
+        "internalType": "uint256",
         "name": "oldValue",
-        "type": "address"
+        "type": "uint256"
       },
       {
         "indexed": true,
-        "internalType": "address",
+        "internalType": "uint256",
         "name": "newValue",
-        "type": "address"
+        "type": "uint256"
       }
     ],
-    "name": "SetLendingStake",
+    "name": "SetFeePercent",
     "type": "event"
   },
   {
@@ -245,7 +311,7 @@ export const LOAN_ABI = [
         "type": "address"
       }
     ],
-    "name": "SetLoan",
+    "name": "SetFeeReceiver",
     "type": "event"
   },
   {
@@ -254,30 +320,17 @@ export const LOAN_ABI = [
       {
         "indexed": true,
         "internalType": "address",
-        "name": "oldValue",
+        "name": "token",
         "type": "address"
       },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newValue",
-        "type": "address"
-      }
-    ],
-    "name": "SetMarketplace",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
+        "internalType": "bool",
+        "name": "allow",
+        "type": "bool"
       }
     ],
-    "name": "Unpaused",
+    "name": "SetPaymentToken",
     "type": "event"
   },
   {
@@ -302,60 +355,40 @@ export const LOAN_ABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_token",
-        "type": "address"
-      },
-      {
         "internalType": "uint256",
-        "name": "_amount",
+        "name": "_itemId",
         "type": "uint256"
       }
     ],
-    "name": "approveToPayRewards",
+    "name": "closeItem",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_token",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_to",
-        "type": "address"
-      },
+    "inputs": [],
+    "name": "feePercent",
+    "outputs": [
       {
         "internalType": "uint256",
-        "name": "_amount",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "informDisburse",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "feeReceiver",
+    "outputs": [
       {
         "internalType": "address",
-        "name": "_token",
+        "name": "",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_principal",
-        "type": "uint256"
       }
     ],
-    "name": "informPayBack",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -379,12 +412,66 @@ export const LOAN_ABI = [
   },
   {
     "inputs": [],
-    "name": "lendingStake",
+    "name": "itemCount",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "uint256",
         "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "items",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "itemId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "nft",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "price",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "paymentToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "seller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "internalType": "enum IMarketplace.ItemStatus",
+        "name": "status",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -394,49 +481,33 @@ export const LOAN_ABI = [
     "inputs": [
       {
         "internalType": "address",
-        "name": "_nftContract",
+        "name": "_nft",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "_nftTokenId",
+        "name": "_tokenId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
       },
       {
         "internalType": "uint256",
         "name": "_price",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_beneficiary",
+        "type": "address"
       }
     ],
-    "name": "listNftToMarket",
+    "name": "makeItem",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "loan",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "marketplace",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -487,15 +558,14 @@ export const LOAN_ABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "pause",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "paused",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "paymentToken",
     "outputs": [
       {
         "internalType": "bool",
@@ -507,54 +577,21 @@ export const LOAN_ABI = [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_itemId",
+        "type": "uint256"
+      }
+    ],
+    "name": "purchaseItem",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "renounceOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_nftContract",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_nftTokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_to",
-        "type": "address"
-      }
-    ],
-    "name": "rescueNft",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_token",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "rescueToken",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -598,12 +635,12 @@ export const LOAN_ABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_lendingStake",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "_newValue",
+        "type": "uint256"
       }
     ],
-    "name": "setLendingStake",
+    "name": "setFeePercent",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -612,11 +649,11 @@ export const LOAN_ABI = [
     "inputs": [
       {
         "internalType": "address",
-        "name": "_loan",
+        "name": "_feeReceiver",
         "type": "address"
       }
     ],
-    "name": "setLoan",
+    "name": "setFeeReceiver",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -625,11 +662,16 @@ export const LOAN_ABI = [
     "inputs": [
       {
         "internalType": "address",
-        "name": "_marketplace",
+        "name": "_token",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "allow",
+        "type": "bool"
       }
     ],
-    "name": "setMarketplace",
+    "name": "setPaymentToken",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -643,26 +685,6 @@ export const LOAN_ABI = [
       }
     ],
     "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "unpause",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_marketItemId",
-        "type": "uint256"
-      }
-    ],
-    "name": "withdrawNftFromMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

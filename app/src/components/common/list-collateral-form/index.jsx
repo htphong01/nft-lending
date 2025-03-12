@@ -64,8 +64,8 @@ export default function ListCollateralForm({ item, onClose, type }) {
       const repayment = calculateRepayment(item.offer, item.rate, item.duration);
 
       const offer = {
-        principalAmount: ethers.utils.parseUnits(item.offer, 18),
-        maximumRepaymentAmount: ethers.utils.parseUnits(`${repayment}`, 18),
+        principalAmount: ethers.parseUnits(item.offer, 18),
+        maximumRepaymentAmount: ethers.parseUnits(`${repayment}`, 18),
         nftCollateralId: item.nftTokenId,
         nftCollateralContract: item.nftAddress,
         duration: item.duration * ONE_DAY,

@@ -1,3 +1,6 @@
+import  * as dotenv from 'dotenv';
+dotenv.config();
+
 export const Environment = {
   SERVER_PORT: Number(process.env.SERVER_PORT || 3000),
   SOCKET_PORT: Number(process.env.SOCKET_PORT || 3001),

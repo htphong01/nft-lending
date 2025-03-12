@@ -16,7 +16,7 @@ export const getRawBalance = async (account, contractAddress = WXCR_ADDRESS) => 
 export const getBalance = async (account, contractAddress = WXCR_ADDRESS) => {
   const contract = ERC20Contract(contractAddress, provider);
   const balance = await contract.balanceOf(account);
-  return Number(ethers.utils.formatEther(balance)).toFixed(2);
+  return Number(ethers.formatEther(balance)).toFixed(2);
 };
 
 export const getContractSymbol = async (contractAddress = WXCR_ADDRESS) => {
@@ -27,7 +27,7 @@ export const getContractSymbol = async (contractAddress = WXCR_ADDRESS) => {
 export const checkAllowance = async (owner, amount, spender = LOAN_ADDRESS, contractAddress = WXCR_ADDRESS) => {
   const contract = ERC20Contract(contractAddress, provider);
   const allowance = await contract.allowance(owner, spender);
-  return allowance.gte(amount);
+  return allowance >= amount;
 };
 
 export const approveERC20 = async (
@@ -35,21 +35,21 @@ export const approveERC20 = async (
   spender = LOAN_ADDRESS,
   contractAddress = WXCR_ADDRESS
 ) => {
-  const signer = provider.getSigner();
+  const signer = await provider.getSigner();
   const contract = ERC20Contract(contractAddress, signer);
   return contract.approve(spender, amount);
 };
 
 export const mintERC20 = async (amount, contractAddress = WXCR_ADDRESS) => {
-  const signer = provider.getSigner();
+  const signer = await provider.getSigner();
   const contract = ERC20Contract(contractAddress, signer);
   const decimals = await contract.decimals();
-  return contract.mint({ value: ethers.utils.parseUnits(`${amount}`, decimals) });
+  return contract.mint({ value: ethers.parseUnits(`${amount}`, decimals) });
 };
 
 export const burnERC20 = async (amount, contractAddress = WXCR_ADDRESS) => {
-  const signer = provider.getSigner();
+  const signer = await provider.getSigner();
   const contract = ERC20Contract(contractAddress, signer);
   const decimals = await contract.decimals();
-  return contract.burn(ethers.utils.parseUnits(`${amount}`, decimals));
+  return contract.burn(ethers.parseUnits(`${amount}`, decimals));
 };

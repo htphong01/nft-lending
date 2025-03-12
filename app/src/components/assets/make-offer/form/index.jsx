@@ -6,7 +6,7 @@ import ReactLoading from 'react-loading';
 import { ethers } from 'ethers';
 import {
   convertOfferDataToSign,
-  generateOfferSignature,
+  getOfferSignature,
   calculateAPR,
   calculateRepayment,
   checkAllowance,
@@ -64,20 +64,20 @@ export default function Form({ order, fetchOffers }) {
         rate: data.apr,
         expiration: data.expiration,
         createdAt: new Date().getTime(),
+        nftAddress: order.nftAddress,
+        nftTokenId: order.nftTokenId,
       };
 
-      offer.nftAddress = order.nftAddress;
-      offer.nftTokenId = order.nftTokenId;
-
       const { offerData, signatureData } = convertOfferDataToSign(offer);
-      const signature = await generateOfferSignature(offerData, signatureData);
+      const signature = await getOfferSignature(offerData, signatureData);
       signatureData.signature = signature;
       offer.signature = signatureData;
       offer.adminFeeInBasisPoints = offerData.adminFeeInBasisPoints;
       offer.erc20Denomination = offerData.erc20Denomination;
+      offer.lendingPool = offerData.lendingPool;
       // check allowance and approve erc20
-      if (!(await checkAllowance(account.address, ethers.utils.parseUnits(data.amount, 18)))) {
-        const tx = await approveERC20(ethers.utils.parseUnits(data.amount, 18));
+      if (!(await checkAllowance(account.address, ethers.parseUnits(data.amount, 18)))) {
+        const tx = await approveERC20(ethers.parseUnits(data.amount, 18));
         await tx.wait();
       }
       await toast.promise(createOffer(offer), {
@@ -96,9 +96,10 @@ export default function Form({ order, fetchOffers }) {
       fetchOffers();
       setIsLoading(false);
     } catch (error) {
+      console.error(error);
       const txError = parseMetamaskError(error);
       setIsLoading(false);
-      toast.error(txError.context);
+      toast.error(error);
     }
   };
 

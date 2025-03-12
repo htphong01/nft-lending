@@ -1,6 +1,7 @@
 import { AddressLike, BytesLike, ethers, parseEther, Signer } from 'ethers';
 import { calculateRepayment } from './apr';
 import { LoanData } from 'src/typechain-types/contracts/loans/direct/DirectLoanFixedOffer';
+import config from 'src/config';
 
 const ONE_DAY = 24 * 60 * 60;
 
@@ -124,16 +125,20 @@ function getEncodedOffer(offer: LoanData.OfferStruct) {
   return payload;
 }
 
+export function hashOfferMessage(offerMessage: Uint8Array) {
+  return ethers.keccak256(offerMessage);
+}
+
 export function createOfferMessage(
   offer: LoanData.OfferStruct,
   signature: LoanData.SignatureStruct,
   loan: AddressLike,
-  chainId = 31337
+  chainId = Number(config.ENV.CHAIN_ID)
 ) {
   const encodedOffer = getEncodedOffer(offer);
   const encodedSignature = getEncodedSignature(signature);
   const message = getOfferMessage(encodedOffer, encodedSignature, loan, chainId);
-  return ethers.keccak256(message);
+  return message
 
   // const sig = await signer.signMessage(message); // Do at client side
   // return sig;
@@ -166,7 +171,7 @@ export async function getRenegotiationSignature(
   signature: LoanData.SignatureStruct,
   signer: Signer,
   loan: AddressLike,
-  chainId = 31337
+  chainId = Number(config.ENV.CHAIN_ID)
 ) {
   const message = getEncodedRenegotiation(renogation, signature, loan, chainId);
   const sig = await signer.signMessage(message);

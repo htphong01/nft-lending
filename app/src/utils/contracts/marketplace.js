@@ -1,4 +1,4 @@
-import { MARKETPLACE_ABI } from '@src/abi/marketPlace';
+import { MARKETPLACE_ABI } from '@src/abi/market-place';
 import { MARKETPLACE_ADDRESS } from '@src/constants';
 import { ethers } from 'ethers';
 

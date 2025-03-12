@@ -75,7 +75,7 @@ export default function RequestPopup({ item, onClose }) {
       setIsCommitLoading(true);
 
       // Approve renegotiation fee
-      const renegotiateFee = ethers.utils.parseUnits(item.renegotiateFee, 18);
+      const renegotiateFee = ethers.parseUnits(item.renegotiateFee, 18);
       if (!(await checkAllowance(account.address, renegotiateFee))) {
         const approveTx = await approveERC20(renegotiateFee);
         await approveTx.wait();

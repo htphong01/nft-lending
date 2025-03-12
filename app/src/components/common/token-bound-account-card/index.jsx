@@ -48,11 +48,11 @@ export default function TokenBoundAccountCard({ item, onClose }) {
         },
         {
           name: 'GOLD',
-          value: Number(ethers.utils.formatEther(GOLD)).toFixed(2),
+          value: Number(ethers.formatEther(GOLD)).toFixed(2),
         },
         {
           name: 'SILVER',
-          value: Number(ethers.utils.formatEther(SILVER)).toFixed(2),
+          value: Number(ethers.formatEther(SILVER)).toFixed(2),
         },
       ];
 

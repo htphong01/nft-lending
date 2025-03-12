@@ -13,7 +13,7 @@ const lendingPoolContract = (signerOrProvider = provider) => {
 export const getStakedPerUser = async (address, options = {}) => {
   const contract = lendingPoolContract(provider);
   const balance = (await contract.poolStakers(address, { ...options })).amount;
-  return Number(ethers.utils.formatEther(balance)).toFixed(2);
+  return Number(ethers.formatEther(balance)).toFixed(2);
 };
 
 export const deposit = async (amount) => {
@@ -40,13 +40,13 @@ export const claimReward = async () => {
 export const getStakedByUser = async (address) => {
   const contract = lendingPoolContract(provider);
   const userInfo = await contract.userInfo(address);
-  return Number(ethers.utils.formatUnits(userInfo.amount)).toFixed(2);
+  return Number(ethers.formatUnits(userInfo.amount)).toFixed(2);
 };
 
 export const getTotalStakedInPool = async () => {
   const contract = lendingPoolContract(provider);
   const poolInfo = await contract.poolInfo();
-  return Number(ethers.utils.formatUnits(poolInfo.stakedSupply)).toFixed(2);
+  return Number(ethers.formatUnits(poolInfo.stakedSupply)).toFixed(2);
 };
 
 export const getTotalBonusInPool = async () => {
@@ -65,7 +65,7 @@ export const getBonus = async (address) => {
   const treasuryBalance = await getRawBalance(treasury);
 
   const reward = pendingReward.mul(treasuryBalance).div(rewardSupply);
-  return Number(ethers.utils.formatUnits(reward)).toFixed(2);
+  return Number(ethers.formatUnits(reward)).toFixed(2);
 };
 
 export const getTotalStakers = async () => {

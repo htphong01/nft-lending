@@ -41,13 +41,14 @@ export const convertOfferDataToSign = (offer) => {
   const repayment = calculateRepayment(offer.offer, offer.rate, offer.duration);
 
   const offerData = {
-    offer: ethers.utils.parseUnits(offer.offer, 18),
-    repayment: ethers.utils.parseUnits(`${repayment}`, 18),
-    nftTokenId: offer.nftTokenId,
-    nftAddress: offer.nftAddress,
+    principalAmount: ethers.parseUnits(offer.offer, 18),
+    maximumRepaymentAmount: ethers.parseUnits(`${repayment}`, 18),
+    nftCollateralId: offer.nftTokenId,
+    nftCollateralContract: offer.nftAddress,
     duration: offer.duration * ONE_DAY,
     adminFeeInBasisPoints: 25,
     erc20Denomination: WXCR_ADDRESS,
+    lendingPool: offer.lendingPool,
   };
 
   const signatureData = {
@@ -63,7 +64,7 @@ export const convertRequestDataToSign = (request) => {
   const requestData = {
     loanId: request.offer,
     loanDuration: request.loanDuration * ONE_DAY,
-    renegotiateFee: ethers.utils.parseUnits(request.renegotiateFee, 18).toString(),
+    renegotiateFee: ethers.parseUnits(request.renegotiateFee, 18).toString(),
   };
 
   const signatureData = {

@@ -88,7 +88,7 @@ export default function Pool() {
   const handleWithdraw = async (amount) => {
     try {
       setIsLoading(true);
-      const amountBN = ethers.utils.parseUnits(amount, 18);
+      const amountBN = ethers.parseUnits(amount, 18);
       const tx = await withdraw(amountBN);
       await tx.wait();
       toast.success(`Withdraw wXCR successfully`);
@@ -117,7 +117,7 @@ export default function Pool() {
   const handleStake = async (amount) => {
     try {
       setIsLoading(true);
-      const amountBN = ethers.utils.parseUnits(amount, 18);
+      const amountBN = ethers.parseUnits(amount, 18);
       if (!(await checkAllowance(account.address, amountBN, LENDING_POOL_ADDRESS))) {
         const tx = await approveERC20(amountBN, LENDING_POOL_ADDRESS);
         await tx.wait();
