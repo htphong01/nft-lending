@@ -14,33 +14,33 @@ export default function Assets() {
   const [order, setOrder] = useState();
 
   useEffect(() => {
-    // if (hash) {
-    //   getOrderByHash(hash)
-    //     .then(({ data }) => {
-    //       if (!data || data.lender === 'pool' ||data.status !== OrderStatus.OPENING ) navigate('/lend/assets');
-    //       setOrder(data);
-    //       setIsLoading(false);
-    //     })
-    //     .catch((error) => {
-    //       console.error(error);
-    //       setIsLoading(false);
-    //     });
-    // }
+    if (hash) {
+      getOrderByHash(hash)
+        .then(({ data }) => {
+          if (!data || data.lender === 'pool' ||data.status !== OrderStatus.OPENING ) navigate('/lend/assets');
+          setOrder(data);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error(error);
+          setIsLoading(false);
+        });
+    }
 
-    setOrder({
-      metadata: {
-        collection: 'Test',
-        name: 'test test test test',
-        image: 'https://picsum.photos/200',
-      },
-      nftAddress: NFT_CONTRACT_ADDRESS,
-      nftTokenId: 7,
-      creator: '0x0f5ad3dfC8b233d1aBD45AEF6EBDE8dbB32674F4',
-      offer: 0.1,
-      duration: 10,
-      rate: 0.25,
-    });
-    setIsLoading(false);
+    // setOrder({
+    //   metadata: {
+    //     collection: 'Test',
+    //     name: 'test test test test',
+    //     image: 'https://picsum.photos/200',
+    //   },
+    //   nftAddress: NFT_CONTRACT_ADDRESS,
+    //   nftTokenId: 7,
+    //   creator: '0x0f5ad3dfC8b233d1aBD45AEF6EBDE8dbB32674F4',
+    //   offer: 0.1,
+    //   duration: 10,
+    //   rate: 0.25,
+    // });
+    // setIsLoading(false);
   }, [hash]);
 
   if (isLoading)

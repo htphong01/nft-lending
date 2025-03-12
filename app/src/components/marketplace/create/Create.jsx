@@ -22,13 +22,13 @@ export const Create = () => {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum, 'any');
       const account = (await provider.listAccounts())[0];
-      const signer = provider.getSigner(account);
+      const signer = await provider.getSigner(account.address);
 
       const tokenContract = ERC721Contract(values.address, signer);
 
       const marketPlace = marketPlaceContract(signer);
 
-      const isApproved = await tokenContract.isApprovedForAll(signer.getAddress(), MARKETPLACE_ADDRESS);
+      const isApproved = await tokenContract.isApprovedForAll(await signer.getAddress(), MARKETPLACE_ADDRESS);
 
       if (!isApproved) {
         await (await tokenContract.setApprovalForAll(MARKETPLACE_ADDRESS, true)).wait();

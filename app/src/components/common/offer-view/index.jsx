@@ -28,7 +28,7 @@ export default function OfferView({ item, onClose, action }) {
 
   const fetchOrder = async () => {
     try {
-      const { data: order } = await getOrderByHash(item.order);
+      const { data: order } = await getOrderByHash(item.hash);
       setData({ ...data, order });
       setIsLoading(false);
     } catch (error) {

@@ -2,6 +2,7 @@
 import { useSelector } from 'react-redux';
 import { calculateRepayment, sliceAddress, getOfferStatusText } from '@src/utils';
 import styles from './styles.module.scss';
+import { ethers } from 'ethers';
 
 export default function Table({ title, data, action }) {
   const account = useSelector((state) => state.account);
@@ -25,7 +26,7 @@ export default function Table({ title, data, action }) {
       {data && data.length > 0 ? (
         data.map((item, index) => (
           <div className={styles['table-list']} key={index}>
-            <div className={styles['table-list-item']}>{sliceAddress(item.order)}</div>
+            <div className={styles['table-list-item']}>{sliceAddress(item.hash)}</div>
             <div className={styles['table-list-item']}>{sliceAddress(item.creator)}</div>
             <div className={styles['table-list-item']}>{sliceAddress(item.borrower)}</div>
             <div className={styles['table-list-item']}>
